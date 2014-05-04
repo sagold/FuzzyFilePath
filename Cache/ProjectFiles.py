@@ -9,24 +9,11 @@ class ProjectFiles:
     valid_extensions = None
     exclude_folders = ["node_modules"]
 
+
     def __init__(self, extensions):
 
         self.valid_extensions = extensions
 
-        # settings = sublime.load_settings("QueryFilePath.sublime-settings")
-        # print("### settings", settings.get("extensionsToSuggest"))
-
-        # self.valid_extensions = filter_extensions
-        # print("init project files", self.valid_extensions)
-
-        # settings.add_on_change("extensionsToSuggest", self.updateExtensions)
-
-    def updateExtensions(self, extensions):
-        print ("set extensions", extensions)
-
-    # def __init__(self, request_config):
-    #     self.request_config = request_config
-    #     print (self.request_config)
 
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
 
