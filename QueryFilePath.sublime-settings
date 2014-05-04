@@ -1,11 +1,14 @@
 {
 	// file extensions to show on filepath auto completion
-	"extensionsToSuggest": ["css", "html", "jpg", "js", "json", "md", "png"],
+	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
+	"exclude_folders": ["node_modules"],
 
 	"scopes": [
 
 		{
+			// nodejs require
 			"scope": "require.*string",
+
 			"auto": true,
 			"extensions": ["js"],
 			"insertExtension": false,
@@ -13,8 +16,9 @@
 		},
 
 		{
-
+			// js
 			"scope": "\\.js\\s",
+
 			"auto": false,
 			"extensions": ["js", "json"],
 			"insertExtension": true,
@@ -22,7 +26,29 @@
 		},
 
 		{
-			"scope": "\\.html\\s",
+			// json
+			"scope": "source\\.json.*string",
+
+			"auto": false,
+			"extensions": ["*"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// css
+			"scope": "source\\.css.*meta\\.property",
+
+			"auto": false,
+			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// html
+			"scope": "text\\.html.*string",
+
 			"auto": false,
 			"extensions": ["css", "png", "jpg"],
 			"insertExtension": true,
