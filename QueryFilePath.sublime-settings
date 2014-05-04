@@ -1,0 +1,32 @@
+{
+	// file extensions to show on filepath auto completion
+	"extensionsToSuggest": ["css", "html", "jpg", "js", "json", "md", "png"],
+
+	"scopes": [
+
+		{
+			"scope": "require.*string",
+			"auto": true,
+			"extensions": ["js"],
+			"insertExtension": false,
+			"relative": true
+		},
+
+		{
+
+			"scope": "\\.js\\s",
+			"auto": false,
+			"extensions": ["js", "json"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			"scope": "\\.html\\s",
+			"auto": false,
+			"extensions": ["css", "png", "jpg"],
+			"insertExtension": true,
+			"relative": false
+		}
+	]
+}
