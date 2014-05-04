@@ -108,16 +108,18 @@ def build_query(current_scope, relative=None):
 
 class InsertPathCommand(sublime_plugin.TextCommand):
 
-    def run(self, edit, relative):
+    def run(self, edit, relative=None):
 
         global Query
 
         Query["active"] = True
-        Query["relative"] = False
+        Query["relative"] = None
         Query["extension"] = True
 
-        if (relative is True):
+        if relative is True:
             Query["relative"] = Query["current_folder"]
+        elif relative is False:
+            Query["relative"] = False
 
         view = sublime.active_window().active_view()
         view.run_command('_enter_insert_mode')
@@ -163,13 +165,15 @@ class QueryFilePath(sublime_plugin.EventListener):
 
         if (Query["active"] is True):
             query = build_query(current_scope, Query["relative"])
-
         else:
             query = build_query(current_scope)
 
         # evaluate
         if (query is False or (query["active"] is False and query["auto"] is False)):
             return
+
+        # reset
+        Query["active"] = False
 
         scope_region = view.extract_scope(locations[0])
         needle = view.substr(scope_region)
