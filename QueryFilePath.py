@@ -10,6 +10,7 @@
 ###
 import sublime
 import sublime_plugin
+import re
 
 from QueryFilePath.Cache.ProjectFiles import ProjectFiles
 
@@ -21,7 +22,8 @@ Query = {
     "active": False,
     "relative": False,
     "extension": True,
-    "extensions": []
+    "extensions": [],
+    "base_path": ""
 }
 
 Scopes = None
@@ -39,7 +41,7 @@ def update_settings():
     global project_files, Scopes
 
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
-    project_files = ProjectFiles(settings.get("extensionsToSuggest"))
+    project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), settings.get("excludeFolders", ["node_modules"]))
     Scopes = settings.get("scopes")
 
 # update current views folder in query
@@ -69,9 +71,10 @@ def build_query(current_scope, relative=None):
         scope = properties.get("scope").replace("//", "")
         if re.search(scope, current_scope):
 
-            Query["auto"] = properties.get("auto")
-            Query["extensions"] = properties.get("extensions")
-            Query["extension"] = properties.get("insertExtension")
+            Query["auto"] = properties.get("auto", False)
+            Query["extension"] = properties.get("insertExtension", True)
+            Query["extensions"] = properties.get("extensions", ["js"])
+            # Query["base_path"] = properties.get("basePath", False)
 
             if (relative is None):
                 if properties.get("relative") is True:
@@ -135,7 +138,7 @@ class QueryFilePath(sublime_plugin.EventListener):
         global project_files, Query
 
         if (Query["valid"] is False):
-            print("aborting")
+            # print("aborting")
             return False
 
         current_scope = view.scope_name(locations[0])
@@ -154,6 +157,7 @@ class QueryFilePath(sublime_plugin.EventListener):
 
         view.run_command('_enter_insert_mode')
         scope_region = view.extract_scope(locations[0])
+        # might be file contents on wrong scopes
         needle = view.substr(scope_region)
 
         return project_files.search_completions(needle, query["project_folder"], query["extensions"], query["relative"], query["extension"])
