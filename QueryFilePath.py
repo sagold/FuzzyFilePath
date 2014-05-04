@@ -68,15 +68,20 @@ def update_settings():
 def update_query(view):
 
     folders = sublime.active_window().folders()
+    filename = view.file_name()
+
+    Query["valid"] = is_valid(folders, filename)
+    if Query["valid"] is False:
+        return False
 
     project_folder = folders[0]
     Query["project_folder"] = project_folder
 
-    current_folder = re.sub("/[^/]*$", "", view.file_name())
+    current_folder = re.sub("/[^/]*$", "", filename)
     current_folder = re.sub(project_folder, "", current_folder)
     Query["current_folder"] = current_folder
 
-    Query["valid"] = True
+    return True
 
 
 def build_query(current_scope, relative=None):
@@ -95,8 +100,6 @@ def build_query(current_scope, relative=None):
                     Query["relative"] = Query["current_folder"]
                 else:
                     Query["relative"] = False
-
-            print("--- MATCHED ", scope)
 
             return Query
 
@@ -155,13 +158,11 @@ class QueryFilePath(sublime_plugin.EventListener):
 
         global project_files, Query
 
-        current_scope = view.scope_name(locations[0])
-
-        # only within strings
-        if (Query["valid"] is False and not "string" in current_scope):
+        if (Query["valid"] is False):
             print("aborting")
             return False
 
+        current_scope = view.scope_name(locations[0])
 
         if (Query["active"] is True):
             query = build_query(current_scope, Query["relative"])
@@ -189,38 +190,29 @@ class QueryFilePath(sublime_plugin.EventListener):
             Query["valid"] = False
             return False
 
-        update_query(view)
-        project_files.add(Query["project_folder"])
+        if update_query(view):
+            project_files.add(Query["project_folder"])
 
 
-###
-# Returns true if the current file is invalid for require completions
-#
-# @param {Array} folders    project folders
-# @param {String} file      path to current view
-def abort(folders, file):
 
-    if (file is None):
-        print("__CompletePath__ [A] file is None")
-        return True
+def is_valid(folders, filename):
 
-    # not a js file?
-    if (not file.endswith(".js")):
-        # print("[A] ", file, "not a javascript file")
-        return True
+    if (filename is None):
+        print("__QueryFilePath__ [A] filename is None")
+        return False
 
     # single file?
     if (len(folders) == 0):
-        print("__CompletePath__ [A] no folders")
-        return True
+        print("__QueryFilePath__ [A] no folders")
+        return False
 
     # independent file?
-    if (not folders[0] in file):
-        print("__CompletePath__ [A] independent file")
-        return True
+    if (not folders[0] in filename):
+        print("__QueryFilePath__ [A] independent file")
+        return False
 
     # multiple folders?
     if (len(folders) > 1):
-        print ("__CompletePath__ [W] multiple folders not yet supported")
+        print ("__QueryFilePath__ [W] multiple folders not yet supported")
 
-    return False
+    return True
