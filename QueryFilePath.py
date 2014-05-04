@@ -14,6 +14,7 @@ import os
 
 from QueryFilePath.Cache.ProjectFiles import ProjectFiles
 
+# @type {dict} query parameters and cache
 Query = {
 
     "valid": False,
@@ -25,17 +26,21 @@ Query = {
     "extensions": [],
     "base_path": ""
 }
-
+# @type {array} list of completion settings defined by scope
 Scopes = None
+# @type {ProjectFiles} project cache instance
 project_files = None
 
+##
+# init
 def plugin_loaded():
 
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
 
-
+##
+# reads plugin and project settings
 def update_settings():
 
     global project_files, Scopes
@@ -58,8 +63,10 @@ def update_settings():
 
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
 
-
+##
 # update current views folder in query
+#
+# @param {sublime.Window} view  current
 def update_query(view):
 
     folders = sublime.active_window().folders()
@@ -78,7 +85,11 @@ def update_query(view):
 
     return True
 
-
+##
+# validate request
+#
+# @param {String} current_scope
+# @param {None|Boolean} relativePath or default
 def build_query(current_scope, relative=None):
 
     for properties in Scopes:
@@ -102,9 +113,10 @@ def build_query(current_scope, relative=None):
     return False
 
 
-# PRINTS A SELECTION LIST
-# self.view.show_popup_menu(["12", "123", "34redsas"], printDone)
-
+##
+# trigger autocomplete popup
+#
+# @extends sublime_plugin.TextCommand
 class InsertPathCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, relative=None):
@@ -143,10 +155,11 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         # view.run_command("hide_auto_complete")
         view.run_command('auto_complete')
 
-
+##
+# query autocomplete request
+#
+# @extends sublime_plugin.EventListener
 class QueryFilePath(sublime_plugin.EventListener):
-
-    # def on_text_command(self, view, command_name, args):
 
     def on_query_completions(self, view, prefix, locations):
 
@@ -189,8 +202,11 @@ class QueryFilePath(sublime_plugin.EventListener):
         if update_query(view):
             project_files.add(Query["project_folder"])
 
-
-
+##
+# validate current project-files
+#
+# @param {Array} folders    list of current project folders
+# @param {String} filename  filepath and filename of current view
 def is_valid(folders, filename):
 
     if (filename is None):

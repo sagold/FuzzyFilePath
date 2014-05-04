@@ -2,20 +2,35 @@ import sublime
 import os
 import re
 
-
+##
+# loads and caches files
+#
+#   folders are added with add(<path_to_parent_folder>)
+#
 class ProjectFiles:
 
     cache = {}
     valid_extensions = None
     exclude_folders = None
 
-
+    ##
+    # @constructor
+    # @param {array} file_extensions    to load/suggest
+    # @param {array} exclude_folders
     def __init__(self, file_extensions, exclude_folders):
 
         self.valid_extensions = file_extensions
         self.exclude_folders = exclude_folders
 
-
+    ##
+    # retrieves a list of valid completions, containing fuzzy searched needle
+    #
+    # @param {string} needle            to search in files
+    # @param {string} project_folder    folder to search in, cached via add
+    # @param {array} valid_extensions
+    # @param {string|False} base_path   of current file, creates a relative path if not False
+    # @param {boolean} with_extension   insert extension
+    # @return {List} containing sublime completions
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
 
         project_files = self.cache.get(project_folder)
@@ -47,7 +62,8 @@ class ProjectFiles:
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
 
-
+    ##
+    # @return {list} completion
     def get_completion(self, target_path, target, base_path=False, with_extension=True):
 
         # absolute path
@@ -63,7 +79,7 @@ class ProjectFiles:
             else:
                 return (target[2], self.get_relative_path(target[0], base_path))
 
-
+    # return {string} path from base to target
     def get_relative_path(self, target, base):
 
         bases = base.split("/")
@@ -92,8 +108,8 @@ class ProjectFiles:
 
         return result
 
-
-    # add a folder to cache
+    ##
+    # @param {String} folder    to read and cache
     def add(self, folder):
 
         if self.valid_extensions is None:
@@ -102,7 +118,7 @@ class ProjectFiles:
         if not self.cache.get(folder):
             self.update(folder)
 
-
+    ##
     # rebuild folder cache
     def update(self, folder):
 
@@ -112,7 +128,7 @@ class ProjectFiles:
         self.cache[folder] = self.read(folder)
         print("folder cached", folder)
 
-
+    ##
     # returns files in folder
     def read(self, folder, base=None):
 
