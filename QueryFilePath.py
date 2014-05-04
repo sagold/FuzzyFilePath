@@ -4,34 +4,12 @@
 # Suggests and completes filename in require statement. Requires scope
 # of require to be "require string".
 #
-# ## Usage
-#
-# - within require("") do not use / or .
-#
-# ## Missing features
-#
-# - MAJOR PERFORMANCE ISSUES??
-# - optimize
-#   - presplit filextension
-# - completions not showing on single quotes: '...'
-# - vim command does not insert
-# - cleanup completions (no js, file type hint: json/js/folder)
-# - exclude files and folders
-# - extend base (project) path via project setting
-# - include folders, [filetypes]
-# - update files CACHE in/when x
-# - replace special characters on insert (./)
-#
 # @version 0.0.1
 # @updated 14/05/02
 # @author Sascha Goldhofer <post@saschagoldhofer.de>
 ###
 import sublime
 import sublime_plugin
-import os
-import re
-import inspect
-import time
 
 from QueryFilePath.Cache.ProjectFiles import ProjectFiles
 
@@ -125,8 +103,6 @@ class InsertPathCommand(sublime_plugin.TextCommand):
             Query["relative"] = False
 
         view = sublime.active_window().active_view()
-        view.run_command('_enter_insert_mode')
-
         selections = view.sel()
 
         for selection in selections:
@@ -176,6 +152,7 @@ class QueryFilePath(sublime_plugin.EventListener):
         # reset
         Query["active"] = False
 
+        view.run_command('_enter_insert_mode')
         scope_region = view.extract_scope(locations[0])
         needle = view.substr(scope_region)
 
@@ -198,17 +175,17 @@ class QueryFilePath(sublime_plugin.EventListener):
 def is_valid(folders, filename):
 
     if (filename is None):
-        print("__QueryFilePath__ [A] filename is None")
+        # print("__QueryFilePath__ [A] filename is None")
         return False
 
     # single file?
     if (len(folders) == 0):
-        print("__QueryFilePath__ [A] no folders")
+        # print("__QueryFilePath__ [A] no folders")
         return False
 
     # independent file?
     if (not folders[0] in filename):
-        print("__QueryFilePath__ [A] independent file")
+        # print("__QueryFilePath__ [A] independent file")
         return False
 
     # multiple folders?
