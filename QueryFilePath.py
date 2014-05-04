@@ -1,16 +1,16 @@
 ###
-# # NodeJs require path completion
+# # QueryFilePath
 #
-# Suggests and completes filename in require statement. Requires scope
-# of require to be "require string".
+# Manages autocompletions
 #
-# @version 0.0.1
+# @version 0.0.2
 # @updated 14/05/02
 # @author Sascha Goldhofer <post@saschagoldhofer.de>
 ###
 import sublime
 import sublime_plugin
 import re
+import os
 
 from QueryFilePath.Cache.ProjectFiles import ProjectFiles
 
@@ -40,9 +40,24 @@ def update_settings():
 
     global project_files, Scopes
 
+    exclude_folders = []
+    project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
-    project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), settings.get("excludeFolders", ["node_modules"]))
-    Scopes = settings.get("scopes")
+    Scopes = settings.get("scopes", [])
+
+    # build exclude folders
+    for folder in project_folders:
+        base = folder.get("path")
+        exclude = folder.get("folder_exclude_patterns", [])
+        for f in exclude:
+            exclude_folders.append(os.path.join(base, f))
+
+    # or use default settings
+    if (len(exclude_folders) == 0):
+        exclude_folders = settings.get("excludeFolders", ["node_modules"])
+
+    project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
+
 
 # update current views folder in query
 def update_query(view):
@@ -194,6 +209,6 @@ def is_valid(folders, filename):
 
     # multiple folders?
     if (len(folders) > 1):
-        print ("__QueryFilePath__ [W] multiple folders not yet supported")
+        print("__QueryFilePath__ [W] multiple folders not yet supported")
 
     return True
