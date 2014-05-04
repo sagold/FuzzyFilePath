@@ -7,12 +7,13 @@ class ProjectFiles:
 
     cache = {}
     valid_extensions = None
-    exclude_folders = ["node_modules"]
+    exclude_folders = None
 
 
-    def __init__(self, extensions):
+    def __init__(self, file_extensions, exclude_folders):
 
-        self.valid_extensions = extensions
+        self.valid_extensions = file_extensions
+        self.exclude_folders = exclude_folders
 
 
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
@@ -27,20 +28,19 @@ class ProjectFiles:
         # cleanup
         needle = re.sub('["\']', '', needle)
 
-        print("needle", needle)
+        # print("needle", needle)
 
         # build search expression
         regex = ".*"
         for i in needle:
             regex += i + ".*"
-        # regex = re.compile(regex, re.IGNORECASE)
 
         # get matching files
         result = []
         for file in project_files:
 
             properties = project_files.get(file)
-            if (properties[1] in valid_extensions and re.match(regex, file, re.IGNORECASE)):
+            if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, file, re.IGNORECASE)):
 
                 completion = self.get_completion(file, properties, base_path, with_extension)
                 result.append(completion)
