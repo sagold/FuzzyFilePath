@@ -4,6 +4,7 @@ __Sublime Text 3 Plugin__
 
 Autocompletes filenames inside current project directory. Search result may be inserted absolute or relative (i.e. `../../lib/index.js`)
 
+<img src="https://raw.githubusercontent.com/sagold/QueryFilePath/master/QueryFilePathDemo.gif" />
 
 ## Installation
 
