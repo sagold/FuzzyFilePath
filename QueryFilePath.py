@@ -4,7 +4,6 @@
 # Manages autocompletions
 #
 # @version 0.0.2
-# @updated 14/05/02
 # @author Sascha Goldhofer <post@saschagoldhofer.de>
 ###
 import sublime
