@@ -93,7 +93,8 @@ in `<SublimeConfig>/Packages/QueryFilePath.sublime-settings`
 
 - Characters `.` and `/` are not replaced on autocomplete
 	- using the triggers, those characters will be removed (weird)
-	- not when opening automaticall. Pay attention to wrong results
+	- not when opening automatically
+	- pay attention to wrong results after triggering completion
 - Inserts `""` when no scope *string* is found
 
 
