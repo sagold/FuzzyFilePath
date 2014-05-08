@@ -1,6 +1,53 @@
 import sublime
 import os
 import re
+import threading
+
+##
+# stores all files and its fragments within property files
+class CacheFolder(threading.Thread):
+
+    def __init__(self, exclude_folders, extensions):
+
+        self.exclude_folders = exclude_folders
+        self.extensions = extensions
+        self.files = None
+        threading.Thread.__init__(self)
+
+    ##
+    # cache files
+    #
+    # @param {String} folder    parent folder
+    def run(self, folder):
+        self.files = self.read(folder)
+        print("folder '" + folder + "' cached")
+
+    # returns files in folder
+    def read(self, folder, base=None):
+
+        folder_cache = {}
+        base = base if base is not None else folder
+        ressources = os.listdir(folder)
+
+        for ressource in ressources:
+
+            current_path = os.path.join(folder, ressource)
+
+            if (os.path.isfile(current_path)):
+
+                relative_path = current_path.replace(base, "")
+                filename, extension = os.path.splitext(relative_path)
+                extension = extension[1:]
+
+                if extension in self.extensions:
+                    folder_cache[relative_path] = [filename, extension, filename + "\t" + extension]
+
+            elif (not ressource.startswith('.') and os.path.isdir(current_path)):
+
+                if (not ressource in self.exclude_folders):
+                    folder_cache.update(self.read(current_path, base))
+
+        return folder_cache
 
 ##
 # loads and caches files
@@ -33,7 +80,7 @@ class ProjectFiles:
     # @return {List} containing sublime completions
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
 
-        project_files = self.cache.get(project_folder)
+        project_files = self.get_files(project_folder)
         if (project_files is None):
             return False
 
@@ -61,6 +108,14 @@ class ProjectFiles:
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
+
+
+    def get_files(self, folder):
+        thread = self.cache.get(folder)
+        if (thread is None):
+            return None
+
+        return thread.files
 
     ##
     # @return {list} completion
@@ -115,59 +170,34 @@ class ProjectFiles:
         if self.valid_extensions is None:
             return False
 
-        if not self.cache.get(folder):
-            self.update(folder)
+        self.update(folder)
 
     ##
     # return true if file is within cache
-    def is_cached(self, folder, file_name=None):
+    def file_is_cached(self, folder, file_name):
 
-        if self.cache.get(folder) and file_name:
+        if self.folder_is_cached(folder) and file_name is not None:
 
             file_name = file_name.replace(folder, "")
-            if (self.cache.get(folder).get(file_name)):
+            if (self.cache.get(folder).files.get(file_name)):
                 return True
 
         return False
+
+    def folder_is_cached(self, folder):
+        return self.cache.get(folder) and self.cache.get(folder).files
 
     ##
     # rebuild folder cache
     def update(self, folder, file_name=None):
 
-        if (self.is_cached(folder, file_name)):
+        if (self.file_is_cached(folder, file_name)):
             return False
 
-        if self.cache.get(folder) is not None:
+        if self.folder_is_cached(folder):
             del self.cache[folder]
 
-        self.cache[folder] = self.read(folder)
-        print("folder cached", folder)
+        self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions)
+        self.cache.get(folder).run(folder);
+
         return True
-
-    ##
-    # returns files in folder
-    def read(self, folder, base=None):
-
-        folder_cache = {}
-        base = base if base is not None else folder
-        ressources = os.listdir(folder)
-
-        for ressource in ressources:
-
-            current_path = os.path.join(folder, ressource)
-
-            if (os.path.isfile(current_path)):
-
-                relative_path = current_path.replace(base, "")
-                filename, extension = os.path.splitext(relative_path)
-                extension = extension[1:]
-
-                if extension in self.valid_extensions:
-                    folder_cache[relative_path] = [filename, extension, filename + "\t" + extension]
-
-            elif (not ressource.startswith('.') and os.path.isdir(current_path)):
-
-                if (not ressource in self.exclude_folders):
-                    folder_cache.update(self.read(current_path, base))
-
-        return folder_cache
