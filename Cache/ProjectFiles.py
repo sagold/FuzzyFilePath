@@ -5,6 +5,7 @@ import threading
 
 ##
 # stores all files and its fragments within property files
+#
 class CacheFolder(threading.Thread):
 
     def __init__(self, exclude_folders, extensions):
@@ -49,6 +50,7 @@ class CacheFolder(threading.Thread):
 
         return folder_cache
 
+
 ##
 # loads and caches files
 #
@@ -60,7 +62,6 @@ class ProjectFiles:
     valid_extensions = None
     exclude_folders = None
 
-    ##
     # @constructor
     # @param {array} file_extensions    to load/suggest
     # @param {array} exclude_folders
@@ -69,7 +70,6 @@ class ProjectFiles:
         self.valid_extensions = file_extensions
         self.exclude_folders = exclude_folders
 
-    ##
     # retrieves a list of valid completions, containing fuzzy searched needle
     #
     # @param {string} needle            to search in files
@@ -117,7 +117,6 @@ class ProjectFiles:
 
         return thread.files
 
-    ##
     # @return {list} completion
     def get_completion(self, target_path, target, base_path=False, with_extension=True):
 
@@ -163,17 +162,17 @@ class ProjectFiles:
 
         return result
 
-    ##
-    # @param {String} folder    to read and cache
-    def add(self, folder):
+    # @param {String} parent_folder of files to cache
+    def add(self, parent_folder):
 
         if self.valid_extensions is None:
             return False
 
-        self.update(folder)
+        self.update(parent_folder)
 
-    ##
-    # return true if file is within cache
+    # @param {String} folder    cached folder
+    # @param {String} file_name to search in folder
+    # @return {Boolean} true if file is within cache
     def file_is_cached(self, folder, file_name):
 
         if self.folder_is_cached(folder) and file_name is not None:
@@ -187,7 +186,6 @@ class ProjectFiles:
     def folder_is_cached(self, folder):
         return self.cache.get(folder) and self.cache.get(folder).files
 
-    ##
     # rebuild folder cache
     def update(self, folder, file_name=None):
 
