@@ -111,7 +111,6 @@ def build_query(current_scope, relative=None):
 
     return False
 
-
 ##
 # trigger autocomplete popup
 #
@@ -159,6 +158,17 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 #
 # @extends sublime_plugin.EventListener
 class QueryFilePath(sublime_plugin.EventListener):
+
+    def on_post_save_async(self, view):
+
+        global project_files
+
+        if project_files is not None:
+            for folder in sublime.active_window().folders():
+                if folder in view.file_name():
+                    # print("__CompletePath__ project file saved")
+                    project_files.update(folder, view.file_name())
+
 
     def on_query_completions(self, view, prefix, locations):
 

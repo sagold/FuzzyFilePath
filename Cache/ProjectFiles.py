@@ -119,14 +119,30 @@ class ProjectFiles:
             self.update(folder)
 
     ##
+    # return true if file is within cache
+    def is_cached(self, folder, file_name=None):
+
+        if self.cache.get(folder) and file_name:
+
+            file_name = file_name.replace(folder, "")
+            if (self.cache.get(folder).get(file_name)):
+                return True
+
+        return False
+
+    ##
     # rebuild folder cache
-    def update(self, folder):
+    def update(self, folder, file_name=None):
+
+        if (self.is_cached(folder, file_name)):
+            return False
 
         if self.cache.get(folder) is not None:
             del self.cache[folder]
 
         self.cache[folder] = self.read(folder)
         print("folder cached", folder)
+        return True
 
     ##
     # returns files in folder
