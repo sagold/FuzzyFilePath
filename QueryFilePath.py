@@ -23,14 +23,14 @@ Completion = {
 # @type {dict} query parameters and cache
 Query = {
 
+    "auto_trigger": False,
+
     "valid": False,
     "current_folder": None,
     "project_folder": None,
-    "active": False,
     "relative": False,
     "extension": True,
-    "extensions": [],
-    "base_path": ""
+    "extensions": []
 }
 # @type {array} list of completion settings defined by scope
 Scopes = None
@@ -40,7 +40,6 @@ project_files = None
 ##
 # init
 def plugin_loaded():
-
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
@@ -48,13 +47,14 @@ def plugin_loaded():
 ##
 # reads plugin and project settings
 def update_settings():
-
     global project_files, Scopes
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
     Scopes = settings.get("scopes", [])
+
+    Query["auto_trigger"] = settings.get("auto_trigger", True)
 
     # build exclude folders
     for folder in project_folders:
@@ -74,7 +74,6 @@ def update_settings():
 #
 # @param {sublime.Window} view  current
 def update_query(view):
-
     folders = sublime.active_window().folders()
     filename = view.file_name()
 
@@ -105,7 +104,6 @@ def get_path_at_cursor(view):
     return [path, path_region]
 
 def get_path(line, word):
-
     path = None
     full_words = line.split(" ")
 
@@ -142,11 +140,8 @@ def get_word_at_cursor(view):
     position = selection.begin()
     region = view.word(position)
     word = view.substr(region)
-    '''
-        - word might be empty => i.e. \t""
-        - has trailing "
-        - span lines
-    '''
+
+    # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
 
@@ -167,30 +162,99 @@ class ReplaceRegionCommand(sublime_plugin.TextCommand):
         self.view.replace(edit, sublime.Region(a, b), string)
 
 
-##
-# validate request
-#
-# @param {String} current_scope
-# @param {None|Boolean} relativePath or default
-def build_query(current_scope, relative=None):
+
+def build_query(current_scope, needle, force_type=False):
+    """ Setup properties for completion query
+
+        Behaviour
+        - replaces starting ./ with current folder
+        - uses all extensions if completion is triggered and not specified in settings
+        - triggers completion if
+          - triggered manually
+          - scope settings found and auto true OR
+          - auto_trigger is set to true and input is path
+        - inserts path relative if
+          - set in settings and true OR if not false
+          - path starts with ../ or ./
+          - triggered manually (overrides all)
+
+        Keyword arguments:
+        current_scope -- complete scope on current cursor position
+        needle -- path to search
+        force_type -- "default", "relative", "absolute" (default False)
+    """
+    triggered = force_type is not False
+    properties = get_properties(current_scope)
+    query = evaluate_path(needle)
+
+    if triggered is False and properties is False and query["is_path"] is False:
+        return False
+
+    Query["needle"] = query["needle"] # resolved needle for "./" or "../"
+    Query["relative"] = query["relative"] # default current string
+    Query["active"] = False # default
+    Query["extensions"] = ["*"] # default
+
+    if properties:
+        Query["active"] = properties.get("auto", Query["auto_trigger"])
+        Query["extension"] = properties.get("insertExtension", True)
+        Query["extensions"] = properties.get("extensions", ["js"])
+        Query["relative"] = properties.get("relative", query["relative"])
+
+    # TEST: ignore property settings
+    if query["is_path"]:
+        Query["active"] = Query["auto_trigger"]
+
+    if Query["relative"] is None:
+        Query["relative"] = False
+
+    if force_type is not False:
+        Query["active"] = True
+
+        if force_type is not "default":
+            Query["relative"] = force_type == "relative"
+
+    if Query["relative"] is True:
+        Query["relative"] = Query["current_folder"]
+    elif Query["relative"] is None:
+        Query["relative"] = False
+
+    return Query
+
+
+def evaluate_path(needle):
+
+    properties = {
+
+        "is_path": False,
+        "relative": False,
+        "needle": needle
+    }
+
+    if needle.startswith("./"):
+        properties["is_path"] = True
+        properties["relative"] = Query["current_folder"]
+        properties["needle"] = needle.replace("./", Query["current_folder"])
+
+    elif needle.startswith("../"):
+        properties["is_path"] = True
+        properties["relative"] = Query["current_folder"]
+        properties["needle"] = needle.replace("../", "")
+
+    elif re.search("^\/[A-Za-z0-9\_\-\s\.]*\/", needle):
+        properties["is_path"] = True
+        properties["relative"] = False
+        properties["needle"] = needle
+
+    return properties
+
+
+def get_properties(current_scope):
 
     for properties in Scopes:
-
         scope = properties.get("scope").replace("//", "")
         if re.search(scope, current_scope):
-
-            Query["auto"] = properties.get("auto", False)
-            Query["extension"] = properties.get("insertExtension", True)
-            Query["extensions"] = properties.get("extensions", ["js"])
-            # Query["base_path"] = properties.get("basePath", False)
-
-            if (relative is None):
-                if properties.get("relative") is True:
-                    Query["relative"] = Query["current_folder"]
-                else:
-                    Query["relative"] = False
-
-            return Query
+            return properties
 
     return False
 
@@ -200,20 +264,9 @@ def build_query(current_scope, relative=None):
 # @extends sublime_plugin.TextCommand
 class InsertPathCommand(sublime_plugin.TextCommand):
 
-    def run(self, edit, relative=None):
-
+    def run(self, edit, type="default"):
         global Query
-
-        Query["active"] = True
-        Query["relative"] = None
-        Query["extension"] = True
-        Query["_edit"] = edit
-
-        if relative is True:
-            Query["relative"] = Query["current_folder"]
-        elif relative is False:
-            Query["relative"] = False
-
+        Query["relative"] = type
         view = sublime.active_window().active_view()
         view.run_command('auto_complete')
 
@@ -224,21 +277,20 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 class QueryFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
-
         global Completion
 
         if command_name == "commit_completion":
-            # AND IF PATH COMPLETION...
-            # ! requires region of path for editing
             path = get_path_at_cursor(view)
             word_replaced = re.split("[./]", path[0]).pop()
 
             if (path is not word_replaced):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-                print("before commit", path[0], word_replaced, Completion["before"])
+                # print("before commit", path[0], word_replaced, Completion["before"])
+
+        elif command_name == "hide_auto_complete":
+            Completion["active"] = False
 
     def on_post_text_command(self, view, command_name, args):
-
         global Completion
 
         if (command_name == "commit_completion" and Completion["active"] is True):
@@ -248,10 +300,9 @@ class QueryFilePath(sublime_plugin.EventListener):
 
                 path = get_path_at_cursor(view)
                 final_path = re.sub("^" + Completion["before"], "", path[0])
-                print("replace", path[0], "with", Completion["before"], final_path)
-                view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
-
                 Completion["before"] = None
+                # print("replace", path[0], "with", Completion["before"], final_path)
+                view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
 
     def on_post_save_async(self, view):
@@ -270,32 +321,31 @@ class QueryFilePath(sublime_plugin.EventListener):
         global project_files, Query
 
         if (Query["valid"] is False):
-            # print("aborting")
             return False
 
         current_scope = view.scope_name(locations[0])
-
-        if (Query["active"] is True):
-            query = build_query(current_scope, Query["relative"])
-        else:
-            query = build_query(current_scope)
+        needle = get_path_at_cursor(view)[0]
+        query = build_query(current_scope, needle, Query["relative"])
 
         # evaluate
-        if (query is False or (query["active"] is False and query["auto"] is False)):
+        if query["active"] is False:
+            print("abort: query not activated", Query["relative"])
             return
 
-        # reset
-        Query["active"] = False
-
+        # go into insert mode (ignored if not available)
         view.run_command('_enter_insert_mode')
+        # print("search", query["needle"], "relative to", query["relative"], "base path:")
+        completions = project_files.search_completions(query["needle"], query["project_folder"], query["extensions"], query["relative"], query["extension"])
 
+        if completions:
+            Completion["active"] = True
 
-        # might be file contents on wrong scopes
-        # scope_region = view.extract_scope(locations[0])
-        # needle = view.substr(scope_region)
-        needle = get_path_at_cursor(view)[0]
-        Completion["active"] = True
-        return project_files.search_completions(needle, query["project_folder"], query["extensions"], query["relative"], query["extension"])
+        # reset query
+        Query["relative"] = False
+        Query["active"] = False
+        Query["extension"] = True
+
+        return completions
 
     def on_activated(self, view):
 
