@@ -56,6 +56,13 @@
 			"extensions": ["css", "png", "jpg"],
 			"insertExtension": true,
 			"relative": false
+		},
+
+		{
+			// default, for all scopes
+			"scope": "",
+			"auto": false,
+			"insertExtension": true
 		}
 	]
 }

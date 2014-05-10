@@ -15,12 +15,20 @@ in `<SublimeConfig>/Packages/`
 
 ## Usage
 
-On an autocomplete panel start typing folders and filename, omitting `.` and `/`
+Filepath suggestions are only proposed for files within an opened folder. For single files or a files outside the opened folder autocompletion is disabled.
+Filepath completions are triggered automatically if defined in settings, else a shortcut is required.
 
-- if set, shows automatically
-- __`ctrl+super+space`__ inserts default (settings) completion
-- __`ctrl+alt+space`__ inserts relative paths
-- __`ctrl+shift+space`__ inserts absolute paths
+- __`ctrl+super+space`__ inserts default (settings) or absolute filepath completion
+- __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
+- __`ctrl+shift+space`__ inserts filepaths absolute, overriding possible settings
+
+By default `auto_trigger` is set to *true*: If an input starts with `./`, `../` or `/src/j` filepaths will be automatically suggested with the following rules:
+
+- `./` suggests file within the current directory and inserts selection relative
+- `../` suggest all files and inserts selection relative
+- `/src/j` suggest all files and inserts selection absolute
+
+Search criteria stay the same, but a scope definition in settings overrides the filepath type (*relative*, *absolute*)
 
 ## Configuration
 
