@@ -103,5 +103,9 @@ in `<SublimeConfig>/Packages/QueryFilePath.sublime-settings`
 
 #### Related Plugins
 
-- [AutoFileName](https://github.com/BoundInCode/AutoFileName)
+##### [AutoFileName](https://github.com/BoundInCode/AutoFileName)
+
+- uses file discovery based on current directory instead of fuzzy search
+- adds properties for images in autocompletion description
+- supports Sublime Text 2 and 3
 
