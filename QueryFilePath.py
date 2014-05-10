@@ -13,6 +13,13 @@ import os
 
 from QueryFilePath.Cache.ProjectFiles import ProjectFiles
 
+Completion = {
+
+    "active": False,
+    "before": None,
+    "after": None
+}
+
 # @type {dict} query parameters and cache
 Query = {
 
@@ -84,6 +91,82 @@ def update_query(view):
 
     return True
 
+def get_path_at_cursor(view):
+    word = get_word_at_cursor(view)
+    line = get_line_at_cursor(view)
+
+    path = get_path(line[0], word[0])
+
+    path_region = sublime.Region(word[1].a, word[1].b)
+    path_region.b = word[1].b
+    path_region.a = word[1].a - (len(path) - len(word[0]))
+    # print("path", path, "region", path_region, "str", view.substr(path_region))
+
+    return [path, path_region]
+
+def get_path(line, word):
+
+    path = None
+    full_words = line.split(" ")
+
+    for full_word in full_words:
+        if word in line:
+            if (path is not None):
+                print("multiple matches found in", line, "for", word)
+            path = extract_path_from(full_word, word)
+
+    if (path is None):
+        return word
+
+    # ! (get &) return region of path
+    return path
+
+
+def extract_path_from(word, needle):
+    result = re.search("([^\"\'\s]*)" + needle, word)
+
+    if (result is not None):
+        return result.group(0)
+
+
+def get_line_at_cursor(view):
+    selection = view.sel()[0]
+    position = selection.begin()
+    region = view.line(position)
+
+    return [view.substr(region), region]
+
+
+def get_word_at_cursor(view):
+    selection = view.sel()[0]
+    position = selection.begin()
+    region = view.word(position)
+    word = view.substr(region)
+    '''
+        - word might be empty => i.e. \t""
+        - has trailing "
+        - span lines
+    '''
+    if "\n" in word:
+        return ["", sublime.Region(position, position)]
+
+    if word[0] is '"':
+        word = word[1:]
+        region.a += 1
+
+    if word[-1:] is '"':
+        word = word[1:]
+        region.a += 1
+
+    return [word, region]
+
+
+class ReplaceRegionCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit, a, b, string):
+        self.view.replace(edit, sublime.Region(a, b), string)
+
+
 ##
 # validate request
 #
@@ -124,6 +207,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         Query["active"] = True
         Query["relative"] = None
         Query["extension"] = True
+        Query["_edit"] = edit
 
         if relative is True:
             Query["relative"] = Query["current_folder"]
@@ -131,24 +215,24 @@ class InsertPathCommand(sublime_plugin.TextCommand):
             Query["relative"] = False
 
         view = sublime.active_window().active_view()
-        selections = view.sel()
+        # selections = view.sel()
 
-        for selection in selections:
+        # for selection in selections:
 
-            pos = selection.begin()
+        #     pos = selection.begin()
 
-            if (not "string" in view.scope_name(pos)):
-                view.insert(edit, pos, '""')
-                pos += 1
-                view.sel().clear()
-                view.sel().add(sublime.Region(pos))
-                view.show(pos)
+        #     if (not "string" in view.scope_name(pos)):
+        #         view.insert(edit, pos, '""')
+        #         pos += 1
+        #         view.sel().clear()
+        #         view.sel().add(sublime.Region(pos))
+        #         view.show(pos)
 
-            else:
-                region = view.extract_scope(pos)
-                text = view.substr(region)
-                text = re.sub("[./]", "", text)
-                view.replace(edit, region, text)
+        #     else:
+        #         region = view.extract_scope(pos)
+        #         text = view.substr(region)
+        #         text = re.sub("[./]", "", text)
+        #         view.replace(edit, region, text)
 
         # view.run_command("hide_auto_complete")
         view.run_command('auto_complete')
@@ -158,6 +242,37 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 #
 # @extends sublime_plugin.EventListener
 class QueryFilePath(sublime_plugin.EventListener):
+
+    def on_text_command(self, view, command_name, args):
+
+        global Completion
+
+        if command_name == "commit_completion":
+            # AND IF PATH COMPLETION...
+            # ! requires region of path for editing
+            path = get_path_at_cursor(view)
+            word_replaced = re.split("[./]", path[0]).pop()
+
+            if (path is not word_replaced):
+                Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+                print("before commit", path[0], word_replaced, Completion["before"])
+
+    def on_post_text_command(self, view, command_name, args):
+
+        global Completion
+
+        if (command_name == "commit_completion" and Completion["active"] is True):
+
+            Completion["active"] = False
+            if Completion["before"] is not None:
+
+                path = get_path_at_cursor(view)
+                final_path = re.sub("^" + Completion["before"], "", path[0])
+                print("replace", path[0], "with", Completion["before"], final_path)
+                view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+
+                Completion["before"] = None
+
 
     def on_post_save_async(self, view):
 
@@ -193,10 +308,13 @@ class QueryFilePath(sublime_plugin.EventListener):
         Query["active"] = False
 
         view.run_command('_enter_insert_mode')
-        scope_region = view.extract_scope(locations[0])
-        # might be file contents on wrong scopes
-        needle = view.substr(scope_region)
 
+
+        # might be file contents on wrong scopes
+        # scope_region = view.extract_scope(locations[0])
+        # needle = view.substr(scope_region)
+        needle = get_path_at_cursor(view)[0]
+        Completion["active"] = True
         return project_files.search_completions(needle, query["project_folder"], query["extensions"], query["relative"], query["extension"])
 
     def on_activated(self, view):
