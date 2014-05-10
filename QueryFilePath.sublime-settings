@@ -3,6 +3,10 @@
 	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
 	"exclude_folders": ["node_modules"],
 
+	// if current string matches "./", "../", "/folder/to",
+	// auto suggest files independent of scope settings
+	"auto_trigger": true,
+
 	"scopes": [
 
 		{
@@ -21,8 +25,7 @@
 
 			"auto": false,
 			"extensions": ["js", "json"],
-			"insertExtension": true,
-			"relative": true
+			"insertExtension": true
 		},
 
 		{
