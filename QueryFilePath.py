@@ -215,26 +215,6 @@ class InsertPathCommand(sublime_plugin.TextCommand):
             Query["relative"] = False
 
         view = sublime.active_window().active_view()
-        # selections = view.sel()
-
-        # for selection in selections:
-
-        #     pos = selection.begin()
-
-        #     if (not "string" in view.scope_name(pos)):
-        #         view.insert(edit, pos, '""')
-        #         pos += 1
-        #         view.sel().clear()
-        #         view.sel().add(sublime.Region(pos))
-        #         view.show(pos)
-
-        #     else:
-        #         region = view.extract_scope(pos)
-        #         text = view.substr(region)
-        #         text = re.sub("[./]", "", text)
-        #         view.replace(edit, region, text)
-
-        # view.run_command("hide_auto_complete")
         view.run_command('auto_complete')
 
 ##
