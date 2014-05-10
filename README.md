@@ -1,4 +1,4 @@
-# QueryFilePath
+# FuzzyFilePath
 
 __Sublime Text 3 Plugin__
 

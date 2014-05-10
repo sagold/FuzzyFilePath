@@ -1,5 +1,5 @@
 ###
-# # QueryFilePath
+# # FuzzyFilePath
 #
 # Manages autocompletions
 #
@@ -11,8 +11,8 @@ import sublime_plugin
 import re
 import os
 
-from QueryFilePath.Cache.ProjectFiles import ProjectFiles
-from QueryFilePath.Query import Query
+from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
+from FuzzyFilePath.Query import Query
 
 Completion = {
 
@@ -26,7 +26,7 @@ project_files = None
 
 def plugin_loaded():
     """load settings"""
-    settings = sublime.load_settings("QueryFilePath.sublime-settings")
+    settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
 
@@ -38,7 +38,7 @@ def update_settings():
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
-    settings = sublime.load_settings("QueryFilePath.sublime-settings")
+    settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
 
@@ -131,7 +131,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete')
 
 
-class QueryFilePath(sublime_plugin.EventListener):
+class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
         if command_name == "commit_completion":
