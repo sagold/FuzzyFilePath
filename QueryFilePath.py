@@ -3,7 +3,7 @@
 #
 # Manages autocompletions
 #
-# @version 0.0.2
+# @version 0.0.3
 # @author Sascha Goldhofer <post@saschagoldhofer.de>
 ###
 import sublime
@@ -12,28 +12,20 @@ import re
 import os
 
 from QueryFilePath.Cache.ProjectFiles import ProjectFiles
+from QueryFilePath.Query import Query
 
-# @type {dict} query parameters and cache
-Query = {
+Completion = {
 
-    "valid": False,
-    "current_folder": None,
-    "project_folder": None,
     "active": False,
-    "relative": False,
-    "extension": True,
-    "extensions": [],
-    "base_path": ""
+    "before": None,
+    "after": None
 }
-# @type {array} list of completion settings defined by scope
-Scopes = None
-# @type {ProjectFiles} project cache instance
+
+query = Query()
 project_files = None
 
-##
-# init
 def plugin_loaded():
-
+    """load settings"""
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
@@ -41,13 +33,14 @@ def plugin_loaded():
 ##
 # reads plugin and project settings
 def update_settings():
-
-    global project_files, Scopes
+    """update settings"""
+    global project_files
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings("QueryFilePath.sublime-settings")
-    Scopes = settings.get("scopes", [])
+    query.scopes = settings.get("scopes", [])
+    query.auto_trigger = (settings.get("auto_trigger", True))
 
     # build exclude folders
     for folder in project_folders:
@@ -62,168 +55,142 @@ def update_settings():
 
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
 
-##
-# update current views folder in query
-#
-# @param {sublime.Window} view  current
-def update_query(view):
 
-    folders = sublime.active_window().folders()
-    filename = view.file_name()
+def get_path_at_cursor(view):
+    word = get_word_at_cursor(view)
+    line = get_line_at_cursor(view)
+    path = get_path(line[0], word[0])
+    path_region = sublime.Region(word[1].a, word[1].b)
+    path_region.b = word[1].b
+    path_region.a = word[1].a - (len(path) - len(word[0]))
+    return [path, path_region]
 
-    Query["valid"] = is_valid(folders, filename)
-    if Query["valid"] is False:
-        return False
+def get_path(line, word):
+    path = None
+    full_words = line.split(" ")
 
-    project_folder = folders[0]
-    Query["project_folder"] = project_folder
+    for full_word in full_words:
+        if word in line:
+            if (path is not None):
+                print("multiple matches found in", line, "for", word)
+            path = extract_path_from(full_word, word)
 
-    current_folder = re.sub("/[^/]*$", "", filename)
-    current_folder = re.sub(project_folder, "", current_folder)
-    Query["current_folder"] = current_folder
+    if (path is None):
+        return word
 
-    return True
-
-##
-# validate request
-#
-# @param {String} current_scope
-# @param {None|Boolean} relativePath or default
-def build_query(current_scope, relative=None):
-
-    for properties in Scopes:
-
-        scope = properties.get("scope").replace("//", "")
-        if re.search(scope, current_scope):
-
-            Query["auto"] = properties.get("auto", False)
-            Query["extension"] = properties.get("insertExtension", True)
-            Query["extensions"] = properties.get("extensions", ["js"])
-            # Query["base_path"] = properties.get("basePath", False)
-
-            if (relative is None):
-                if properties.get("relative") is True:
-                    Query["relative"] = Query["current_folder"]
-                else:
-                    Query["relative"] = False
-
-            return Query
-
-    return False
+    return path
 
 
-##
-# trigger autocomplete popup
-#
-# @extends sublime_plugin.TextCommand
+def extract_path_from(word, needle):
+    result = re.search("([^\"\'\s]*)" + needle, word)
+
+    if (result is not None):
+        return result.group(0)
+
+
+def get_line_at_cursor(view):
+    selection = view.sel()[0]
+    position = selection.begin()
+    region = view.line(position)
+
+    return [view.substr(region), region]
+
+
+def get_word_at_cursor(view):
+    selection = view.sel()[0]
+    position = selection.begin()
+    region = view.word(position)
+    word = view.substr(region)
+
+    # single line only
+    if "\n" in word:
+        return ["", sublime.Region(position, position)]
+
+    if word[0] is '"':
+        word = word[1:]
+        region.a += 1
+
+    if word[-1:] is '"':
+        word = word[1:]
+        region.a += 1
+
+    return [word, region]
+
+
+class ReplaceRegionCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit, a, b, string):
+        self.view.replace(edit, sublime.Region(a, b), string)
+
+
+"""triggers autocomplete"""
 class InsertPathCommand(sublime_plugin.TextCommand):
 
-    def run(self, edit, relative=None):
+    def run(self, edit, type="default"):
+        query.relative = type
+        self.view.run_command('auto_complete')
 
-        global Query
 
-        Query["active"] = True
-        Query["relative"] = None
-        Query["extension"] = True
-
-        if relative is True:
-            Query["relative"] = Query["current_folder"]
-        elif relative is False:
-            Query["relative"] = False
-
-        view = sublime.active_window().active_view()
-        selections = view.sel()
-
-        for selection in selections:
-
-            pos = selection.begin()
-
-            if (not "string" in view.scope_name(pos)):
-                view.insert(edit, pos, '""')
-                pos += 1
-                view.sel().clear()
-                view.sel().add(sublime.Region(pos))
-                view.show(pos)
-
-            else:
-                region = view.extract_scope(pos)
-                text = view.substr(region)
-                text = re.sub("[./]", "", text)
-                view.replace(edit, region, text)
-
-        # view.run_command("hide_auto_complete")
-        view.run_command('auto_complete')
-
-##
-# query autocomplete request
-#
-# @extends sublime_plugin.EventListener
 class QueryFilePath(sublime_plugin.EventListener):
 
+    def on_text_command(self, view, command_name, args):
+        if command_name == "commit_completion":
+
+            path = get_path_at_cursor(view)
+            word_replaced = re.split("[./]", path[0]).pop()
+            if (path is not word_replaced):
+                Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+                # print("before commit", path[0], word_replaced, Completion["before"])
+
+        elif command_name == "hide_auto_complete":
+
+            Completion["active"] = False
+
+    def on_post_text_command(self, view, command_name, args):
+        if (command_name == "commit_completion" and Completion["active"]):
+
+            Completion["active"] = False
+            if Completion["before"] is not None:
+
+                path = get_path_at_cursor(view)
+                final_path = re.sub("^" + Completion["before"], "", path[0])
+                Completion["before"] = None
+                # print("replace", path[0], "with", Completion["before"], final_path)
+                view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+
+
+    def on_post_save_async(self, view):
+        if project_files is not None:
+            for folder in sublime.active_window().folders():
+                if folder in view.file_name():
+                    project_files.update(folder, view.file_name())
+
+
     def on_query_completions(self, view, prefix, locations):
-
-        global project_files, Query
-
-        if (Query["valid"] is False):
-            # print("aborting")
+        if (query.valid is False):
             return False
 
         current_scope = view.scope_name(locations[0])
+        needle = get_path_at_cursor(view)[0]
 
-        if (Query["active"] is True):
-            query = build_query(current_scope, Query["relative"])
-        else:
-            query = build_query(current_scope)
-
-        # evaluate
-        if (query is False or (query["active"] is False and query["auto"] is False)):
+        if query.build(current_scope, needle, query.relative) is False:
             return
 
-        # reset
-        Query["active"] = False
-
         view.run_command('_enter_insert_mode')
-        scope_region = view.extract_scope(locations[0])
-        # might be file contents on wrong scopes
-        needle = view.substr(scope_region)
-
-        return project_files.search_completions(needle, query["project_folder"], query["extensions"], query["relative"], query["extension"])
+        Completion["active"] = True
+        # print("search", query["needle"], "relative to", query["relative"], "base path:")
+        # print(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
+        completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
+        query.reset()
+        return completions
 
     def on_activated(self, view):
+        file_name = view.file_name()
+        folders = sublime.active_window().folders()
 
-        global project_files
-        global Query
-
-        if (project_files is None or view.file_name() is None):
-            Query["valid"] = False
+        if (project_files is None):
+            query.valid = False
             return False
 
-        if update_query(view):
-            project_files.add(Query["project_folder"])
-
-##
-# validate current project-files
-#
-# @param {Array} folders    list of current project folders
-# @param {String} filename  filepath and filename of current view
-def is_valid(folders, filename):
-
-    if (filename is None):
-        # print("__QueryFilePath__ [A] filename is None")
-        return False
-
-    # single file?
-    if (len(folders) == 0):
-        # print("__QueryFilePath__ [A] no folders")
-        return False
-
-    # independent file?
-    if (not folders[0] in filename):
-        # print("__QueryFilePath__ [A] independent file")
-        return False
-
-    # multiple folders?
-    if (len(folders) > 1):
-        print("__QueryFilePath__ [W] multiple folders not yet supported")
-
-    return True
+        if query.update(folders, file_name):
+            project_files.add(query.project_folder)

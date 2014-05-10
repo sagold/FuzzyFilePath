@@ -18,7 +18,7 @@ in `<SublimeConfig>/Packages/`
 On an autocomplete panel start typing folders and filename, omitting `.` and `/`
 
 - if set, shows automatically
-- __`ctrl+super+space`__ inserts default completion
+- __`ctrl+super+space`__ inserts default (settings) completion
 - __`ctrl+alt+space`__ inserts relative paths
 - __`ctrl+shift+space`__ inserts absolute paths
 
@@ -37,6 +37,10 @@ in `<SublimeConfig>/Packages/QueryFilePath.sublime-settings`
 
 	// folders to skip. Is ignored if project settings exclude folders
 	"exclude_folders": ["node_modules"],
+
+	// auto trigger completion if a valid filepath is inserted:
+	// ../ or ./ or /word/c
+	"auto_trigger": true,
 
 	// enables file completion via scope regexes
 	"scopes": [
@@ -74,7 +78,7 @@ in `<SublimeConfig>/Packages/QueryFilePath.sublime-settings`
         "keys": ["ctrl+alt+space"],
         "command": "insert_path",
         "args": {
-            "relative": true
+            "type": "relative"
         }
     },
     // enforces absolute filepath insertion
@@ -82,19 +86,10 @@ in `<SublimeConfig>/Packages/QueryFilePath.sublime-settings`
         "keys": ["ctrl+shift+space"],
         "command": "insert_path",
         "args": {
-            "relative": false
+            "type": "absolute"
         }
     }
 ]
 ```
-
-
-## Weirdness
-
-- Characters `.` and `/` are not replaced on autocomplete
-	- using the triggers, those characters will be removed (weird)
-	- not when opening automatically
-	- pay attention to wrong results after triggering completion
-- Inserts `""` when no scope *string* is found
 
 
