@@ -142,7 +142,7 @@ class ProjectFiles:
         index = 0
 
         # step back base, until in same folder
-        size = len(bases)
+        size = min(len(bases), len(targets))
 
         # find common folder
         while (index < size and bases[index] == targets[index]):
