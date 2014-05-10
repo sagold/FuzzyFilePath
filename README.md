@@ -4,13 +4,13 @@ __Sublime Text 3 Plugin__
 
 Fuzzy search and autocomplete filenames inside current project directory. Search result may be inserted absolute or relative (i.e. `../../lib/index.js`)
 
-<img src="https://raw.githubusercontent.com/sagold/QueryFilePath/master/QueryFilePathDemo.gif" />
+<img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/master/FuzzyFilePathDemo.gif" />
 
 ## Installation
 
 in `<SublimeConfig>/Packages/`
 
-`git clone https://github.com/sagold/QueryFilePath.git`
+`git clone https://github.com/sagold/FuzzyFilePath.git`
 
 
 ## Usage
