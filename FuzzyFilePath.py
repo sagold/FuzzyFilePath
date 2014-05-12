@@ -2,20 +2,14 @@
 
 # BUGS
 
-A
-
 Traceback (most recent call last):
   File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
     res = callback.on_text_command(v, name, args)
   File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
     Completion["before"] = re.sub(word_replaced + "$", "", path[0])
 
-B
 
-require("../../../../optimizer");
-require("..../../../../optimizer")
-
-C
+# Cursor Position after replacement:
 
 require("../../../../optimizer|cursor|")
 SHOULD BE:
@@ -38,6 +32,8 @@ import os
 
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
+
+DEBUG = True
 
 Completion = {
 
@@ -166,6 +162,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             word_replaced = re.split("[./]", path[0]).pop()
             if (path is not word_replaced):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+                # / is replaced on ../needle
+                if Completion["before"].endswith("/"):
+                    Completion["before"] = Completion["before"][:-1]
                 # print("before commit", path[0], word_replaced, Completion["before"])
 
         elif command_name == "hide_auto_complete":
@@ -180,8 +179,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
                 path = get_path_at_cursor(view)
                 final_path = re.sub("^" + Completion["before"], "", path[0])
+                if DEBUG:
+                    print("replace", path[0], "with", Completion["before"], final_path)
                 Completion["before"] = None
-                # print("replace", path[0], "with", Completion["before"], final_path)
                 view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
 
