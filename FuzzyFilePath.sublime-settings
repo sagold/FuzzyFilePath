@@ -60,8 +60,9 @@
 
 		{
 			// default, for all scopes
-			"scope": "",
+			"scope": ".",
 			"auto": false,
+			"extensions": ["*"],
 			"insertExtension": true
 		}
 	]

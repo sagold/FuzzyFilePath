@@ -8,7 +8,6 @@ Traceback (most recent call last):
   File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
     Completion["before"] = re.sub(word_replaced + "$", "", path[0])
 
-
 # Cursor Position after replacement:
 
 require("../../../../optimizer|cursor|")
@@ -33,7 +32,7 @@ import os
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 
-DEBUG = True
+DEBUG = False
 
 Completion = {
 
