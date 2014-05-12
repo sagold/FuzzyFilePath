@@ -21,7 +21,6 @@ class CacheFolder(threading.Thread):
     # @param {String} folder    parent folder
     def run(self, folder):
         self.files = self.read(folder)
-        print("folder '" + folder + "' cached")
 
     # returns files in folder
     def read(self, folder, base=None):
