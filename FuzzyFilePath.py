@@ -1,3 +1,28 @@
+"""
+
+# BUGS
+
+A
+
+Traceback (most recent call last):
+  File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
+    res = callback.on_text_command(v, name, args)
+  File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
+    Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+
+B
+
+require("../../../../optimizer");
+require("..../../../../optimizer")
+
+C
+
+require("../../../../optimizer|cursor|")
+SHOULD BE:
+require("../../../../optimizer")|cursor|
+
+"""
+
 ###
 # # FuzzyFilePath
 #
@@ -71,8 +96,8 @@ def get_path(line, word):
 
     for full_word in full_words:
         if word in line:
-            if (path is not None):
-                print("multiple matches found in", line, "for", word)
+            # if (path is not None):
+                # print("multiple matches found in", line, "for", word)
             path = extract_path_from(full_word, word)
 
     if (path is None):
@@ -106,13 +131,14 @@ def get_word_at_cursor(view):
     if "\n" in word:
         return ["", sublime.Region(position, position)]
 
-    if word[0] is '"':
-        word = word[1:]
-        region.a += 1
+    if len(word) > 0:
+        if word[0] is '"':
+            word = word[1:]
+            region.a += 1
 
-    if word[-1:] is '"':
-        word = word[1:]
-        region.a += 1
+        if word[-1:] is '"':
+            word = word[1:]
+            region.a += 1
 
     return [word, region]
 
