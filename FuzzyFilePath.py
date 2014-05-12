@@ -1,29 +1,24 @@
+""" FuzzyFilePath
+    Manages filepath autocompletions
+
+    # BUGS
+
+    Traceback (most recent call last):
+      File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
+        res = callback.on_text_command(v, name, args)
+      File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
+        Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+    -> ERROR WHAT??
+
+    ## Cursor Position after replacement:
+
+    require("../../../../optimizer|cursor|")
+    SHOULD BE:
+    require("../../../../optimizer")|cursor|
+
+    @version 0.0.4
+    @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
-
-# BUGS
-
-Traceback (most recent call last):
-  File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
-    res = callback.on_text_command(v, name, args)
-  File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
-    Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-
-# Cursor Position after replacement:
-
-require("../../../../optimizer|cursor|")
-SHOULD BE:
-require("../../../../optimizer")|cursor|
-
-"""
-
-###
-# # FuzzyFilePath
-#
-# Manages autocompletions
-#
-# @version 0.0.4
-# @author Sascha Goldhofer <post@saschagoldhofer.de>
-###
 import sublime
 import sublime_plugin
 import re
@@ -44,16 +39,16 @@ Completion = {
 query = Query()
 project_files = None
 
+
 def plugin_loaded():
     """load settings"""
     settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
 
-##
-# reads plugin and project settings
+
 def update_settings():
-    """update settings"""
+    """restart projectFiles with new plugin and project settings"""
     global project_files
 
     exclude_folders = []
@@ -68,7 +63,6 @@ def update_settings():
         exclude = folder.get("folder_exclude_patterns", [])
         for f in exclude:
             exclude_folders.append(os.path.join(base, f))
-
     # or use default settings
     if (len(exclude_folders) == 0):
         exclude_folders = settings.get("excludeFolders", ["node_modules"])
@@ -84,6 +78,7 @@ def get_path_at_cursor(view):
     path_region.b = word[1].b
     path_region.a = word[1].a - (len(path) - len(word[0]))
     return [path, path_region]
+
 
 def get_path(line, word):
     path = None

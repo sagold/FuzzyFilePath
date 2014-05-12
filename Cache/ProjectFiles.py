@@ -15,9 +15,7 @@ class CacheFolder(threading.Thread):
         self.files = None
         threading.Thread.__init__(self)
 
-    ##
     # cache files
-    #
     # @param {String} folder    parent folder
     def run(self, folder):
         self.files = self.read(folder)
