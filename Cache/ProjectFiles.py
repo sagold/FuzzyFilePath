@@ -8,17 +8,19 @@ import threading
 #
 class CacheFolder(threading.Thread):
 
-    def __init__(self, exclude_folders, extensions):
+    def __init__(self, exclude_folders, extensions, folder):
+        threading.Thread.__init__(self)
 
         self.exclude_folders = exclude_folders
         self.extensions = extensions
+        self.folder = folder
         self.files = None
         threading.Thread.__init__(self)
 
     # cache files
     # @param {String} folder    parent folder
-    def run(self, folder):
-        self.files = self.read(folder)
+    def run(self):
+        self.files = self.read(self.folder)
 
     # returns files in folder
     def read(self, folder, base=None):
@@ -192,7 +194,7 @@ class ProjectFiles:
         if self.folder_is_cached(folder):
             del self.cache[folder]
 
-        self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions)
-        self.cache.get(folder).run(folder);
+        self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
+        self.cache.get(folder).start();
 
         return True
