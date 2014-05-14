@@ -18,7 +18,7 @@
             Completion["before"] = re.sub(word_replaced + "$", "", path[0])
         -> ERROR WHAT??
 
-    @version 0.0.4
+    @version 0.0.5
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
