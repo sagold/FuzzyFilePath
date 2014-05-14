@@ -3,9 +3,8 @@ import os
 import re
 import threading
 
-##
+
 # stores all files and its fragments within property files
-#
 class CacheFolder(threading.Thread):
 
     def __init__(self, exclude_folders, extensions, folder):
@@ -50,13 +49,10 @@ class CacheFolder(threading.Thread):
         return folder_cache
 
 
-##
-# loads and caches files
-#
-#   folders are added with add(<path_to_parent_folder>)
-#
 class ProjectFiles:
-
+    """ loads and caches files
+        folders are added with add(<path_to_parent_folder>)
+    """
     cache = {}
     valid_extensions = None
     exclude_folders = None
