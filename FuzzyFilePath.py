@@ -1,20 +1,22 @@
 """ FuzzyFilePath
     Manages filepath autocompletions
 
-    # BUGS
+    # Tasks
 
-    Traceback (most recent call last):
-      File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
-        res = callback.on_text_command(v, name, args)
-      File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
-        Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-    -> ERROR WHAT??
+        - support multiple folders
+        - Cursor Position after replacement:
+            require("../../../../optimizer|cursor|")
+            SHOULD BE:
+            require("../../../../optimizer")|cursor|
 
-    ## Cursor Position after replacement:
+    # Bugs
 
-    require("../../../../optimizer|cursor|")
-    SHOULD BE:
-    require("../../../../optimizer")|cursor|
+        Traceback (most recent call last):
+          File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
+            res = callback.on_text_command(v, name, args)
+          File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
+            Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+        -> ERROR WHAT??
 
     @version 0.0.4
     @author Sascha Goldhofer <post@saschagoldhofer.de>
