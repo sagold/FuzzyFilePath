@@ -8,9 +8,13 @@ Fuzzy search and autocomplete filenames inside current project directory. Search
 
 ## Installation
 
-in `<SublimeConfig>/Packages/`
+### [Package Control](https://sublime.wbond.net/)
 
-`git clone https://github.com/sagold/FuzzyFilePath.git`
+After [Package Control installation](https://sublime.wbond.net/installation), restart Sublime Text. Use the Command Palette `cmd+shift+p` (OS X) or `ctrl+shift+p` (Linux/Windows) and search for *Package Control: Install Package*. Wait until Package Control downloaded the latest package list and search for *FuzzyFilePath*.
+
+### [github](https://github.com/sagold/FuzzyFilePath.git)
+
+in `<SublimeConfig>/Packages/` call `git clone https://github.com/sagold/FuzzyFilePath.git`
 
 
 ## Usage

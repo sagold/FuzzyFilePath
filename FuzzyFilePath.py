@@ -1,11 +1,26 @@
-###
-# # FuzzyFilePath
-#
-# Manages autocompletions
-#
-# @version 0.0.4
-# @author Sascha Goldhofer <post@saschagoldhofer.de>
-###
+""" FuzzyFilePath
+    Manages filepath autocompletions
+
+    # Tasks
+
+        - support multiple folders
+        - Cursor Position after replacement:
+            require("../../../../optimizer|cursor|")
+            SHOULD BE:
+            require("../../../../optimizer")|cursor|
+
+    # Bugs
+
+        Traceback (most recent call last):
+          File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
+            res = callback.on_text_command(v, name, args)
+          File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
+            Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+        -> ERROR WHAT??
+
+    @version 0.0.5
+    @author Sascha Goldhofer <post@saschagoldhofer.de>
+"""
 import sublime
 import sublime_plugin
 import re
@@ -13,6 +28,8 @@ import os
 
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
+
+DEBUG = False
 
 Completion = {
 
@@ -24,16 +41,16 @@ Completion = {
 query = Query()
 project_files = None
 
+
 def plugin_loaded():
     """load settings"""
     settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
 
-##
-# reads plugin and project settings
+
 def update_settings():
-    """update settings"""
+    """restart projectFiles with new plugin and project settings"""
     global project_files
 
     exclude_folders = []
@@ -48,7 +65,6 @@ def update_settings():
         exclude = folder.get("folder_exclude_patterns", [])
         for f in exclude:
             exclude_folders.append(os.path.join(base, f))
-
     # or use default settings
     if (len(exclude_folders) == 0):
         exclude_folders = settings.get("excludeFolders", ["node_modules"])
@@ -65,14 +81,15 @@ def get_path_at_cursor(view):
     path_region.a = word[1].a - (len(path) - len(word[0]))
     return [path, path_region]
 
+
 def get_path(line, word):
     path = None
     full_words = line.split(" ")
 
     for full_word in full_words:
         if word in line:
-            if (path is not None):
-                print("multiple matches found in", line, "for", word)
+            # if (path is not None):
+                # print("multiple matches found in", line, "for", word)
             path = extract_path_from(full_word, word)
 
     if (path is None):
@@ -106,13 +123,14 @@ def get_word_at_cursor(view):
     if "\n" in word:
         return ["", sublime.Region(position, position)]
 
-    if word[0] is '"':
-        word = word[1:]
-        region.a += 1
+    if len(word) > 0:
+        if word[0] is '"':
+            word = word[1:]
+            region.a += 1
 
-    if word[-1:] is '"':
-        word = word[1:]
-        region.a += 1
+        if word[-1:] is '"':
+            word = word[1:]
+            region.a += 1
 
     return [word, region]
 
@@ -140,6 +158,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             word_replaced = re.split("[./]", path[0]).pop()
             if (path is not word_replaced):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+                # / is replaced on ../needle
+                if Completion["before"].endswith("/"):
+                    Completion["before"] = Completion["before"][:-1]
                 # print("before commit", path[0], word_replaced, Completion["before"])
 
         elif command_name == "hide_auto_complete":
@@ -154,8 +175,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
                 path = get_path_at_cursor(view)
                 final_path = re.sub("^" + Completion["before"], "", path[0])
+                if DEBUG:
+                    print("replace", path[0], "with", Completion["before"], final_path)
                 Completion["before"] = None
-                # print("replace", path[0], "with", Completion["before"], final_path)
                 view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
 
