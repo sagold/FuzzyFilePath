@@ -1,11 +1,6 @@
 [
     {
         "keys": ["ctrl+alt+space"],
-        "command": "insert_path"
-    },
-
-    {
-        "keys": ["ctrl+shift+space"],
         "command": "insert_path",
         "args": {
             "type": "relative"
@@ -18,5 +13,10 @@
         "args": {
             "type": "absolute"
         }
+    },
+
+    {
+        "keys": ["ctrl+alt+shift+space"],
+        "command": "insert_path"
     }
 ]

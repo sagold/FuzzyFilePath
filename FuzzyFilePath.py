@@ -109,7 +109,6 @@ def get_line_at_cursor(view):
     selection = view.sel()[0]
     position = selection.begin()
     region = view.line(position)
-
     return [view.substr(region), region]
 
 
@@ -141,9 +140,8 @@ class ReplaceRegionCommand(sublime_plugin.TextCommand):
         self.view.replace(edit, sublime.Region(a, b), string)
 
 
-"""triggers autocomplete"""
 class InsertPathCommand(sublime_plugin.TextCommand):
-
+    """triggers autocomplete"""
     def run(self, edit, type="default"):
         query.relative = type
         self.view.run_command('auto_complete')
@@ -152,19 +150,14 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
-        if command_name == "commit_completion":
 
+        if command_name == "commit_completion":
             path = get_path_at_cursor(view)
             word_replaced = re.split("[./]", path[0]).pop()
             if (path is not word_replaced):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-                # / is replaced on ../needle
-                if Completion["before"].endswith("/"):
-                    Completion["before"] = Completion["before"][:-1]
-                # print("before commit", path[0], word_replaced, Completion["before"])
 
         elif command_name == "hide_auto_complete":
-
             Completion["active"] = False
 
     def on_post_text_command(self, view, command_name, args):
@@ -200,9 +193,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         view.run_command('_enter_insert_mode')
         Completion["active"] = True
-        # print("search", query["needle"], "relative to", query["relative"], "base path:")
-        # print(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
+        if DEBUG:
+            print("rel", query.relative, completions)
         query.reset()
         return completions
 

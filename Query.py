@@ -1,4 +1,7 @@
-import re
+import re, os
+
+def posix(path):
+    return path.replace("\\", "/")
 
 class Query:
 
@@ -24,10 +27,12 @@ class Query:
             return False
 
         project_folder = folders[0]
-        current_folder = re.sub("/[^/]*$", "", file_name)
-        current_folder = re.sub(project_folder, "", current_folder)
+        current_folder = os.path.dirname(file_name)
+        current_folder = os.path.relpath(current_folder, project_folder)
+        current_folder = "" if current_folder == "." else current_folder
+
         self.project_folder = project_folder
-        self.current_folder = current_folder
+        self.current_folder = posix(current_folder)
         return True
 
     def build(self, scope, needle, force_type=False):

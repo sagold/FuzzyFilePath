@@ -3,6 +3,8 @@ import os
 import re
 import threading
 
+def posix(path):
+    return path.replace("\\", "/")
 
 # stores all files and its fragments within property files
 class CacheFolder(threading.Thread):
@@ -16,14 +18,12 @@ class CacheFolder(threading.Thread):
         self.files = None
         threading.Thread.__init__(self)
 
-    # cache files
-    # @param {String} folder    parent folder
     def run(self):
+        # cache files in folder
         self.files = self.read(self.folder)
 
-    # returns files in folder
     def read(self, folder, base=None):
-
+        """return all files in folder"""
         folder_cache = {}
         base = base if base is not None else folder
         ressources = os.listdir(folder)
@@ -34,12 +34,12 @@ class CacheFolder(threading.Thread):
 
             if (os.path.isfile(current_path)):
 
-                relative_path = current_path.replace(base, "")
+                relative_path = os.path.relpath(current_path, base)
                 filename, extension = os.path.splitext(relative_path)
                 extension = extension[1:]
 
                 if extension in self.extensions:
-                    folder_cache[relative_path] = [filename, extension, filename + "\t" + extension]
+                    folder_cache[posix(relative_path)] = [posix(filename), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
 
@@ -85,8 +85,6 @@ class ProjectFiles:
         # cleanup
         needle = re.sub('["\']', '', needle)
 
-        # print("needle", needle)
-
         # build search expression
         regex = ".*"
         for i in needle:
@@ -118,9 +116,9 @@ class ProjectFiles:
         # absolute path
         if base_path is False:
             if with_extension is True:
-                return (target[2], target_path)
+                return (target[2], "/" + target_path)
             else:
-                return (target[2], target[0])
+                return (target[2], "/" + target[0])
         # create relative path
         else:
             if with_extension is True:
@@ -138,8 +136,6 @@ class ProjectFiles:
 
         # step back base, until in same folder
         size = min(len(bases), len(targets))
-
-        # find common folder
         while (index < size and bases[index] == targets[index]):
             index += 1
 
@@ -154,12 +150,15 @@ class ProjectFiles:
             result = "../" * len(bases)
 
         result += "/".join(targets)
-
         return result
 
-    # @param {String} parent_folder of files to cache
     def add(self, parent_folder):
+        """ caches all files within the given folder
 
+            Parameters
+            ----------
+            parent_folder : string -- of files to cache
+        """
         if self.valid_extensions is None:
             return False
 
