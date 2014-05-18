@@ -22,9 +22,12 @@ in `<SublimeConfig>/Packages/` call `git clone https://github.com/sagold/FuzzyFi
 Filepath suggestions are only proposed for files within an opened folder. For single files or a files outside the opened folder autocompletion is disabled.
 Filepath completions are triggered automatically if defined in settings, else a shortcut is required.
 
-- __`ctrl+super+space`__ inserts default (settings) or absolute filepath completion
 - __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
 - __`ctrl+shift+space`__ inserts filepaths absolute, overriding possible settings
+- insert default (settings) or absolute filepath completion
+	- OS X: __`ctrl+super+space`__
+	- Windows/Linux: __`ctrl+alt+shift+space`__
+
 
 By default `auto_trigger` is set to *true*: If an input starts with `./`, `../` or `/src/j` filepaths will be automatically suggested with the following rules:
 
