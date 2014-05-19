@@ -150,6 +150,9 @@ class ProjectFiles:
             result = "../" * len(bases)
 
         result += "/".join(targets)
+        # !Do Debug "//"
+        result = re.sub("//", "/", result);
+
         return result
 
     def add(self, parent_folder):
