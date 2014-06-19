@@ -6,6 +6,7 @@ import threading
 def posix(path):
     return path.replace("\\", "/")
 
+
 DEBUG = False
 
 # stores all files and its fragments within property files
@@ -180,9 +181,10 @@ class ProjectFiles:
             return self.folder_is_cached(folder)
 
         if self.folder_is_cached(folder):
-            file_name = file_name.replace(folder, "")
+            file_name = file_name.replace(folder + '/', "")
             if (self.cache.get(folder).files.get(file_name)):
                 return True
+            #print(file_name + " not within", self.cache.get(folder).files)
 
         return False
 
@@ -191,7 +193,6 @@ class ProjectFiles:
 
     # rebuild folder cache
     def update(self, folder, file_name=None):
-
         if (self.file_is_cached(folder, file_name)):
             return False
 
@@ -200,5 +201,4 @@ class ProjectFiles:
 
         self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
-
         return True
