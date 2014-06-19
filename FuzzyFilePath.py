@@ -76,9 +76,10 @@ def get_path_at_cursor(view):
     word = get_word_at_cursor(view)
     line = get_line_at_cursor(view)
     path = get_path(line[0], word[0])
-    path_region = sublime.Region(word[1].a, word[1].b)
-    path_region.b = word[1].b
-    path_region.a = word[1].a - (len(path) - len(word[0]))
+    # path_region = sublime.Region(word[1].a, word[1].b)
+    # path_region.b = word[1].b
+    # path_region.a = word[1].a - (len(path) - len(word[0]))
+    path_region = sublime.Region(word[1].a - (len(path) - len(word[0])), word[1].b)
     return [path, path_region]
 
 
@@ -191,6 +192,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.build(current_scope, needle, query.relative) is False:
             return
 
+        if DEBUG:
+            print("FFP: searching completions...")
+
         view.run_command('_enter_insert_mode')
         Completion["active"] = True
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
@@ -201,16 +205,17 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_activated(self, view):
         file_name = view.file_name()
-        windows = sublime.windows()
+        current = sublime.active_window()
 
-        for window in windows:
-            folders = window.folders()
+        if current is None:
+            print("FFP: no active window")
+            return False
 
-            if (project_files is None):
-                print("FFP: project files None")
-                query.valid = False
-                return False
+        folders = current.folders()
 
-            if query.update(folders, file_name):
-                print("FFP: Adding folder")
-                project_files.add(query.project_folder)
+        if (project_files is None):
+            query.valid = False
+            return False
+
+        if query.update(folders, file_name):
+            project_files.add(query.project_folder)
