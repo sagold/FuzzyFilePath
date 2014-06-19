@@ -29,7 +29,7 @@ import os
 from Cache.ProjectFiles import ProjectFiles
 from Query import Query
 
-DEBUG = False
+DEBUG = True
 
 Completion = {
 
@@ -42,34 +42,34 @@ query = Query()
 project_files = None
 
 
-def plugin_loaded():
-    """load settings"""
-    settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
-    settings.add_on_change("extensionsToSuggest", update_settings)
-    update_settings()
-
-
 def update_settings():
     """restart projectFiles with new plugin and project settings"""
     global project_files
 
     exclude_folders = []
-    project_folders = sublime.active_window().project_data().get("folders", [])
+    # project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
 
     # build exclude folders
-    for folder in project_folders:
-        base = folder.get("path")
-        exclude = folder.get("folder_exclude_patterns", [])
-        for f in exclude:
-            exclude_folders.append(os.path.join(base, f))
-    # or use default settings
+    # for folder in project_folders:
+    #     base = folder.get("path")
+    #     exclude = folder.get("folder_exclude_patterns", [])
+    #     for f in exclude:
+    #         exclude_folders.append(os.path.join(base, f))
+
+    # use default settings
     if (len(exclude_folders) == 0):
         exclude_folders = settings.get("excludeFolders", ["node_modules"])
 
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
+
+
+# load settings
+settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
+settings.add_on_change("extensionsToSuggest", update_settings)
+update_settings()
 
 
 def get_path_at_cursor(view):
@@ -201,11 +201,16 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_activated(self, view):
         file_name = view.file_name()
-        folders = sublime.active_window().folders()
+        windows = sublime.windows()
 
-        if (project_files is None):
-            query.valid = False
-            return False
+        for window in windows:
+            folders = window.folders()
 
-        if query.update(folders, file_name):
-            project_files.add(query.project_folder)
+            if (project_files is None):
+                print("FFP: project files None")
+                query.valid = False
+                return False
+
+            if query.update(folders, file_name):
+                print("FFP: Adding folder")
+                project_files.add(query.project_folder)
