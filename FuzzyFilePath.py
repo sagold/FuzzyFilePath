@@ -24,7 +24,6 @@
 import sublime
 import sublime_plugin
 import re
-import os
 
 from Cache.ProjectFiles import ProjectFiles
 from Query import Query
