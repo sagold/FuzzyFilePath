@@ -6,6 +6,8 @@ import threading
 def posix(path):
     return path.replace("\\", "/")
 
+DEBUG = False
+
 # stores all files and its fragments within property files
 class CacheFolder(threading.Thread):
 
@@ -19,6 +21,7 @@ class CacheFolder(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        print("FFP: caching folder", self.folder)
         # cache files in folder
         self.files = self.read(self.folder)
 
@@ -77,7 +80,11 @@ class ProjectFiles:
 
         project_files = self.get_files(project_folder)
         if (project_files is None):
+            print("FFP: no project files found in cache")
             return False
+
+        if DEBUG:
+            print("FFP complete: ", needle, project_folder, valid_extensions)
 
         # basic: strip any dots
         needle = re.sub("\.\./", "", needle)

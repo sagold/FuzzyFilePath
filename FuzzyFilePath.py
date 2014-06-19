@@ -29,7 +29,7 @@ import os
 from Cache.ProjectFiles import ProjectFiles
 from Query import Query
 
-DEBUG = True
+DEBUG = False
 
 Completion = {
 
@@ -190,10 +190,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         needle = get_path_at_cursor(view)[0]
 
         if query.build(current_scope, needle, query.relative) is False:
+            if DEBUG:
+                print("FFP: invalid build for ", str(needle), "forced:", query.relative)
             return
-
-        if DEBUG:
-            print("FFP: searching completions...")
 
         view.run_command('_enter_insert_mode')
         Completion["active"] = True
