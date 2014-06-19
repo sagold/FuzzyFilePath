@@ -6,6 +6,7 @@ import threading
 def posix(path):
     return path.replace("\\", "/")
 
+
 DEBUG = False
 
 # stores all files and its fragments within property files
@@ -21,8 +22,9 @@ class CacheFolder(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        print("FFP: caching folder", self.folder)
         # cache files in folder
+        if DEBUG:
+            print("FFP: caching folder", self.folder)
         self.files = self.read(self.folder)
 
     def read(self, folder, base=None):
@@ -80,11 +82,7 @@ class ProjectFiles:
 
         project_files = self.get_files(project_folder)
         if (project_files is None):
-            print("FFP: no project files found in cache")
             return False
-
-        if DEBUG:
-            print("FFP complete: ", needle, project_folder, valid_extensions)
 
         # basic: strip any dots
         needle = re.sub("\.\./", "", needle)
@@ -174,16 +172,22 @@ class ProjectFiles:
 
         self.update(parent_folder)
 
-    # @param {String} folder    cached folder
-    # @param {String} file_name to search in folder
-    # @return {Boolean} true if file is within cache
-    def file_is_cached(self, folder, file_name):
+    def file_is_cached(self, folder, file_name=None):
+        """ returns True if the given file is cached
 
-        if self.folder_is_cached(folder) and file_name is not None:
+            Parameters
+            ----------
+            folder : string -- of project
+            file_name : string -- optional, file to test
+        """
+        if file_name is None:
+            return self.folder_is_cached(folder)
 
-            file_name = file_name.replace(folder, "")
+        if self.folder_is_cached(folder):
+            file_name = file_name.replace(folder + '/', "")
             if (self.cache.get(folder).files.get(file_name)):
                 return True
+            #print(file_name + " not within", self.cache.get(folder).files)
 
         return False
 
@@ -192,7 +196,6 @@ class ProjectFiles:
 
     # rebuild folder cache
     def update(self, folder, file_name=None):
-
         if (self.file_is_cached(folder, file_name)):
             return False
 
@@ -201,5 +204,4 @@ class ProjectFiles:
 
         self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
-
         return True

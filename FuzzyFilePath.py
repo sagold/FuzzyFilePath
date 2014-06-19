@@ -11,14 +11,7 @@
 
     # Bugs
 
-        Traceback (most recent call last):
-          File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
-            res = callback.on_text_command(v, name, args)
-          File "/Users/goldhofers/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 142, in on_text_command
-            Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-        -> ERROR WHAT??
-
-    @version 0.0.6
+    @version 0.0.7
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
