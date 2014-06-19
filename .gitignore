@@ -2,3 +2,5 @@
 /Cache/ProjectFiles.pyc
 
 *.pyc
+
+/Cache/__init__.pyc
