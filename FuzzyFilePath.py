@@ -26,8 +26,8 @@ import sublime_plugin
 import re
 import os
 
-from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
-from FuzzyFilePath.Query import Query
+from Cache.ProjectFiles import ProjectFiles
+from Query import Query
 
 DEBUG = False
 
