@@ -1,6 +1,6 @@
-# FuzzyFilePath
+# [FuzzyFilePath](https://github.com/sagold/FuzzyFilePath)
 
-__Sublime Text 3 Plugin__
+__Sublime Text Plugin__
 
 Fuzzy search and autocomplete filenames inside current project directory. Search result may be inserted absolute or relative (i.e. `../../lib/index.js`)
 
@@ -14,12 +14,18 @@ After [Package Control installation](https://sublime.wbond.net/installation), re
 
 ### [github](https://github.com/sagold/FuzzyFilePath.git)
 
-in `<SublimeConfig>/Packages/` call `git clone https://github.com/sagold/FuzzyFilePath.git`
+in `<SublimeConfig>/Packages/` call: <br />
+`git clone https://github.com/sagold/FuzzyFilePath.git`
 
+__Sublime Text 2__
+
+in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch with:<br />
+`git checkout st2`
 
 ## Usage
 
-Filepath suggestions are only proposed for files within an opened folder. For single files or a files outside the opened folder autocompletion is disabled.
+Filepath suggestions are only proposed for files within an opened folder.
+Autocompletion is disabled for single files or files outside the opened folder.
 Filepath completions are triggered automatically if defined in settings, else a shortcut is required.
 
 - __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
@@ -29,13 +35,13 @@ Filepath completions are triggered automatically if defined in settings, else a 
 	- Windows/Linux: __`ctrl+alt+shift+space`__
 
 
-By default `auto_trigger` is set to *true*: If an input starts with `./`, `../` or `/src/j` filepaths will be automatically suggested with the following rules:
+By default `auto_trigger` is set to *true*: If an input starts with `./`, `../` or `/src/j` filepaths will automatically be suggested by the following rules:
 
 - `./` suggests file within the current directory and inserts selection relative
 - `../` suggest all files and inserts selection relative
 - `/src/j` suggest all files and inserts selection absolute
 
-Search criteria stay the same, but a scope definition in settings overrides the filepath type (*relative*, *absolute*)
+Search criteria stay the same, but a scope definition in settings will override the filepath type (*relative*, *absolute*)
 
 ## Configuration
 
