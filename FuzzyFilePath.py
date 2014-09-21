@@ -83,13 +83,13 @@ def get_path_at_cursor(view):
 
 
 def get_path(line, word):
+    if word is None or word is "":
+        return word
+
     path = None
     full_words = line.split(" ")
-
     for full_word in full_words:
         if word in line:
-            # if (path is not None):
-                # print("multiple matches found in", line, "for", word)
             path = extract_path_from(full_word, word)
 
     if (path is None):
@@ -99,8 +99,8 @@ def get_path(line, word):
 
 
 def extract_path_from(word, needle):
-    result = re.search("([^\"\'\s]*)" + needle, word)
-
+    result = None
+    result = re.search('([^\"\'\s]*)' + needle, word)
     if (result is not None):
         return result.group(0)
 
@@ -130,6 +130,11 @@ def get_word_at_cursor(view):
         if word[-1:] is '"':
             word = word[1:]
             region.a += 1
+
+    if word.find('') != -1 or word.find("") != -1:
+        word = ""
+        region = sublime.Region(position, position)
+        # return ["", sublime.Region(position, position)]
 
     return [word, region]
 
