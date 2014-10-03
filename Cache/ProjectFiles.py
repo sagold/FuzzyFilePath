@@ -128,7 +128,6 @@ class ProjectFiles:
         # create relative path
         else:
             if with_extension is True:
-                print("completion path", target[0] + "." + target[1])
                 return (target[2], self.get_relative_path(target_path, base_path))
             else:
                 return (target[2], self.get_relative_path(target[0], base_path))
