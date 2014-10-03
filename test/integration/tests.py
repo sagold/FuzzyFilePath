@@ -16,4 +16,4 @@ modules = [ os.path.basename(f)[:-3] for f in modules]
 
 for f in modules:
 	lib = importlib.import_module("FuzzyFilePath.test.integration." + f)
-	tests[f[:-5]] = lib.tests
+	tests[f[:-5]] = lib.Test(f[:-5])

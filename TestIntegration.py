@@ -55,14 +55,14 @@ class FfpIntegration(sublime_plugin.TextCommand):
 
 		for name in tests:
 			testCase = tests.get(name)
-			total_tests += len(testCase)
+			total_tests += testCase.length
 
-			for test in testCase:
+			for test in testCase.tests:
 				try:
-					test(self.tools)
+					testCase[test](self.tools)
 				except:
 					failed_tests += 1
-					print("\n" + name + " " + test.__name__ + ":")
+					print("\n" + name + " " + test + ":")
 					print(LINE)
 					traceback.print_exc()
 					print(LINE)
