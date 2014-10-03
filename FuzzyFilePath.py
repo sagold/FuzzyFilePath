@@ -85,10 +85,11 @@ def get_path(line, word):
     if word is None or word is "":
         return word
 
+    needle = re.escape(word)
     full_words = line.split(" ")
     for full_word in full_words:
         if word in line:
-            path = extract_path_from(full_word, word)
+            path = extract_path_from(full_word, needle)
             if not path is None:
                 return path
 
@@ -97,7 +98,6 @@ def get_path(line, word):
 
 #! fails if needle occurs also before path (line)
 def extract_path_from(word, needle):
-    # tested
     result = re.search('([^\"\'\s]*)' + needle + '([^\"\'\s]*)', word)
     if (result is not None):
         return result.group(0)
