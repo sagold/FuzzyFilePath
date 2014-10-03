@@ -6,6 +6,8 @@ Fuzzy search and autocomplete filenames inside current project directory. Search
 
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/master/FuzzyFilePathDemo.gif" />
 
+
+
 ## Installation
 
 ### [Package Control](https://sublime.wbond.net/)
@@ -21,6 +23,8 @@ __Sublime Text 2__
 
 in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch with:<br />
 `git checkout st2`
+
+
 
 ## Usage
 
@@ -43,47 +47,117 @@ By default `auto_trigger` is set to *true*: If an input starts with `./`, `../` 
 
 Search criteria stay the same, but a scope definition in settings will override the filepath type (*relative*, *absolute*)
 
+
+#### Special Characters
+
+If your projects contains filenames with special characters, consider modifying Sublime Texts `word_separators`.
+
+i.e. in AngularJs filenames may start with `$`. In _Sublime Text | Preferences | Settings - User_ add:
+```json
+	"word_separators": "./\\()\"'-:,.;<>~!@#%^&*|+=[]{}`~?"
+```
+
+
+
 ## Configuration
 
-The default options, as always, should be set in user-settings
+The default options, as always, should be set in user-settings:<br />
+_Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_
 
-#### Settings
 
-in `<SublimeConfig>/Packages/QueryFilePath.sublime-settings`
+### Settings Options
+
+#### `disable_autocompletions`:Boolean
+Whenever Sublime Text queries completion suggestions, FuzzyFilePath will propose filepaths if the current query meets its requirements.
+This may conflict with other plugins. Set `"disable_autocompletions": true` to disable this automatic filepath completions.
+
+#### `disable_keymap_actions`:Boolean
+Set `"disable_keymap_actions": false` to disables all FuzzyFilePath commands triggered by shortcuts. Default shortcut definitions are
+found in _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_. This may prevent conflicts with
+other plugins.
+
+#### `extensionsToSuggest`:Array
+FuzzyFilePath will only cache and suggest filetypes defined in this array.<br />
+i.e. `"extensionsToSuggest": ["gif", "jpg", "jpg", "png"]` will only suggest imagepaths for the given type
+
+#### `auto_trigger`:Boolean
+If `"auto_trigger": true`, FuzzyFilePath will trigger autocompletions if the current word starts with
+
+- `../` or
+- `./` or
+- `/folder/`
+
+completly ignoring current scope.
+
+#### `scopes`:Array
+Each object in `scopes` triggers a specific configuration for filepaths completions. Objects are iterated in the given
+order for the current `scope`-regex. If it matches the current scope, its configuration is used for filepath suggestions
+and insertions. Configuration properties are as follows:
+
+##### `"scope"`:RegExp
+A regular expression to test the current scope. In order to escape a regex character two backslashes are required: `\\.`.
+To lookup a scope within your source code, press `alt+super+p`. The current scope will be displayed in Sublime Text's status bar.
+
+##### `auto`:Boolean
+If `"auto": false` the specified configuration will only be triggered by shortcuts.
+
+##### `relative`:Boolean
+Sets the type of the path to insert. If `"relative": true` paths will be inserted _relative to the given file_. Else
+filepaths are inserted _absolute to the project folder_. This option may also be set by key commands for _insert\_path_.
+
+##### `extensions`:Array
+This will further filter proposed files for this scope (based on `extensionsToSuggest`).<br />
+i.e. `"extensions": ["js", "json"]` will only list javascript or json files.
+
+##### `insertExtension`:Boolean
+If `"insertExtension": false`, files will be inserted without their file extension.<br />
+i.e. javascript AMD imports requires `/modules/dummy` to reference `modules/dummy.js`
+
+##### `replace_on_insert`:Array
+An array containing substitutions for the inserted path. After a selected filepath completion is inserted,
+the path may be further adjusted. Each item within _replace\_on\_insert_  must be another array like
+`[Search:RegExp, Replace:RegExp]`. Use cases:
+
+- If the project path varies, it may be adjusted for the current scope with<br />
+	`["/base_path/module", "module"]`.
+- In NodeJs index files are resolved by default, thus set<br />
+	`["/index$", ""]` if `"insertExtension": false` to resolve a selection of _../module/index.js_ to _../module_
+- i.e. [webpack](https://github.com/webpack/webpack) may resolve paths differently. Thus if a bower component
+	is selected, but its folder is not required<br/>
+	`["^[\\.\\./]*/bower_components/", ""]` will fix this.
+
+This option may also be set by key commands for _insert\_path_.
+
+
+### Settings Example
+
+See `<SublimeConfig>/Packages/FuzzyFilePath.sublime-settings` for an up to date version
 
 ```json
 {
-	// file types to cache and suggest
-	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png"],
-
-	// folders to skip. Is ignored if project settings exclude folders
+	"disable_autocompletions": false,
+	"disable_keymap_actions": false,
+	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
 	"exclude_folders": ["node_modules"],
-
-	// auto trigger completion if a valid filepath is inserted:
-	// ../ or ./ or /word/c
 	"auto_trigger": true,
-
-	// enables file completion via scope regexes
 	"scopes": [
 
-		// each object is tested on current scope, first match wins
 		{
-			// tests for ".js " in current scope
 			"scope": "\\.js\\s",
 
-			// if matched
-			// do not show by default, requires special command to trigger
 			"auto": false,
-			// show the following extensions only, may be "[*]"
 			"extensions": ["js", "json"],
-			// insert file with file extension
 			"insertExtension": true,
-			// insert file relative to current file's directory
-			"relative": true
+			"relative": true,
+			"replace_on_insert": [
+				["^[\\.\\./]*/bower_components/", ""],
+				["/index$", ""]
+			]
 		}
 	]
 }
 ```
+
 
 #### Keybindings
 
