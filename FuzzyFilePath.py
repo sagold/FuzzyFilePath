@@ -9,10 +9,6 @@
             SHOULD BE:
             require("../../../../optimizer")|cursor|
 
-    # Bugs
-
-        - "./fil" replaced to "././file"
-
     @version 0.0.7
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
