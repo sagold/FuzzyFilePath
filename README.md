@@ -11,8 +11,8 @@ Fuzzy search and autocomplete filenames inside current project directory. Search
 1. [Installation](#installation)
 2. [Usage](#usage)
 3. [Configuration](#configuration)
-	- [Settings](#configuration:settings)
-	- [Keybindings](#configuration:keybindings)
+	- [Settings](#configuration_settings)
+	- [Keybindings](#configuration_keybindings)
 
 ---
 
@@ -74,7 +74,7 @@ The default options, as always, should be set in user-settings:<br />
 _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_
 
 
-### <a name="configuration:settings">Settings</a>
+### <a name="configuration_settings">Settings</a>
 
 #### `disable_autocompletions`:Boolean
 Whenever Sublime Text queries completion suggestions, FuzzyFilePath will propose filepaths if the current query meets its requirements.
@@ -112,7 +112,7 @@ If `"auto": false` the specified configuration will only be triggered by shortcu
 
 ##### relative:Boolean
 Sets the type of the path to insert. If `"relative": true` paths will be inserted _relative to the given file_. Else
-filepaths are inserted _absolute to the project folder_. This option may also be set by [key commands for _insert\_path_](#configuration:keybindings).
+filepaths are inserted _absolute to the project folder_. This option may also be set by [key commands for _insert\_path_](#configuration_keybindings).
 
 ##### extensions:Array
 This will further filter proposed files for this scope (based on `extensionsToSuggest`).<br />
@@ -135,7 +135,7 @@ the path may be further adjusted. Each item within _replace\_on\_insert_  must b
 	is selected, but its folder is not required, the replacement:<br/>
 	`["^[\\.\\./]*/bower_components/", ""]` will fix this.
 
-This option may also be set by [key commands for _insert\_path_](#configuration:keybindings).
+This option may also be set by [key commands for _insert\_path_](#configuration_keybindings).
 
 
 #### Example
@@ -166,7 +166,7 @@ See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - 
 ```
 
 
-### <a name="configuration:keybindings">Keybindings</a>
+### <a name="configuration_keybindings">Keybindings</a>
 
 In addition to automatic filepath suggestions, keybindings may be set to trigger filepath completions, independent of
 the current scope. While scope rules will be applied
