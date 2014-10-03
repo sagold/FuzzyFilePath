@@ -108,17 +108,17 @@ def get_line_at_cursor(view):
 
 
 def get_word_at_cursor(view):
+    # tested
     selection = view.sel()[0]
     position = selection.begin()
     region = view.word(position)
     word = view.substr(region)
 
-    print("word: " + word)
-
     # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
 
+    # strip quotes
     if len(word) > 0:
         if word[0] is '"':
             word = word[1:]
@@ -128,10 +128,10 @@ def get_word_at_cursor(view):
             word = word[1:]
             region.a += 1
 
-    if word.find('') != -1 or word.find("") != -1:
+    # cleanup in case an empty string is encounterd
+    if word.find("''") != -1 or word.find('""') != -1 or word.isspace():
         word = ""
         region = sublime.Region(position, position)
-        # return ["", sublime.Region(position, position)]
 
     return [word, region]
 
@@ -199,6 +199,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             print("rel", query.relative, completions)
         query.reset()
         return completions
+
 
     def on_activated(self, view):
         file_name = view.file_name()
