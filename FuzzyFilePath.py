@@ -169,10 +169,11 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_post_text_command(self, view, command_name, args):
         if (command_name == "commit_completion" and Completion["active"]):
-
             Completion["active"] = False
-            if Completion["before"] is not None:
 
+            if Completion["before"] is not None:
+                # replace current path (fragments) with selected path
+                # i.e. ../../../file -> ../file
                 path = get_path_at_cursor(view)
                 final_path = re.sub("^" + Completion["before"], "", path[0])
                 verbose("replace", path[0], "with", Completion["before"], final_path)
@@ -191,13 +192,13 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if (query.valid is False):
             return False
 
-        current_scope = view.scope_name(locations[0])
         needle = get_path_at_cursor(view)[0]
+        current_scope = view.scope_name(locations[0])
 
         if query.build(current_scope, needle, query.relative) is False:
             return
 
-        view.run_command('_enter_insert_mode')
+        view.run_command('_enter_insert_mode') # vintageous
         Completion["active"] = True
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
         verbose("rel", query.relative, completions)
