@@ -160,11 +160,14 @@ class ReplaceRegionCommand(sublime_plugin.TextCommand):
 
 class InsertPathCommand(sublime_plugin.TextCommand):
     # triggers autocomplete
-    def run(self, edit, type="default"):
+    def run(self, edit, type="default", replace_on_insert=[]):
         if DISABLE_KEYMAP_ACTIONS is True:
             return False
 
         query.relative = type
+        if len(replace_on_insert) > 0:
+            verbose("insert path", "override replace", replace_on_insert)
+            query.override_replace_on_insert(replace_on_insert)
         self.view.run_command('auto_complete')
 
 
@@ -227,7 +230,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
         verbose("query needle:", needle, "relative:", query.relative)
         verbose("query completions:", completions)
-        Completion["replaceOnInsert"] = query.replaceOnInsert
+        Completion["replaceOnInsert"] = query.replace_on_insert
         query.reset()
         return completions
 

@@ -11,6 +11,7 @@ class Query:
     valid = False
     current_folder = None
     project_folder = None
+    skip_update_replace = False
 
 
     def __init__(self):
@@ -22,7 +23,8 @@ class Query:
         self.relative = False
         self.active = False
         self.extension = True
-        self.replaceOnInsert = []
+        self.replace_on_insert = []
+        self.skip_update_replace = False
 
 
     def update(self, folders, file_name):
@@ -74,7 +76,8 @@ class Query:
             self.extension = properties.get("insertExtension", True)
             self.extensions = properties.get("extensions", ["js"])
             self.relative = properties.get("relative", query_string["relative"])
-            self.replaceOnInsert = properties.get("replace_on_insert", [])
+            if not self.skip_update_replace:
+                self.replace_on_insert = properties.get("replace_on_insert", [])
 
         # TEST: ignore property settings
         if query_string["is_path"]:
@@ -103,6 +106,10 @@ class Query:
             if re.search(scope, current_scope):
                 return properties
         return False
+
+    def override_replace_on_insert(self, replacements):
+        self.replace_on_insert = replacements
+        self.skip_update_replace = True
 
 
     def get_input_properties(self, needle):
