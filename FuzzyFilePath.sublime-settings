@@ -1,22 +1,38 @@
 {
+	// disable automatic path completions
+	"disable_autocompletions": false,
+
+	// disable keymaps
+	"disable_keymap_actions": false,
+
 	// file extensions to show on filepath auto completion
 	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
+
 	"exclude_folders": ["node_modules"],
 
 	// if current string matches "./", "../", "/folder/to",
-	// auto suggest files independent of scope settings
+	// auto suggest files, independent of scope settings
 	"auto_trigger": true,
 
+	// All options may be overriden in <Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User>
+	// configuration of suggestions and insertions by scope
 	"scopes": [
 
 		{
-			// nodejs require
+			// JS AMD
 			"scope": "require.*string",
 
 			"auto": true,
 			"extensions": ["js"],
 			"insertExtension": false,
-			"relative": true
+			"relative": true,
+
+			"replace_on_insert": [
+				// in case bower_components are resolved absolute
+				["^[\\.\\./]*/bower_components/", ""],
+				// nodejs will load index.js by default, remove
+				["/index$", ""]
+			]
 		},
 
 		{

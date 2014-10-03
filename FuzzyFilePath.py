@@ -1,7 +1,9 @@
 """ FuzzyFilePath
     Manages filepath autocompletions
 
-    # Tasks
+    # possible tasks
+
+        - use test-triggers like "graffin:" instead/additionally to scope-triggers
 
         - support multiple folders
         - Cursor Position after replacement:
@@ -9,9 +11,7 @@
             SHOULD BE:
             require("../../../../optimizer")|cursor|
 
-    # Bugs
-
-    @version 0.0.7
+    @version 0.0.8
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
@@ -22,13 +22,19 @@ import os
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 
-DEBUG = False
+DEBUG = True
+DISABLE_AUTOCOMPLETION = False
+DISABLE_KEYMAP_ACTIONS = False
+def verbose(*args):
+    if DEBUG is True:
+        print("FFP\t", *args)
 
 Completion = {
 
     "active": False,
     "before": None,
-    "after": None
+    "after": None,
+    "onInsert": []
 }
 
 query = Query()
@@ -44,13 +50,15 @@ def plugin_loaded():
 
 def update_settings():
     """restart projectFiles with new plugin and project settings"""
-    global project_files
+    global project_files, DISABLE_AUTOCOMPLETION, DISABLE_KEYMAP_ACTIONS
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
+    DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", False);
+    DISABLE_KEYMAP_ACTIONS = settings.get("disable_keymap_actions", False);
 
     # build exclude folders
     for folder in project_folders:
@@ -72,49 +80,59 @@ def get_path_at_cursor(view):
     path_region = sublime.Region(word[1].a, word[1].b)
     path_region.b = word[1].b
     path_region.a = word[1].a - (len(path) - len(word[0]))
+    verbose("path_at_cursor", path, "word:", word, "line", line)
     return [path, path_region]
 
 
+# tested
 def get_path(line, word):
-    path = None
-    full_words = line.split(" ")
-
-    for full_word in full_words:
-        if word in line:
-            # if (path is not None):
-                # print("multiple matches found in", line, "for", word)
-            path = extract_path_from(full_word, word)
-
-    if (path is None):
+    #! returns first match
+    if word is None or word is "":
         return word
 
-    return path
+    needle = re.escape(word)
+    full_words = line.split(" ")
+    for full_word in full_words:
+        if word in line:
+            path = extract_path_from(full_word, needle)
+            if not path is None:
+                return path
+
+    return word
 
 
+#! fails if needle occurs also before path (line)
 def extract_path_from(word, needle):
-    result = re.search("([^\"\'\s]*)" + needle, word)
-
+    result = re.search('([^\"\'\s]*)' + needle + '([^\"\'\s]*)', word)
     if (result is not None):
         return result.group(0)
+    return None
 
 
 def get_line_at_cursor(view):
     selection = view.sel()[0]
     position = selection.begin()
     region = view.line(position)
-    return [view.substr(region), region]
+    line = view.substr(region)
+    verbose("line at cursor", line)
+    return [line, region]
 
 
+# tested
 def get_word_at_cursor(view):
     selection = view.sel()[0]
     position = selection.begin()
     region = view.word(position)
     word = view.substr(region)
-
+    # validate
+    valid = not re.sub("[\"\'\s\(\)]*", "", word).strip() == ""
+    if not valid:
+        verbose("invalid word", word)
+        return ["", sublime.Region(position, position)]
     # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
-
+    # strip quotes
     if len(word) > 0:
         if word[0] is '"':
             word = word[1:]
@@ -123,27 +141,38 @@ def get_word_at_cursor(view):
         if word[-1:] is '"':
             word = word[1:]
             region.a += 1
+    # cleanup in case an empty string is encounterd
+    if word.find("''") != -1 or word.find('""') != -1 or word.isspace():
+        word = ""
+        region = sublime.Region(position, position)
 
     return [word, region]
 
 
 class ReplaceRegionCommand(sublime_plugin.TextCommand):
-
+    # helper: replaces range with string
     def run(self, edit, a, b, string):
+        if DISABLE_KEYMAP_ACTIONS is True:
+            return False
         self.view.replace(edit, sublime.Region(a, b), string)
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
-    """triggers autocomplete"""
-    def run(self, edit, type="default"):
+    # triggers autocomplete
+    def run(self, edit, type="default", replace_on_insert=[]):
+        if DISABLE_KEYMAP_ACTIONS is True:
+            return False
+
         query.relative = type
+        if len(replace_on_insert) > 0:
+            verbose("insert path", "override replace", replace_on_insert)
+            query.override_replace_on_insert(replace_on_insert)
         self.view.run_command('auto_complete')
 
 
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
-
         if command_name == "commit_completion":
             path = get_path_at_cursor(view)
             word_replaced = re.split("[./]", path[0]).pop()
@@ -153,18 +182,26 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         elif command_name == "hide_auto_complete":
             Completion["active"] = False
 
+
     def on_post_text_command(self, view, command_name, args):
         if (command_name == "commit_completion" and Completion["active"]):
-
             Completion["active"] = False
-            if Completion["before"] is not None:
-
-                path = get_path_at_cursor(view)
-                final_path = re.sub("^" + Completion["before"], "", path[0])
-                if DEBUG:
-                    print("replace", path[0], "with", Completion["before"], final_path)
-                Completion["before"] = None
-                view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+            # replace current path (fragments) with selected path
+            # i.e. ../../../file -> ../file
+            # if Completion["before"] is not None:
+            path = get_path_at_cursor(view)
+            final_path = re.sub("^" + Completion["before"], "", path[0])
+            # hack reverse
+            # final_path = final_path.replace("_D011AR_", "$")
+            final_path = re.sub("_D011AR_", "$", final_path)
+            # modify result
+            for replace in Completion["replaceOnInsert"]:
+                final_path = re.sub(replace[0], replace[1], final_path)
+            # cleanup path
+            view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+            #reset
+            Completion["before"] = None
+            Completion["replaceOnInsert"] = []
 
 
     def on_post_save_async(self, view):
@@ -175,22 +212,27 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
 
     def on_query_completions(self, view, prefix, locations):
-        if (query.valid is False):
+        if (DISABLE_AUTOCOMPLETION is True):
+            return None
+
+        if query.valid is False:
             return False
 
-        current_scope = view.scope_name(locations[0])
         needle = get_path_at_cursor(view)[0]
+        current_scope = view.scope_name(locations[0])
 
         if query.build(current_scope, needle, query.relative) is False:
-            return
+            return None
 
-        view.run_command('_enter_insert_mode')
+        view.run_command('_enter_insert_mode') # vintageous
         Completion["active"] = True
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
-        if DEBUG:
-            print("rel", query.relative, completions)
+        verbose("query needle:", needle, "relative:", query.relative)
+        verbose("query completions:", completions)
+        Completion["replaceOnInsert"] = query.replace_on_insert
         query.reset()
         return completions
+
 
     def on_activated(self, view):
         file_name = view.file_name()
