@@ -30,6 +30,12 @@ class Test(TestCase):
 
 		assert path == "./path/in/quotes", "expected '%s' to be './path/in/quotes'" % path
 
+
+	def should_escape_regex_in_needle(self, viewHelper):
+		path = get_path('/component/common/$index', "$ind")
+
+		assert path == "/component/common/$index", "expected '%s' to be '/component/common/$index'" % path
+
 	# def should_return_match_within_quotes(self, viewHelper):
 	# 	path = get_path('another needle "./path/to/needle"', "needle")
 	# 	assert path == "./path/to/needle", "expected '%s' to be './path/to/needle'" % path
