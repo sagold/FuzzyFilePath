@@ -32,3 +32,12 @@ class Test(TestCase):
 		word = get_word_at_cursor(viewHelper.view)[0]
 
 		assert word == "", "expected '%s' to be empty" % word
+
+
+	def should_not_contain_special_characters(self, viewHelper):
+		viewHelper.set_line('")')
+		viewHelper.move_cursor(0, 0)
+
+		word = get_word_at_cursor(viewHelper.view)[0]
+
+		assert word == "", "expected '%s' to be empty" % word

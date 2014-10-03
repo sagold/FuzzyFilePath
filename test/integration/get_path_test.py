@@ -31,6 +31,12 @@ class Test(TestCase):
 		assert path == "./path/in/quotes", "expected '%s' to be './path/in/quotes'" % path
 
 
+	def should_include_special_characters(self, viewHelper):
+		path = get_path('/component/common/$index', "common")
+
+		assert path == "/component/common/$index", "expected '%s' to be '/component/common/$index'" % path
+
+
 	def should_escape_regex_in_needle(self, viewHelper):
 		path = get_path('/component/common/$index', "$ind")
 
