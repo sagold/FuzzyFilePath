@@ -6,9 +6,18 @@ Fuzzy search and autocomplete filenames inside current project directory. Search
 
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/master/FuzzyFilePathDemo.gif" />
 
+---
+
+1. [Installation](#installation)
+2. [Usage](#usage)
+3. [Configuration](#configuration)
+	- [Settings](#configuration:settings)
+	- [Keybindings](#configuration:keybindings)
+
+---
 
 
-## Installation
+## <a name="installation">Installation</a>
 
 ### [Package Control](https://sublime.wbond.net/)
 
@@ -26,7 +35,7 @@ in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch wit
 
 
 
-## Usage
+## <a name="usage">Usage</a>
 
 Filepath suggestions are only proposed for files within an opened folder.
 Autocompletion is disabled for single files or files outside the opened folder.
@@ -59,13 +68,13 @@ i.e. in AngularJs filenames may start with `$`. In _Sublime Text | Preferences |
 
 
 
-## Configuration
+## <a name="configuration">Configuration</a>
 
 The default options, as always, should be set in user-settings:<br />
 _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_
 
 
-### Settings Options
+### <a name="configuration:settings">Settings</a>
 
 #### `disable_autocompletions`:Boolean
 Whenever Sublime Text queries completion suggestions, FuzzyFilePath will propose filepaths if the current query meets its requirements.
@@ -94,26 +103,26 @@ Each object in `scopes` triggers a specific configuration for filepaths completi
 order for the current `scope`-regex. If it matches the current scope, its configuration is used for filepath suggestions
 and insertions. Configuration properties are as follows:
 
-##### `"scope"`:RegExp
+##### scope:RegExp
 A regular expression to test the current scope. In order to escape a regex character two backslashes are required: `\\.`.
 To lookup a scope within your source code, press `alt+super+p`. The current scope will be displayed in Sublime Text's status bar.
 
-##### `auto`:Boolean
+##### auto:Boolean
 If `"auto": false` the specified configuration will only be triggered by shortcuts.
 
-##### `relative`:Boolean
+##### relative:Boolean
 Sets the type of the path to insert. If `"relative": true` paths will be inserted _relative to the given file_. Else
-filepaths are inserted _absolute to the project folder_. This option may also be set by key commands for _insert\_path_.
+filepaths are inserted _absolute to the project folder_. This option may also be set by [key commands for _insert\_path_](#configuration:keybindings).
 
-##### `extensions`:Array
+##### extensions:Array
 This will further filter proposed files for this scope (based on `extensionsToSuggest`).<br />
 i.e. `"extensions": ["js", "json"]` will only list javascript or json files.
 
-##### `insertExtension`:Boolean
+##### insertExtension:Boolean
 If `"insertExtension": false`, files will be inserted without their file extension.<br />
 i.e. javascript AMD imports requires `/modules/dummy` to reference `modules/dummy.js`
 
-##### `replace_on_insert`:Array
+##### replace\_on\_insert:Array
 An array containing substitutions for the inserted path. After a selected filepath completion is inserted,
 the path may be further adjusted. Each item within _replace\_on\_insert_  must be another array like
 `[Search:RegExp, Replace:RegExp]`. Use cases:
@@ -123,25 +132,23 @@ the path may be further adjusted. Each item within _replace\_on\_insert_  must b
 - In NodeJs index files are resolved by default, thus set<br />
 	`["/index$", ""]` if `"insertExtension": false` to resolve a selection of _../module/index.js_ to _../module_
 - i.e. [webpack](https://github.com/webpack/webpack) may resolve paths differently. Thus if a bower component
-	is selected, but its folder is not required<br/>
+	is selected, but its folder is not required, the replacement:<br/>
 	`["^[\\.\\./]*/bower_components/", ""]` will fix this.
 
-This option may also be set by key commands for _insert\_path_.
+This option may also be set by [key commands for _insert\_path_](#configuration:keybindings).
 
 
-### Settings Example
-
-See `<SublimeConfig>/Packages/FuzzyFilePath.sublime-settings` for an up to date version
+#### Example
+See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - Default_ for an up to date version
 
 ```json
 {
 	"disable_autocompletions": false,
 	"disable_keymap_actions": false,
-	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
+	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "png"],
 	"exclude_folders": ["node_modules"],
 	"auto_trigger": true,
 	"scopes": [
-
 		{
 			"scope": "\\.js\\s",
 
@@ -159,16 +166,61 @@ See `<SublimeConfig>/Packages/FuzzyFilePath.sublime-settings` for an up to date 
 ```
 
 
-#### Keybindings
+### <a name="configuration:keybindings">Keybindings</a>
+
+In addition to automatic filepath suggestions, keybindings may be set to trigger filepath completions, independent of
+the current scope. While scope rules will be applied
+
+- the **type** of the requested path (_relative_, _absolute_) may be set explicitly and
+- the replacements in **replace\_on\_insert** may be overriden
+
+In _Sublime Text | Preferences | KeyBinding - User_ or <br />
+_Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_ add an object like
+
+```json
+{
+	"keys": ["ctrl+alt+i"],
+	"command": "insert_path"
+}
+```
+
+This will trigger filepath suggestions on `ctrl+alt+i`, with the current scope rules defined in settings. To override
+the _type_ of the path add an arguments object like:
+
+```json
+{
+	"keys": ["ctrl+alt+i"],
+	"command": "insert_path",
+	"args": {
+	    "type": "relative"
+	}
+}
+```
+
+To override replacements set
+
+```json
+{
+    "keys": ["ctrl+shift+space"],
+    "command": "insert_path",
+    "args": {
+        "replace_on_insert": [
+        	["^[\\.\\./]*/bower_components/", ""]
+        ]
+    }
+}
+```
+
+
+#### Examples
+See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_ for an up to date version
 
 ```json
 [
-	// use relative value from settings
     {
         "keys": ["ctrl+super+space"],
         "command": "insert_path"
     },
-    // enforces relative filepath insertion
     {
         "keys": ["ctrl+alt+space"],
         "command": "insert_path",
@@ -176,12 +228,14 @@ See `<SublimeConfig>/Packages/FuzzyFilePath.sublime-settings` for an up to date 
             "type": "relative"
         }
     },
-    // enforces absolute filepath insertion
     {
         "keys": ["ctrl+shift+space"],
         "command": "insert_path",
         "args": {
-            "type": "absolute"
+            "type": "absolute",
+            "replace_on_insert": [
+            	["^[\\.\\./]*/bower_components/", ""]
+            ]
         }
     }
 ]
@@ -194,5 +248,4 @@ See `<SublimeConfig>/Packages/FuzzyFilePath.sublime-settings` for an up to date 
 
 - uses file discovery based on current directory instead of fuzzy search
 - adds properties for images in autocompletion description
-- supports Sublime Text 2 and 3
 
