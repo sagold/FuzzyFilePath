@@ -17,7 +17,6 @@
 import sublime
 import sublime_plugin
 import re
-import os
 
 from Cache.ProjectFiles import ProjectFiles
 from Query import Query
@@ -27,7 +26,7 @@ DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
 def verbose(*args):
     if DEBUG is True:
-        print(*args)
+        print(args)
 
 Completion = {
 
@@ -76,10 +75,12 @@ def get_path_at_cursor(view):
     word = get_word_at_cursor(view)
     line = get_line_at_cursor(view)
     path = get_path(line[0], word[0])
-    path_region = sublime.Region(word[1].a, word[1].b)
-    path_region.b = word[1].b
-    path_region.a = word[1].a - (len(path) - len(word[0]))
-    verbose("path_at_cursor", path, "word:", word, "line", line)
+    # st2 - fix ----
+    # path_region = sublime.Region(word[1].a, word[1].b)
+    # path_region.b = word[1].b
+    # path_region.a = word[1].a - (len(path) - len(word[0]))
+    path_region = sublime.Region(word[1].a - (len(path) - len(word[0])), word[1].b)
+    # ----
     return [path, path_region]
 
 
