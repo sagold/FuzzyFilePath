@@ -44,7 +44,8 @@ class CacheFolder(threading.Thread):
                 extension = extension[1:]
 
                 if extension in self.extensions:
-                    folder_cache[posix(relative_path)] = [posix(filename), extension, posix(filename) + "\t" + extension]
+                    # $ hack, reversed in post_commit_completion
+                    folder_cache[posix(relative_path)] = [re.sub("\$", "_D011AR_", posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
 
@@ -88,7 +89,7 @@ class ProjectFiles:
         needle = re.sub("\.\./", "", needle)
         needle = re.sub("\.\/", "", needle)
         # cleanup
-        needle = re.sub('["\']', '', needle)
+        needle = re.sub('["\'\(\)]', '', needle)
 
         # build search expression
         regex = ".*"
@@ -121,7 +122,7 @@ class ProjectFiles:
         # absolute path
         if base_path is False:
             if with_extension is True:
-                return (target[2], "/" + target_path)
+                return (target[2], "/" + target[0] + "." + target[1])
             else:
                 return (target[2], "/" + target[0])
         # create relative path

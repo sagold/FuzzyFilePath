@@ -11,15 +11,21 @@ class Query:
     valid = False
     current_folder = None
     project_folder = None
+    skip_update_replace = False
+
 
     def __init__(self):
         self.reset()
+
 
     def reset(self):
         self.extensions = ["*"]
         self.relative = False
         self.active = False
         self.extension = True
+        self.replace_on_insert = []
+        self.skip_update_replace = False
+
 
     def update(self, folders, file_name):
         self.valid = is_valid(folders, file_name)
@@ -70,6 +76,8 @@ class Query:
             self.extension = properties.get("insertExtension", True)
             self.extensions = properties.get("extensions", ["js"])
             self.relative = properties.get("relative", query_string["relative"])
+            if not self.skip_update_replace:
+                self.replace_on_insert = properties.get("replace_on_insert", [])
 
         # TEST: ignore property settings
         if query_string["is_path"]:
@@ -91,12 +99,18 @@ class Query:
 
         return self.active
 
+
     def get_scope_properties(self, current_scope):
         for properties in self.scopes:
             scope = properties.get("scope").replace("//", "")
             if re.search(scope, current_scope):
                 return properties
         return False
+
+    def override_replace_on_insert(self, replacements):
+        self.replace_on_insert = replacements
+        self.skip_update_replace = True
+
 
     def get_input_properties(self, needle):
         properties = {
@@ -128,21 +142,17 @@ class Query:
 # @param {Array} folders    list of current project folders
 # @param {String} filename  filepath and filename of current view
 def is_valid(folders, file_name):
-
     if (file_name is None):
         # print("__QueryFilePath__ [A] filename is None")
         return False
-
     # single file?
     if (len(folders) == 0):
         # print("__QueryFilePath__ [A] no folders")
         return False
-
     # independent file?
     if (not folders[0] in file_name):
         # print("__QueryFilePath__ [A] independent file")
         return False
-
     # multiple folders?
     if (len(folders) > 1):
         print("__QueryFilePath__ [W] multiple folders not yet supported")
