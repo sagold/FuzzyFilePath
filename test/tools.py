@@ -1,6 +1,9 @@
 import inspect
 
-
+"""
+	Inherit from TestCase to run tests receiving argument `ViewHelper`
+	Convention: for a test to be executed/recognized its name must contains "should"
+"""
 class TestCase:
 	def __init__(self, name):
 		self.name = name
