@@ -11,6 +11,8 @@
 
     # Bugs
 
+        - "./fil" replaced to "././file"
+
     @version 0.0.7
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
@@ -111,6 +113,8 @@ def get_word_at_cursor(view):
     region = view.word(position)
     word = view.substr(region)
 
+    print("word: " + word)
+
     # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
@@ -170,7 +174,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
                     print("replace", path[0], "with", Completion["before"], final_path)
                 Completion["before"] = None
                 view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
-
 
     def on_post_save_async(self, view):
         if project_files is not None:
