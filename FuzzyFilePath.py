@@ -56,7 +56,6 @@ def update_settings():
     settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
-
     # build exclude folders
     for folder in project_folders:
         base = folder.get("path")
@@ -80,9 +79,9 @@ def get_path_at_cursor(view):
     return [path, path_region]
 
 
-#! returns first match
+# tested
 def get_path(line, word):
-    # tested
+    #! returns first match
     if word is None or word is "":
         return word
 
@@ -112,17 +111,15 @@ def get_line_at_cursor(view):
     return [view.substr(region), region]
 
 
+# tested
 def get_word_at_cursor(view):
-    # tested
     selection = view.sel()[0]
     position = selection.begin()
     region = view.word(position)
     word = view.substr(region)
-
     # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
-
     # strip quotes
     if len(word) > 0:
         if word[0] is '"':
@@ -132,7 +129,6 @@ def get_word_at_cursor(view):
         if word[-1:] is '"':
             word = word[1:]
             region.a += 1
-
     # cleanup in case an empty string is encounterd
     if word.find("''") != -1 or word.find('""') != -1 or word.isspace():
         word = ""
@@ -142,13 +138,13 @@ def get_word_at_cursor(view):
 
 
 class ReplaceRegionCommand(sublime_plugin.TextCommand):
-
+    # helper: replaces range with string
     def run(self, edit, a, b, string):
         self.view.replace(edit, sublime.Region(a, b), string)
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
-    """triggers autocomplete"""
+    # triggers autocomplete
     def run(self, edit, type="default"):
         query.relative = type
         self.view.run_command('auto_complete')

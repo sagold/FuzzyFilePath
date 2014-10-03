@@ -29,3 +29,7 @@ class Test(TestCase):
 		path = get_path('"./path/in/quotes" another in', "in")
 
 		assert path == "./path/in/quotes", "expected '%s' to be './path/in/quotes'" % path
+
+	# def should_return_match_within_quotes(self, viewHelper):
+	# 	path = get_path('another needle "./path/to/needle"', "needle")
+	# 	assert path == "./path/to/needle", "expected '%s' to be './path/to/needle'" % path
