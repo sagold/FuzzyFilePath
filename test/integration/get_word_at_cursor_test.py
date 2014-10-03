@@ -7,7 +7,6 @@ from FuzzyFilePath.FuzzyFilePath import get_word_at_cursor
 
 class Test(TestCase):
 
-
 	def should_return_word_at_cursor(self, viewHelper):
 		viewHelper.set_line('notPartOfPath	/absolute/pathAtCursor	')
 		viewHelper.move_cursor(0, 25)
