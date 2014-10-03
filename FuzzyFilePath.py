@@ -11,7 +11,7 @@
             SHOULD BE:
             require("../../../../optimizer")|cursor|
 
-    @version 0.0.7
+    @version 0.0.8
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
