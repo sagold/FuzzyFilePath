@@ -10,7 +10,7 @@
 	"exclude_folders": ["node_modules"],
 
 	// if current string matches "./", "../", "/folder/to",
-	// auto suggest files independent of scope settings
+	// auto suggest files, independent of scope settings
 	"auto_trigger": true,
 
 	"scopes": [
@@ -22,7 +22,12 @@
 			"auto": true,
 			"extensions": ["js"],
 			"insertExtension": false,
-			"relative": true
+			"relative": true,
+
+			"replace_on_insert": [
+				["^[\\.\\./]*/bower_components/", ""],
+				["/index$", ""]
+			]
 		},
 
 		{

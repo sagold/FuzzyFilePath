@@ -20,18 +20,19 @@ import os
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 
-DEBUG = False
+DEBUG = True
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
 def verbose(*args):
     if DEBUG is True:
-        print(*args)
+        print("FFP\t", *args)
 
 Completion = {
 
     "active": False,
     "before": None,
-    "after": None
+    "after": None,
+    "onInsert": []
 }
 
 query = Query()
@@ -77,6 +78,7 @@ def get_path_at_cursor(view):
     path_region = sublime.Region(word[1].a, word[1].b)
     path_region.b = word[1].b
     path_region.a = word[1].a - (len(path) - len(word[0]))
+    verbose("path_at_cursor", path, "word:", word, "line", line)
     return [path, path_region]
 
 
@@ -109,16 +111,27 @@ def get_line_at_cursor(view):
     selection = view.sel()[0]
     position = selection.begin()
     region = view.line(position)
-    return [view.substr(region), region]
+    line = view.substr(region)
+    verbose("line at cursor", line)
+    return [line, region]
 
 
 # tested
 def get_word_at_cursor(view):
     selection = view.sel()[0]
     position = selection.begin()
+
     region = view.word(position)
     word = view.substr(region)
-    verbose("word@cursor", word)
+
+    # validate
+    valid = not re.sub("[\"\'\s\(\)$]*", "", word).strip() == ""
+    verbose("valid?", valid, word)
+
+    if not valid:
+        return ["", sublime.Region(position, position)]
+
+
     # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
@@ -174,14 +187,20 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if (command_name == "commit_completion" and Completion["active"]):
             Completion["active"] = False
 
+            # replace current path (fragments) with selected path
+            # i.e. ../../../file -> ../file
             if Completion["before"] is not None:
-                # replace current path (fragments) with selected path
-                # i.e. ../../../file -> ../file
                 path = get_path_at_cursor(view)
                 final_path = re.sub("^" + Completion["before"], "", path[0])
-                verbose("replace", path[0], "with", Completion["before"], final_path)
-                Completion["before"] = None
+                # modify result
+                for replace in Completion["replaceOnInsert"]:
+                    final_path = re.sub(replace[0], replace[1], final_path)
+                # cleanup path
                 view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+                #reset
+                Completion["before"] = None
+                Completion["replaceOnInsert"] = []
+
 
     def on_post_save_async(self, view):
         if project_files is not None:
@@ -206,7 +225,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         view.run_command('_enter_insert_mode') # vintageous
         Completion["active"] = True
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
-        verbose("rel", query.relative, completions)
+        # completions contain '$'
+        # verbose("rel", query.relative, completions)
+        Completion["replaceOnInsert"] = query.replaceOnInsert
         query.reset()
         return completions
 

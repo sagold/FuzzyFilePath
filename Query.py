@@ -12,14 +12,18 @@ class Query:
     current_folder = None
     project_folder = None
 
+
     def __init__(self):
         self.reset()
+
 
     def reset(self):
         self.extensions = ["*"]
         self.relative = False
         self.active = False
         self.extension = True
+        self.replaceOnInsert = []
+
 
     def update(self, folders, file_name):
         self.valid = is_valid(folders, file_name)
@@ -70,6 +74,7 @@ class Query:
             self.extension = properties.get("insertExtension", True)
             self.extensions = properties.get("extensions", ["js"])
             self.relative = properties.get("relative", query_string["relative"])
+            self.replaceOnInsert = properties.get("replace_on_insert", [])
 
         # TEST: ignore property settings
         if query_string["is_path"]:
@@ -91,12 +96,14 @@ class Query:
 
         return self.active
 
+
     def get_scope_properties(self, current_scope):
         for properties in self.scopes:
             scope = properties.get("scope").replace("//", "")
             if re.search(scope, current_scope):
                 return properties
         return False
+
 
     def get_input_properties(self, needle):
         properties = {
@@ -128,21 +135,17 @@ class Query:
 # @param {Array} folders    list of current project folders
 # @param {String} filename  filepath and filename of current view
 def is_valid(folders, file_name):
-
     if (file_name is None):
         # print("__QueryFilePath__ [A] filename is None")
         return False
-
     # single file?
     if (len(folders) == 0):
         # print("__QueryFilePath__ [A] no folders")
         return False
-
     # independent file?
     if (not folders[0] in file_name):
         # print("__QueryFilePath__ [A] independent file")
         return False
-
     # multiple folders?
     if (len(folders) > 1):
         print("__QueryFilePath__ [W] multiple folders not yet supported")
