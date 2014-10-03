@@ -25,6 +25,7 @@ from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 
 DEBUG = False
+DISABLE_AUTOCOMPLETION = False
 def verbose(*args):
     if DEBUG is True:
         print(*args)
@@ -49,13 +50,14 @@ def plugin_loaded():
 
 def update_settings():
     """restart projectFiles with new plugin and project settings"""
-    global project_files
+    global project_files, DISABLE_AUTOCOMPLETION
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
+    DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", False);
     # build exclude folders
     for folder in project_folders:
         base = folder.get("path")
@@ -117,6 +119,7 @@ def get_word_at_cursor(view):
     position = selection.begin()
     region = view.word(position)
     word = view.substr(region)
+    verbose("word@cursor", word)
     # single line only
     if "\n" in word:
         return ["", sublime.Region(position, position)]
@@ -176,7 +179,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
                 Completion["before"] = None
                 view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
-
     def on_post_save_async(self, view):
         if project_files is not None:
             for folder in sublime.active_window().folders():
@@ -185,14 +187,17 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
 
     def on_query_completions(self, view, prefix, locations):
-        if (query.valid is False):
+        if (DISABLE_AUTOCOMPLETION is True):
+            return None
+
+        if query.valid is False:
             return False
 
         needle = get_path_at_cursor(view)[0]
         current_scope = view.scope_name(locations[0])
 
         if query.build(current_scope, needle, query.relative) is False:
-            return
+            return None
 
         view.run_command('_enter_insert_mode') # vintageous
         Completion["active"] = True
