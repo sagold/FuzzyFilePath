@@ -14,9 +14,22 @@ class Test(TestCase):
 
 		word = get_word_at_cursor(viewHelper.view)[0]
 
-		assert word == "pathAtCursor", "expected %w to be 'pathAtCursor'" % word
+		assert word == "pathAtCursor", "expected '%s' to be 'pathAtCursor'" % word
 
 
-	def should_return_empty_string(self, viewHelper):
-		word = get_word_at_cursor(viewHelper.view)
-		print("emptystring:", word)
+	def should_not_return_empty_strings(self, viewHelper):
+		viewHelper.set_line('""')
+		viewHelper.move_cursor(0, 1)
+
+		word = get_word_at_cursor(viewHelper.view)[0]
+
+		assert word == "", "expected '%s' to be empty" % word
+
+
+	def should_not_return_whitespaces(self, viewHelper):
+		viewHelper.set_line('"    "')
+		viewHelper.move_cursor(0, 3)
+
+		word = get_word_at_cursor(viewHelper.view)[0]
+
+		assert word == "", "expected '%s' to be empty" % word
