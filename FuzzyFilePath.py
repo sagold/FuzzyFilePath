@@ -3,6 +3,9 @@
 
     # possible tasks
 
+        - use test-triggers like "graffin:" instead/additionally to scope-triggers
+        - extend insert completion arguments with replace_on_insert-options
+
         - support multiple folders
         - Cursor Position after replacement:
             require("../../../../optimizer|cursor|")
