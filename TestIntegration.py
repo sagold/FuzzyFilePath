@@ -43,7 +43,7 @@ class FfpIntegration(sublime_plugin.TextCommand):
 		if failed_tests > 0:
 			print(failed_tests, "of" , total_tests, "tests failed")
 		else:
-			print(total_tests, "tests succesful")
+			print(total_tests, "tests successful")
 
 
 	def run(self, edit):
@@ -53,16 +53,16 @@ class FfpIntegration(sublime_plugin.TextCommand):
 
 		self.setUp(edit)
 
-		for name in tests:
-			testCase = tests.get(name)
+		for testCase in tests:
 			total_tests += testCase.length
 
-			for test in testCase.tests:
+			for should in testCase.tests:
+				test = getattr(testCase, should)
 				try:
-					testCase[test](self.tools)
+					test(self.tools)
 				except:
 					failed_tests += 1
-					print("\n" + name + " " + test + ":")
+					print("\n" + testCase.name + " " + should + ":")
 					print(LINE)
 					traceback.print_exc()
 					print(LINE)

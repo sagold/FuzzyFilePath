@@ -8,7 +8,7 @@ import glob
 import importlib
 
 
-tests = {}
+tests = []
 
 
 modules = glob.glob(os.path.dirname(__file__) + "/*_test.py")
@@ -16,4 +16,4 @@ modules = [ os.path.basename(f)[:-3] for f in modules]
 
 for f in modules:
 	lib = importlib.import_module("FuzzyFilePath.test.integration." + f)
-	tests[f[:-5]] = lib.Test(f[:-5])
+	tests.append(lib.Test(f[:-5]))
