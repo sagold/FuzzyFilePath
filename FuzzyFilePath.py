@@ -22,6 +22,7 @@ from FuzzyFilePath.Query import Query
 
 DEBUG = False
 DISABLE_AUTOCOMPLETION = False
+DISABLE_KEYMAP_ACTIONS = False
 def verbose(*args):
     if DEBUG is True:
         print(*args)
@@ -46,7 +47,7 @@ def plugin_loaded():
 
 def update_settings():
     """restart projectFiles with new plugin and project settings"""
-    global project_files, DISABLE_AUTOCOMPLETION
+    global project_files, DISABLE_AUTOCOMPLETION, DISABLE_KEYMAP_ACTIONS
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
@@ -54,6 +55,8 @@ def update_settings():
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
     DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", False);
+    DISABLE_KEYMAP_ACTIONS = settings.get("disable_keymap_actions", False);
+
     # build exclude folders
     for folder in project_folders:
         base = folder.get("path")
@@ -139,12 +142,17 @@ def get_word_at_cursor(view):
 class ReplaceRegionCommand(sublime_plugin.TextCommand):
     # helper: replaces range with string
     def run(self, edit, a, b, string):
+        if DISABLE_KEYMAP_ACTIONS is True:
+            return False
         self.view.replace(edit, sublime.Region(a, b), string)
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
     # triggers autocomplete
     def run(self, edit, type="default"):
+        if DISABLE_KEYMAP_ACTIONS is True:
+            return False
+
         query.relative = type
         self.view.run_command('auto_complete')
 

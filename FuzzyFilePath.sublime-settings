@@ -1,5 +1,9 @@
 {
+	// disable automatic path completions
 	"disable_autocompletions": false,
+	// disable keymaps
+	"disable_keymap_actions": false,
+
 
 	// file extensions to show on filepath auto completion
 	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],

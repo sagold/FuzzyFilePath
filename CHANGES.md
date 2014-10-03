@@ -2,3 +2,4 @@
 
 - add integration tests
 - setting disable_autocompletions
+- setting disable_keymap_actions
