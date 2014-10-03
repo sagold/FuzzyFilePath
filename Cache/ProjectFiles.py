@@ -88,7 +88,7 @@ class ProjectFiles:
         needle = re.sub("\.\./", "", needle)
         needle = re.sub("\.\/", "", needle)
         # cleanup
-        needle = re.sub('["\']', '', needle)
+        needle = re.sub('["\'\(\)]', '', needle)
 
         # build search expression
         regex = ".*"
