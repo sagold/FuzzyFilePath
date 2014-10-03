@@ -44,7 +44,8 @@ class CacheFolder(threading.Thread):
                 extension = extension[1:]
 
                 if extension in self.extensions:
-                    folder_cache[posix(relative_path)] = [posix(filename), extension, posix(filename) + "\t" + extension]
+                    # $ hack, reversed in post_commit_completion
+                    folder_cache[posix(relative_path)] = [re.sub("\$", "_D011AR_", posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
 
@@ -121,12 +122,13 @@ class ProjectFiles:
         # absolute path
         if base_path is False:
             if with_extension is True:
-                return (target[2], "/" + target_path)
+                return (target[2], "/" + target[0] + "." + target[1])
             else:
                 return (target[2], "/" + target[0])
         # create relative path
         else:
             if with_extension is True:
+                print("completion path", target[0] + "." + target[1])
                 return (target[2], self.get_relative_path(target_path, base_path))
             else:
                 return (target[2], self.get_relative_path(target[0], base_path))
