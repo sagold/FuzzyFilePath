@@ -22,7 +22,7 @@ import os
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 
-DEBUG = True
+DEBUG = False
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
 def verbose(*args):
