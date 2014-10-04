@@ -150,7 +150,7 @@ See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - 
 	"auto_trigger": true,
 	"scopes": [
 		{
-			"scope": "\\.js\\s",
+			"scope": "\\.js$",
 
 			"auto": false,
 			"extensions": ["js", "json"],
@@ -248,4 +248,3 @@ See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding 
 
 - uses file discovery based on current directory instead of fuzzy search
 - adds properties for images in autocompletion description
-
