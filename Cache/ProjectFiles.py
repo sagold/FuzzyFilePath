@@ -2,12 +2,11 @@ import sublime
 import os
 import re
 import threading
+from FuzzyFilePath.common.verbose import verbose
 
 def posix(path):
     return path.replace("\\", "/")
 
-
-DEBUG = False
 
 # stores all files and its fragments within property files
 class CacheFolder(threading.Thread):
@@ -23,8 +22,7 @@ class CacheFolder(threading.Thread):
 
     def run(self):
         # cache files in folder
-        if DEBUG:
-            print("FFP: caching folder", self.folder)
+        verbose("caching folder", self.folder)
         self.files = self.read(self.folder)
 
     def read(self, folder, base=None):
@@ -48,9 +46,13 @@ class CacheFolder(threading.Thread):
                     folder_cache[posix(relative_path)] = [re.sub("\$", "_D011AR_", posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
-
+                # scan inner directories if they are not to be excluded
                 if (not ressource in self.exclude_folders):
+                    verbose("caching folder contents:", ressource, current_path)
                     folder_cache.update(self.read(current_path, base))
+                else:
+                    ""
+                    verbose("cache: ignoring folder:", ressource, current_path)
 
         return folder_cache
 
