@@ -25,6 +25,7 @@ from FuzzyFilePath.common.verbose import verbose
 
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
+FFP_SETTINGS_FILE = "FuzzyFilePath.sublime-settings"
 
 Completion = {
 
@@ -40,7 +41,7 @@ project_files = None
 
 def plugin_loaded():
     """load settings"""
-    settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
+    settings = sublime.load_settings(FFP_SETTINGS_FILE)
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
 
@@ -51,24 +52,13 @@ def update_settings():
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
-    settings = sublime.load_settings("FuzzyFilePath.sublime-settings")
+    settings = sublime.load_settings(FFP_SETTINGS_FILE)
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
-    DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", False);
-    DISABLE_KEYMAP_ACTIONS = settings.get("disable_keymap_actions", False);
-
-    # build exclude folders
-    for folder in project_folders:
-        base = folder.get("path")
-        exclude = folder.get("folder_exclude_patterns", [])
-        for f in exclude:
-            exclude_folders.append(os.path.join(base, f))
-
-    # or use default settings
-    if (len(exclude_folders) == 0):
-        exclude_folders = settings.get("excludeFolders", ["node_modules"])
-
+    exclude_folders = settings.get("excludeFolders", ["node_modules"])
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
+    DISABLE_KEYMAP_ACTIONS = settings.get("disable_keymap_actions", DISABLE_KEYMAP_ACTIONS);
+    DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", DISABLE_AUTOCOMPLETION);
 
 
 def get_path_at_cursor(view):
