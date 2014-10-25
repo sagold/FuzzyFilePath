@@ -21,13 +21,10 @@ import os
 
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
+from FuzzyFilePath.common.verbose import verbose
 
-DEBUG = False
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
-def verbose(*args):
-    if DEBUG is True:
-        print("FFP\t", *args)
 
 Completion = {
 
@@ -66,6 +63,7 @@ def update_settings():
         exclude = folder.get("folder_exclude_patterns", [])
         for f in exclude:
             exclude_folders.append(os.path.join(base, f))
+
     # or use default settings
     if (len(exclude_folders) == 0):
         exclude_folders = settings.get("excludeFolders", ["node_modules"])
