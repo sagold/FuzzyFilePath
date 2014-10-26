@@ -55,7 +55,7 @@ def update_settings():
     settings = sublime.load_settings(FFP_SETTINGS_FILE)
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
-    exclude_folders = settings.get("excludeFolders", ["node_modules"])
+    exclude_folders = settings.get("exclude_folders", ["node_modules"])
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
     DISABLE_KEYMAP_ACTIONS = settings.get("disable_keymap_actions", DISABLE_KEYMAP_ACTIONS);
     DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", DISABLE_AUTOCOMPLETION);
