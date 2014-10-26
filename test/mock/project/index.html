@@ -1,0 +1,22 @@
+
+./$module.js
+
+/**
+ * CASES
+ *
+ * <query> + insert_path => inserted
+ * <query> + insert_path => list
+ * <query> + auto_complete => inserted
+ * <query> + auto_complete => list
+ */
+
+m 	+ TAB: POST_TEXT_COMMAND: insert_path -> cleanup -> list of completions
+		ACTIVE = true
+	+ ENTER: ON_TEXT_COMMAND commit_completion
+		ACTIVE = false
+		POST_TEXT_COMMAND = ACTIVE = false
+
+
+module + TAB: TAB: POST_TEXT_COMMAND: insert_path -> cleanup -> list of completions
+	DONE
+

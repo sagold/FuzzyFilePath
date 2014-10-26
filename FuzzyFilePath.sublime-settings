@@ -1,0 +1,85 @@
+{
+	// disable automatic path completions
+	"disable_autocompletions": false,
+
+	// disable keymaps
+	"disable_keymap_actions": false,
+
+	// file extensions to show on filepath auto completion
+	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
+
+	"exclude_folders": ["node_modules"],
+
+	// if current string matches "./", "../", "/folder/to",
+	// auto suggest files, independent of scope settings
+	"auto_trigger": true,
+
+	// All options may be overriden in <Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User>
+	// configuration of suggestions and insertions by scope
+	"scopes": [
+
+		{
+			// JS AMD
+			"scope": "require.*string",
+
+			"auto": true,
+			"extensions": ["js"],
+			"insertExtension": false,
+			"relative": true,
+
+			"replace_on_insert": [
+				// in case bower_components are resolved absolute
+				["^[\\.\\./]*/bower_components/", ""],
+				// nodejs will load index.js by default, remove
+				["/index$", ""]
+			]
+		},
+
+		{
+			// js
+			"scope": "\\.js\\s",
+
+			"auto": false,
+			"extensions": ["js", "json"],
+			"insertExtension": true
+		},
+
+		{
+			// json
+			"scope": "source\\.json.*string",
+
+			"auto": false,
+			"extensions": ["*"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// css
+			"scope": "source\\.css.*meta\\.property",
+
+			"auto": false,
+			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// html
+			"scope": "text\\.html.*string",
+
+			"auto": false,
+			"extensions": ["css", "png", "jpg"],
+			"insertExtension": true,
+			"relative": false
+		},
+
+		{
+			// default, for all scopes
+			"scope": ".",
+			"auto": false,
+			"extensions": ["*"],
+			"insertExtension": true
+		}
+	]
+}
