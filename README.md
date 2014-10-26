@@ -89,6 +89,10 @@ Set `"disable_keymap_actions": false` to disables all FuzzyFilePath commands tri
 found in _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_. This may prevent conflicts with
 other plugins.
 
+#### `exclude_folders`:Array
+Skips scanning of given folders. This greatly improves performance on startup (read files) and queries (filter file list).
+i.e. `"exclude_folders": ["node_modules]` will ignore all files and folders in _node\_modules_ (highly recommended).
+
 #### `extensionsToSuggest`:Array
 FuzzyFilePath will only cache and suggest filetypes defined in this array.<br />
 i.e. `"extensionsToSuggest": ["gif", "jpg", "jpg", "png"]` will only suggest imagepaths for the given type
