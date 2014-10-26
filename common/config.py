@@ -1,5 +1,6 @@
 config = {
 
-	"DEBUG": True,
-	"FFP_SETTINGS_FILE": "FuzzyFilePath.sublime-settings"
+	"DEBUG": False,
+	"FFP_SETTINGS_FILE": "FuzzyFilePath.sublime-settings",
+	"ESCAPE_DOLLAR": '\$'
 }

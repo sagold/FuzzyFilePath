@@ -3,6 +3,7 @@ import os
 import re
 import threading
 from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.config import config
 
 def posix(path):
     return path.replace("\\", "/")
@@ -43,7 +44,7 @@ class CacheFolder(threading.Thread):
 
                 if extension in self.extensions:
                     # $ hack, reversed in post_commit_completion
-                    folder_cache[posix(relative_path)] = [re.sub("\$", "_D011AR_", posix(filename)), extension, posix(filename) + "\t" + extension]
+                    folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
                 # scan inner directories if they are not to be excluded

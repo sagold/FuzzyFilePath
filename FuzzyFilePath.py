@@ -30,6 +30,7 @@ from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
+
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
 FFP_SETTINGS_FILE = config["FFP_SETTINGS_FILE"]
@@ -233,7 +234,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             final_path = re.sub("^" + Completion["before"], "", path[0])
             # hack reverse
             # final_path = final_path.replace("_D011AR_", "$")
-            final_path = re.sub("_D011AR_", "$", final_path)
+            final_path = re.sub(config["ESCAPE_DOLLAR"], "$", final_path)
             # modify result
             for replace in Completion["replaceOnInsert"]:
                 final_path = re.sub(replace[0], replace[1], final_path)
