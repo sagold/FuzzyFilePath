@@ -36,7 +36,7 @@ FFP_SETTINGS_FILE = config["FFP_SETTINGS_FILE"]
 
 Completion = {
 
-    "active": False,
+    "active": 0,
     "before": None,
     "after": None,
     "onInsert": []
@@ -171,22 +171,19 @@ CLEANUP_COMMANDS = ["commit_completion", "insert_best_completion", "insert_path"
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
-
         if command_name == "commit_completion":
             path = get_path_at_cursor(view)
-
-            verbose("ON_TEXT_COMMAND", command_name, path)
 
             word_replaced = re.split("[./]", path[0]).pop()
             if (path is not word_replaced):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
 
         elif command_name == "hide_auto_complete":
-            Completion["active"] = False
+            Completion["active"] = 0
 
 
     def on_post_text_command(self, view, command_name, args):
-        if (command_name in CLEANUP_COMMANDS): # Completion["active"] and
+        if Completion["active"] > 0 and command_name in CLEANUP_COMMANDS: # Completion["active"] and
             """
                 Sanitize inserted path by
                     - replacing temporary variables (_D011AR_ = $)
@@ -200,9 +197,28 @@ class FuzzyFilePath(sublime_plugin.EventListener):
                 Problems checking on Completion["active"] == True
                     - misses direct insertions (auto_complete, insert_path). Thus workarounds like _D011AR_
                         remain in text
-            """
 
-            verbose("ON_POST_TEXT_COMMAND", command_name, args, Completion)
+                INFO
+
+                    shortcut
+                       1. ON_POST_TEXT_COMMAND insert_path
+                       2. QUERY COMPLETIONS
+                       3. <select> + <enter>
+                       4. ON_TEXT_COMMAND commit_completion / insert_best_completion (tab)
+                       5. ON_POST_TEXT_COMMAND commit_completion / insert_best_completion (tab)
+                       -
+
+                    shortcut, single suggestion
+                        1. ON_POST_TEXT_COMMAND insert_path
+                        -
+
+                    auto_complete
+                        1. ON_POST_TEXT_COMMAND auto_complete
+                        2. <select> + <enter>
+                        3. ON_TEXT_COMMAND commit_completion / insert_best_completion (tab)
+                        4. ON_POST_TEXT_COMMAND commit_completion / insert_best_completion (tab)
+                        -
+            """
 
             # replace current path (fragments) with selected path
             # i.e. ../../../file -> ../file
@@ -210,8 +226,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             if (Completion["before"] is None):
                 Completion["before"] = "";
 
-            if not command_name == "insert_path":
-                Completion["active"] = False
+            Completion["active"] -= 1
 
             verbose("cleanup path", path, Completion)
 
@@ -249,8 +264,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.build(current_scope, needle, query.relative) is False:
             return None
 
+        verbose("QUERY COMPLETIONS")
+
         view.run_command('_enter_insert_mode') # vintageous
-        Completion["active"] = True
+        Completion["active"] = 2
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
         verbose("query", "needle:", needle, "relative:", query.relative)
         verbose("query", "completions:", completions)
