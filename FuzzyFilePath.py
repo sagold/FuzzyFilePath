@@ -186,10 +186,21 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
 
     def on_post_text_command(self, view, command_name, args):
-
-        verbose("ON_POST_TEXT_COMMAND", command_name)
-
         if (command_name in CLEANUP_COMMANDS): # Completion["active"] and
+            """
+                Sanitize inserted path by
+                    - replacing temporary variables (_D011AR_ = $)
+                    - replacing query partials, like "../<inserted path>"
+
+                Major Problems when not checking on Completion["active] == True
+                    - file path insertion not yet tracked. Since completions may be inserted
+                        directly (without a manual selection), correct situation not yet retrieved
+                    - this leads to weird insertions if working on non-paths and minor performance issues
+
+                Problems checking on Completion["active"] == True
+                    - misses direct insertions (auto_complete, insert_path). Thus workarounds like _D011AR_
+                        remain in text
+            """
 
             verbose("ON_POST_TEXT_COMMAND", command_name, args, Completion)
 
