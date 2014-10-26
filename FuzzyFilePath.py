@@ -11,6 +11,12 @@
             SHOULD BE:
             require("../../../../optimizer")|cursor|
 
+    # bugs
+
+        - $module still not inserted on completions & tab trigger
+        - $module does not trigger completions
+        - reproduce: query completion with one valid entry throws an error
+
     @version 0.0.8
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
@@ -22,10 +28,11 @@ import os
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.config import config
 
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
-FFP_SETTINGS_FILE = "FuzzyFilePath.sublime-settings"
+FFP_SETTINGS_FILE = config["FFP_SETTINGS_FILE"]
 
 Completion = {
 
@@ -68,7 +75,7 @@ def get_path_at_cursor(view):
     path_region = sublime.Region(word[1].a, word[1].b)
     path_region.b = word[1].b
     path_region.a = word[1].a - (len(path) - len(word[0]))
-    verbose("path_at_cursor", path, "word:", word, "line", line)
+    verbose("view", "path_at_cursor", path, "word:", word, "line", line)
     return [path, path_region]
 
 
@@ -102,7 +109,7 @@ def get_line_at_cursor(view):
     position = selection.begin()
     region = view.line(position)
     line = view.substr(region)
-    verbose("line at cursor", line)
+    verbose("view", "line at cursor", line)
     return [line, region]
 
 
@@ -115,7 +122,7 @@ def get_word_at_cursor(view):
     # validate
     valid = not re.sub("[\"\'\s\(\)]*", "", word).strip() == ""
     if not valid:
-        verbose("invalid word", word)
+        verbose("view", "invalid word", word)
         return ["", sublime.Region(position, position)]
     # single line only
     if "\n" in word:
@@ -158,11 +165,18 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete')
 
 
+CLEANUP_COMMANDS = ["commit_completion", "insert_best_completion", "insert_path", "auto_complete"]
+
+
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
+
         if command_name == "commit_completion":
             path = get_path_at_cursor(view)
+
+            verbose("ON_TEXT_COMMAND", command_name, path)
+
             word_replaced = re.split("[./]", path[0]).pop()
             if (path is not word_replaced):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
@@ -172,12 +186,24 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
 
     def on_post_text_command(self, view, command_name, args):
-        if (command_name == "commit_completion" and Completion["active"]):
-            Completion["active"] = False
+
+        verbose("ON_POST_TEXT_COMMAND", command_name)
+
+        if (command_name in CLEANUP_COMMANDS): # Completion["active"] and
+
+            verbose("ON_POST_TEXT_COMMAND", command_name, args, Completion)
+
             # replace current path (fragments) with selected path
             # i.e. ../../../file -> ../file
-            # if Completion["before"] is not None:
             path = get_path_at_cursor(view)
+            if (Completion["before"] is None):
+                Completion["before"] = "";
+
+            if not command_name == "insert_path":
+                Completion["active"] = False
+
+            verbose("cleanup path", path, Completion)
+
             final_path = re.sub("^" + Completion["before"], "", path[0])
             # hack reverse
             # final_path = final_path.replace("_D011AR_", "$")
@@ -215,9 +241,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         view.run_command('_enter_insert_mode') # vintageous
         Completion["active"] = True
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
-        verbose("query needle:", needle, "relative:", query.relative)
-        verbose("query completions:", completions)
+        verbose("query", "needle:", needle, "relative:", query.relative)
+        verbose("query", "completions:", completions)
         Completion["replaceOnInsert"] = query.replace_on_insert
+        Completion["count"] = len(completions)
         query.reset()
         return completions
 
