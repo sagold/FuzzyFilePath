@@ -14,7 +14,6 @@
     # bugs
 
         - $module does not trigger completions
-        - Cache does not update for new js files (vs before: updated always)
         - reproduce: query completion with one valid entry throws an error
         -   > require("./validate");
             + insert_path (+ instant completion)
