@@ -13,9 +13,28 @@
 
     # bugs
 
-        - $module still not inserted on completions & tab trigger
         - $module does not trigger completions
+        - Cache does not update for new js files (vs before: updated always)
         - reproduce: query completion with one valid entry throws an error
+        -   > require("./validate");
+            + insert_path (+ instant completion)
+            > reqexports.validate");
+
+    # errors
+
+        14/10/27
+
+            Traceback (most recent call last):
+              File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
+                res = callback.on_text_command(v, name, args)
+              File "/Users/Gott/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 180, in on_text_command
+                Completion["before"] = re.sub(word_replaced + "$", "", path[0])
+              File "X/re.py", line 170, in sub
+              File "X/functools.py", line 258, in wrapper
+              File "X/re.py", line 274, in _compile
+              File "X/sre_compile.py", line 493, in compile
+              File "X/sre_parse.py", line 729, in parse
+            sre_constants.error: unbalanced parenthesis
 
     @version 0.0.8
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -265,15 +284,20 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.build(current_scope, needle, query.relative) is False:
             return None
 
-        verbose("QUERY COMPLETIONS")
+        # vintageous
+        view.run_command('_enter_insert_mode')
 
-        view.run_command('_enter_insert_mode') # vintageous
-        Completion["active"] = 2
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
-        verbose("query", "needle:", needle, "relative:", query.relative)
-        verbose("query", "completions:", completions)
-        Completion["replaceOnInsert"] = query.replace_on_insert
-        Completion["count"] = len(completions)
+
+        if len(completions) > 0:
+            Completion["active"] = 2
+            verbose("query", "needle:", needle, "relative:", query.relative)
+            verbose("query", "completions:", completions)
+            Completion["replaceOnInsert"] = query.replace_on_insert
+
+        else:
+            Completion["active"] = 0
+
         query.reset()
         return completions
 
