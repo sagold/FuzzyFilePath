@@ -189,7 +189,9 @@ class ProjectFiles:
             return self.folder_is_cached(folder)
 
         name, extension = os.path.splitext(file_name)
+        extension = extension[1:]
         if not extension in self.valid_extensions:
+            verbose("cache", "file to cache has no valid extension", extension)
             return True
 
         if self.folder_is_cached(folder):
@@ -205,10 +207,14 @@ class ProjectFiles:
     # rebuild folder cache
     def update(self, folder, file_name=None):
         if (self.file_is_cached(folder, file_name)):
+            verbose("cache", "already cached", file_name)
             return False
 
         if self.folder_is_cached(folder):
+            verbose("cache", "already cached", folder)
             del self.cache[folder]
+
+        verbose("cache", "cache update", file_name)
 
         self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
