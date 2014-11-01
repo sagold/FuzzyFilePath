@@ -43,11 +43,30 @@ import sublime_plugin
 import re
 import os
 
+import FuzzyFilePath.context
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
+
+
+TRIGGER_ACTION = ["auto_complete", "insert_path"]
+INSERT_ACTION = ["commit_completion", "insert_best_completion"]
+ACTION = {
+    "active": False,
+    "start": "",
+    "end": ""
+}
+
+def start(view):
+    ACTION["active"] = True
+    ACTION["start"] = get_line_at_cursor(view)
+    ACTION["end"] = None
+
+def stop(view):
+    ACTION["active"] = False
+    ACTION["end"] = get_line_at_cursor(view)
 
 DISABLE_AUTOCOMPLETION = False
 DISABLE_KEYMAP_ACTIONS = False
@@ -181,7 +200,8 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         if len(replace_on_insert) > 0:
             verbose("insert path", "override replace", replace_on_insert)
             query.override_replace_on_insert(replace_on_insert)
-        self.view.run_command('auto_complete')
+
+        self.view.run_command('auto_complete', "insert")
 
 
 CLEANUP_COMMANDS = ["commit_completion", "insert_best_completion", "insert_path", "auto_complete"]
@@ -190,6 +210,18 @@ CLEANUP_COMMANDS = ["commit_completion", "insert_best_completion", "insert_path"
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
+
+        if command_name in TRIGGER_ACTION:
+            start(view)
+            print("--> trigger", command_name, ACTION, args)
+
+        elif command_name in INSERT_ACTION:
+            # may already be started
+            #     - insert_path & any in INSERT_ACTION
+            #     - auto_complete & any in INSERT_ACTION
+            start(view)
+            print("--> insert", command_name, ACTION, args)
+
         if command_name == "commit_completion":
             path = get_path_at_cursor(view)
 
@@ -202,7 +234,24 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
 
     def on_post_text_command(self, view, command_name, args):
-        if Completion["active"] > 0 and command_name in CLEANUP_COMMANDS: # Completion["active"] and
+        insert = False
+
+        if command_name in TRIGGER_ACTION:
+
+            ACTION["end"] = get_line_at_cursor(view)
+
+            if ACTION["start"] != ACTION["end"]:
+                insert = True
+                stop(view)
+                print("<-- trigger", command_name, ACTION, args)
+
+        elif command_name in INSERT_ACTION:
+            insert = True
+            stop(view)
+            print("<-- insert", command_name, ACTION, args)
+
+
+        if insert is True and Completion["active"] > 0: # Completion["active"] and
             """
                 Sanitize inserted path by
                     - replacing temporary variables (_D011AR_ = $)
@@ -263,14 +312,15 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             Completion["replaceOnInsert"] = []
 
 
-    def on_post_save_async(self, view):
-        if project_files is not None:
-            for folder in sublime.active_window().folders():
-                if folder in view.file_name():
-                    project_files.update(folder, view.file_name())
+
 
 
     def on_query_completions(self, view, prefix, locations):
+        # auto complete on input
+        if ACTION["active"] is False:
+            start(view)
+            print("--> auto", prefix, ACTION)
+
         if (DISABLE_AUTOCOMPLETION is True):
             return None
 
@@ -300,6 +350,12 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         query.reset()
         return completions
 
+
+    def on_post_save_async(self, view):
+        if project_files is not None:
+            for folder in sublime.active_window().folders():
+                if folder in view.file_name():
+                    project_files.update(folder, view.file_name())
 
     def on_activated(self, view):
         file_name = view.file_name()
