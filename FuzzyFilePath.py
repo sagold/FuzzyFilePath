@@ -50,8 +50,6 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
 
-TRIGGER_ACTION = ["auto_complete", "insert_path"]
-INSERT_ACTION = ["commit_completion", "insert_best_completion"]
 ACTION = {
     "active": False,
     "start": "",
@@ -67,10 +65,6 @@ def stop(view):
     ACTION["active"] = False
     ACTION["end"] = context.get_line_at_cursor(view)[0]
 
-DISABLE_AUTOCOMPLETION = False
-DISABLE_KEYMAP_ACTIONS = False
-FFP_SETTINGS_FILE = config["FFP_SETTINGS_FILE"]
-
 Completion = {
 
     "active": 0,
@@ -85,30 +79,31 @@ project_files = None
 
 def plugin_loaded():
     """load settings"""
-    settings = sublime.load_settings(FFP_SETTINGS_FILE)
+    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     settings.add_on_change("extensionsToSuggest", update_settings)
     update_settings()
 
 
 def update_settings():
     """restart projectFiles with new plugin and project settings"""
-    global project_files, DISABLE_AUTOCOMPLETION, DISABLE_KEYMAP_ACTIONS
+    global project_files, config
 
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
-    settings = sublime.load_settings(FFP_SETTINGS_FILE)
+    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
     exclude_folders = settings.get("exclude_folders", ["node_modules"])
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
-    DISABLE_KEYMAP_ACTIONS = settings.get("disable_keymap_actions", DISABLE_KEYMAP_ACTIONS);
-    DISABLE_AUTOCOMPLETION = settings.get("disable_autocompletions", DISABLE_AUTOCOMPLETION);
+
+    config["DISABLE_KEYMAP_ACTIONS"] = settings.get("disable_keymap_actions", config["DISABLE_KEYMAP_ACTIONS"]);
+    config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
 
 
 class ReplaceRegionCommand(sublime_plugin.TextCommand):
     # helper: replaces range with string
     def run(self, edit, a, b, string):
-        if DISABLE_KEYMAP_ACTIONS is True:
+        if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
         self.view.replace(edit, sublime.Region(a, b), string)
 
@@ -116,7 +111,7 @@ class ReplaceRegionCommand(sublime_plugin.TextCommand):
 class InsertPathCommand(sublime_plugin.TextCommand):
     # triggers autocomplete
     def run(self, edit, type="default", replace_on_insert=[]):
-        if DISABLE_KEYMAP_ACTIONS is True:
+        if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
 
         query.relative = type
@@ -127,21 +122,18 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete', "insert")
 
 
-CLEANUP_COMMANDS = ["commit_completion", "insert_best_completion", "insert_path", "auto_complete"]
-
-
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
 
-        if command_name in TRIGGER_ACTION:
+        if command_name in config["TRIGGER_ACTION"]:
             start(view)
             print("--> trigger", command_name, ACTION, args)
 
-        elif command_name in INSERT_ACTION:
+        elif command_name in config["INSERT_ACTION"]:
             # may already be started
-            #     - insert_path & any in INSERT_ACTION
-            #     - auto_complete & any in INSERT_ACTION
+            #     - insert_path & any in config["INSERT_ACTION]"
+            #     - auto_complete & any in config["INSERT_ACTION]"
             start(view)
             print("--> insert", command_name, ACTION, args)
 
@@ -159,7 +151,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def on_post_text_command(self, view, command_name, args):
         insert = False
 
-        if command_name in TRIGGER_ACTION:
+        if command_name in config["TRIGGER_ACTION"]:
 
             ACTION["end"] = context.get_line_at_cursor(view)[0]
 
@@ -168,7 +160,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
                 stop(view)
                 print("<-- trigger", command_name, ACTION, args)
 
-        elif command_name in INSERT_ACTION:
+        elif command_name in config["INSERT_ACTION"]:
             insert = True
             stop(view)
             print("<-- insert", command_name, ACTION, args)
@@ -244,7 +236,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             start(view)
             print("--> auto", prefix, ACTION)
 
-        if (DISABLE_AUTOCOMPLETION is True):
+        if (config["DISABLE_AUTOCOMPLETION"] is True):
             return None
 
         if query.valid is False:
