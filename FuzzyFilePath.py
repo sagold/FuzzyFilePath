@@ -56,14 +56,16 @@ ACTION = {
     "end": ""
 }
 
-def start(view):
+def start(view, command_name=None):
     ACTION["active"] = True
-    ACTION["start"] = context.get_line_at_cursor(view)[0]
+    ACTION["line_at_start"] = context.get_line_at_cursor(view)[0]
     ACTION["end"] = None
+    verbose("--> trigger", command_name, ACTION)
 
-def stop(view):
+def stop(view, command_name=None):
     ACTION["active"] = False
     ACTION["end"] = context.get_line_at_cursor(view)[0]
+    verbose("<-- insert", command_name, ACTION)
 
 Completion = {
 
@@ -117,11 +119,12 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 
 class FuzzyFilePath(sublime_plugin.EventListener):
 
-    def on_insert_completion(self, view):
+    def on_post_insert_completion(self, view, command_name):
         """ Sanitize inserted path by
-            - replacing temporary variables (_D011AR_ = $)
+            - replacing temporary variables (~$)
             - replacing query partials, like "../<inserted path>"
         """
+        stop(view, command_name)
         if Completion["active"] is False:
             return None
         # replace current path (fragments) with selected path
@@ -148,52 +151,31 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         Completion["replaceOnInsert"] = []
 
     def on_text_command(self, view, command_name, args):
-
-        if command_name in config["TRIGGER_ACTION"]:
-            start(view)
-            verbose("--> trigger", command_name, ACTION, args)
-
-        elif command_name in config["INSERT_ACTION"]:
-            # may already be started
-            #     - insert_path & any in config["INSERT_ACTION]"
-            #     - auto_complete & any in config["INSERT_ACTION]"
-            start(view)
-            verbose("--> insert", command_name, ACTION, args)
-
-        if command_name == "commit_completion":
-            path = context.get_path_at_cursor(view)
-
-            word_replaced = re.split("[./]", path[0]).pop()
-            if (path is not word_replaced):
-                Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-
+        if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
+            start(view, command_name)
         elif command_name == "hide_auto_complete":
             Completion["active"] = False
+            stop(view, command_name)
+        # if command_name == "commit_completion":
+        #     path = context.get_path_at_cursor(view)
+
+        #     word_replaced = re.split("[./]", path[0]).pop()
+        #     if (path is not word_replaced):
+        #         Completion["before"] = re.sub(word_replaced + "$", "", path[0])
 
 
     def on_post_text_command(self, view, command_name, args):
-        insert = False
+        current_line = context.get_line_at_cursor(view)[0]
+        insert = command_name in config["TRIGGER_ACTION"] and ACTION["line_at_start"] != current_line
+        insert = insert or command_name in config["INSERT_ACTION"]
 
-        if command_name in config["TRIGGER_ACTION"]:
-
-            ACTION["end"] = context.get_line_at_cursor(view)[0]
-
-            if ACTION["start"] != ACTION["end"]:
-                stop(view)
-                verbose("<-- trigger", command_name, ACTION, args)
-                self.on_insert_completion(view)
-
-        elif command_name in config["INSERT_ACTION"]:
-            stop(view)
-            verbose("<-- insert", command_name, ACTION, args)
-            self.on_insert_completion(view)
-
+        if insert is True:
+            self.on_post_insert_completion(view, command_name)
 
     def on_query_completions(self, view, prefix, locations):
         # auto complete on input
         if ACTION["active"] is False:
             start(view)
-            verbose("--> auto", prefix, ACTION)
 
         if (config["DISABLE_AUTOCOMPLETION"] is True):
             return None
