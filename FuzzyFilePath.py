@@ -100,14 +100,6 @@ def update_settings():
     config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
 
 
-class ReplaceRegionCommand(sublime_plugin.TextCommand):
-    # helper: replaces range with string
-    def run(self, edit, a, b, string):
-        if config["DISABLE_KEYMAP_ACTIONS"] is True:
-            return False
-        self.view.replace(edit, sublime.Region(a, b), string)
-
-
 class InsertPathCommand(sublime_plugin.TextCommand):
     # triggers autocomplete
     def run(self, edit, type="default", replace_on_insert=[]):
