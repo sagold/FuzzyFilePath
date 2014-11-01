@@ -67,7 +67,7 @@ def stop(view):
 
 Completion = {
 
-    "active": 0,
+    "active": False,
     "before": None,
     "after": None,
     "onInsert": []
@@ -101,6 +101,7 @@ def update_settings():
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
+
     # triggers autocomplete
     def run(self, edit, type="default", replace_on_insert=[]):
         if config["DISABLE_KEYMAP_ACTIONS"] is True:
@@ -116,18 +117,48 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 
 class FuzzyFilePath(sublime_plugin.EventListener):
 
+    def on_insert_completion(self, view):
+        """ Sanitize inserted path by
+            - replacing temporary variables (_D011AR_ = $)
+            - replacing query partials, like "../<inserted path>"
+        """
+        if Completion["active"] is False:
+            return None
+        # replace current path (fragments) with selected path
+        # i.e. ../../../file -> ../file
+        path = context.get_path_at_cursor(view)
+        if (Completion["before"] is None):
+            Completion["before"] = "";
+
+        Completion["active"] = False
+
+        verbose("cleanup path", path, Completion)
+
+        final_path = re.sub("^" + Completion["before"], "", path[0])
+        # hack reverse
+        # final_path = final_path.replace("_D011AR_", "$")
+        final_path = re.sub(config["ESCAPE_DOLLAR"], "$", final_path)
+        # modify result
+        for replace in Completion["replaceOnInsert"]:
+            final_path = re.sub(replace[0], replace[1], final_path)
+        # cleanup path
+        view.run_command("ffp_replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+        #reset
+        Completion["before"] = None
+        Completion["replaceOnInsert"] = []
+
     def on_text_command(self, view, command_name, args):
 
         if command_name in config["TRIGGER_ACTION"]:
             start(view)
-            print("--> trigger", command_name, ACTION, args)
+            verbose("--> trigger", command_name, ACTION, args)
 
         elif command_name in config["INSERT_ACTION"]:
             # may already be started
             #     - insert_path & any in config["INSERT_ACTION]"
             #     - auto_complete & any in config["INSERT_ACTION]"
             start(view)
-            print("--> insert", command_name, ACTION, args)
+            verbose("--> insert", command_name, ACTION, args)
 
         if command_name == "commit_completion":
             path = context.get_path_at_cursor(view)
@@ -137,7 +168,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
                 Completion["before"] = re.sub(word_replaced + "$", "", path[0])
 
         elif command_name == "hide_auto_complete":
-            Completion["active"] = 0
+            Completion["active"] = False
 
 
     def on_post_text_command(self, view, command_name, args):
@@ -148,85 +179,21 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             ACTION["end"] = context.get_line_at_cursor(view)[0]
 
             if ACTION["start"] != ACTION["end"]:
-                insert = True
                 stop(view)
-                print("<-- trigger", command_name, ACTION, args)
+                verbose("<-- trigger", command_name, ACTION, args)
+                self.on_insert_completion(view)
 
         elif command_name in config["INSERT_ACTION"]:
-            insert = True
             stop(view)
-            print("<-- insert", command_name, ACTION, args)
-
-
-        if insert is True and Completion["active"] > 0: # Completion["active"] and
-            """
-                Sanitize inserted path by
-                    - replacing temporary variables (_D011AR_ = $)
-                    - replacing query partials, like "../<inserted path>"
-
-                Major Problems when not checking on Completion["active] == True
-                    - file path insertion not yet tracked. Since completions may be inserted
-                        directly (without a manual selection), correct situation not yet retrieved
-                    - this leads to weird insertions if working on non-paths and minor performance issues
-
-                Problems checking on Completion["active"] == True
-                    - misses direct insertions (auto_complete, insert_path). Thus workarounds like _D011AR_
-                        remain in text
-
-                INFO
-
-                    shortcut
-                       1. ON_POST_TEXT_COMMAND insert_path
-                       2. QUERY COMPLETIONS
-                       3. <select> + <enter>
-                       4. ON_TEXT_COMMAND commit_completion / insert_best_completion (tab)
-                       5. ON_POST_TEXT_COMMAND commit_completion / insert_best_completion (tab)
-                       -
-
-                    shortcut, single suggestion
-                        1. ON_POST_TEXT_COMMAND insert_path
-                        -
-
-                    auto_complete
-                        1. ON_POST_TEXT_COMMAND auto_complete
-                        2. <select> + <enter>
-                        3. ON_TEXT_COMMAND commit_completion / insert_best_completion (tab)
-                        4. ON_POST_TEXT_COMMAND commit_completion / insert_best_completion (tab)
-                        -
-            """
-
-            # replace current path (fragments) with selected path
-            # i.e. ../../../file -> ../file
-            path = context.get_path_at_cursor(view)
-            if (Completion["before"] is None):
-                Completion["before"] = "";
-
-            Completion["active"] -= 1
-
-            verbose("cleanup path", path, Completion)
-
-            final_path = re.sub("^" + Completion["before"], "", path[0])
-            # hack reverse
-            # final_path = final_path.replace("_D011AR_", "$")
-            final_path = re.sub(config["ESCAPE_DOLLAR"], "$", final_path)
-            # modify result
-            for replace in Completion["replaceOnInsert"]:
-                final_path = re.sub(replace[0], replace[1], final_path)
-            # cleanup path
-            view.run_command("replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
-            #reset
-            Completion["before"] = None
-            Completion["replaceOnInsert"] = []
-
-
-
+            verbose("<-- insert", command_name, ACTION, args)
+            self.on_insert_completion(view)
 
 
     def on_query_completions(self, view, prefix, locations):
         # auto complete on input
         if ACTION["active"] is False:
             start(view)
-            print("--> auto", prefix, ACTION)
+            verbose("--> auto", prefix, ACTION)
 
         if (config["DISABLE_AUTOCOMPLETION"] is True):
             return None
@@ -246,13 +213,13 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
 
         if len(completions) > 0:
-            Completion["active"] = 2
+            Completion["active"] = True
             verbose("query", "needle:", needle, "relative:", query.relative)
             verbose("query", "completions:", completions)
             Completion["replaceOnInsert"] = query.replace_on_insert
 
         else:
-            Completion["active"] = 0
+            Completion["active"] = False
 
         query.reset()
         return completions
