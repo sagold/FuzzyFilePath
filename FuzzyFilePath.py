@@ -14,10 +14,6 @@
     # bugs
 
         - $module does not trigger completions
-        - reproduce: query completion with one valid entry throws an error
-        -   > require("./validate");
-            + insert_path (+ instant completion)
-            > reqexports.validate");
 
     # errors
 
@@ -27,12 +23,7 @@
               File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
                 res = callback.on_text_command(v, name, args)
               File "/Users/Gott/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 180, in on_text_command
-                Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-              File "X/re.py", line 170, in sub
-              File "X/functools.py", line 258, in wrapper
-              File "X/re.py", line 274, in _compile
-              File "X/sre_compile.py", line 493, in compile
-              File "X/sre_parse.py", line 729, in parse
+                Completion.before = re.sub(word_replaced + "$", "", path[0])
             sre_constants.error: unbalanced parenthesis
 
     @version 0.0.8
@@ -62,18 +53,39 @@ def start(view, command_name=None):
     ACTION["end"] = None
     verbose("--> trigger", command_name, ACTION)
 
+    path = context.get_path_at_cursor(view)
+    word_replaced = re.split("[./]", path[0]).pop()
+    if (path is not word_replaced):
+        Completion.before = re.sub(word_replaced + "$", "", path[0])
+
 def stop(view, command_name=None):
-    ACTION["active"] = False
+    abort()
     ACTION["end"] = context.get_line_at_cursor(view)[0]
     verbose("<-- insert", command_name, ACTION)
 
-Completion = {
+def abort():
+    ACTION["active"] = False
 
-    "active": False,
-    "before": None,
-    "after": None,
-    "onInsert": []
-}
+
+class Completion:
+    active = False
+    before = None
+    after = None
+    onInsert = []
+
+    def reset():
+        Completion.before = None
+        Completion.replaceOnInsert = []
+
+    def get_final_path(path):
+        if Completion.before is not None:
+            path = re.sub("^" + Completion.before, "", path)
+        # hack reverse
+        path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
+        for replace in Completion.replaceOnInsert:
+            path = re.sub(replace[0], replace[1], path)
+        return path
+
 
 query = Query()
 project_files = None
@@ -119,61 +131,32 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 
 class FuzzyFilePath(sublime_plugin.EventListener):
 
-    def on_post_insert_completion(self, view, command_name):
-        """ Sanitize inserted path by
-            - replacing temporary variables (~$)
-            - replacing query partials, like "../<inserted path>"
-        """
-        stop(view, command_name)
-        if Completion["active"] is False:
-            return None
-        # replace current path (fragments) with selected path
-        # i.e. ../../../file -> ../file
-        path = context.get_path_at_cursor(view)
-        if (Completion["before"] is None):
-            Completion["before"] = "";
-
-        Completion["active"] = False
-
-        verbose("cleanup path", path, Completion)
-
-        final_path = re.sub("^" + Completion["before"], "", path[0])
-        # hack reverse
-        # final_path = final_path.replace("_D011AR_", "$")
-        final_path = re.sub(config["ESCAPE_DOLLAR"], "$", final_path)
-        # modify result
-        for replace in Completion["replaceOnInsert"]:
-            final_path = re.sub(replace[0], replace[1], final_path)
-        # cleanup path
-        view.run_command("ffp_replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
-        #reset
-        Completion["before"] = None
-        Completion["replaceOnInsert"] = []
-
+    """
+        prepare: on_post_insert_completion
+    """
     def on_text_command(self, view, command_name, args):
+        # check if a completion may be inserted
         if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
             start(view, command_name)
         elif command_name == "hide_auto_complete":
-            Completion["active"] = False
-            stop(view, command_name)
-        # if command_name == "commit_completion":
-        #     path = context.get_path_at_cursor(view)
-
-        #     word_replaced = re.split("[./]", path[0]).pop()
-        #     if (path is not word_replaced):
-        #         Completion["before"] = re.sub(word_replaced + "$", "", path[0])
-
+            Completion.active = False
+            abort()
 
     def on_post_text_command(self, view, command_name, args):
+        # check if a completion is inserted
         current_line = context.get_line_at_cursor(view)[0]
         insert = command_name in config["TRIGGER_ACTION"] and ACTION["line_at_start"] != current_line
         insert = insert or command_name in config["INSERT_ACTION"]
 
         if insert is True:
+            # completion is inserted, trigger event
             self.on_post_insert_completion(view, command_name)
 
+    """
+        filepath completion
+    """
     def on_query_completions(self, view, prefix, locations):
-        # auto complete on input
+        # check if a completion may be inserted
         if ACTION["active"] is False:
             start(view)
 
@@ -189,24 +172,43 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.build(current_scope, needle, query.relative) is False:
             return None
 
-        # vintageous
-        view.run_command('_enter_insert_mode')
-
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
 
         if len(completions) > 0:
-            Completion["active"] = True
-            verbose("query", "needle:", needle, "relative:", query.relative)
-            verbose("query", "completions:", completions)
-            Completion["replaceOnInsert"] = query.replace_on_insert
-
+            Completion.active = True
+            Completion.replaceOnInsert = query.replace_on_insert
+            # vintageous
+            view.run_command('_enter_insert_mode')
         else:
-            Completion["active"] = False
+            Completion.active = False
 
         query.reset()
         return completions
 
+    """
+        post filepath completion
+    """
+    def on_post_insert_completion(self, view, command_name):
+        """ Sanitize inserted path by
+            - replacing temporary variables (~$)
+            - replacing query partials, like "../<inserted path>"
+        """
+        stop(view, command_name)
+        if Completion.active is False:
+            return None
 
+        Completion.active = False
+        path = context.get_path_at_cursor(view)
+        # remove path query completely
+        final_path = Completion.get_final_path(path[0])
+        # replace current query with final path
+        view.run_command("ffp_replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
+
+        Completion.reset()
+
+    """
+        update cached files
+    """
     def on_post_save_async(self, view):
         if project_files is not None:
             for folder in sublime.active_window().folders():
