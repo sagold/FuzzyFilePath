@@ -40,33 +40,6 @@ from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
-
-ACTION = {
-    "active": False,
-    "start": "",
-    "end": ""
-}
-
-def start(view, command_name=None):
-    ACTION["active"] = True
-    ACTION["line_at_start"] = context.get_line_at_cursor(view)[0]
-    ACTION["end"] = None
-    verbose("--> trigger", command_name, ACTION)
-
-    path = context.get_path_at_cursor(view)
-    word_replaced = re.split("[./]", path[0]).pop()
-    if (path is not word_replaced):
-        Completion.before = re.sub(word_replaced + "$", "", path[0])
-
-def stop(view, command_name=None):
-    abort()
-    ACTION["end"] = context.get_line_at_cursor(view)[0]
-    verbose("<-- insert", command_name, ACTION)
-
-def abort():
-    ACTION["active"] = False
-
-
 class Completion:
     active = False
     before = None
@@ -132,24 +105,49 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 class FuzzyFilePath(sublime_plugin.EventListener):
 
     """
-        prepare: on_post_insert_completion
+        track and validate: on_post_insert_completion
     """
+    track_insert = {
+        "active": False,
+        "start_line": "",
+        "end_line": ""
+    }
+
+    def start_tracking(self, view, command_name=None):
+        self.track_insert["active"] = True
+        self.track_insert["start_line"] = context.get_line_at_cursor(view)[0]
+        self.track_insert["end_line"] = None
+        verbose("--> trigger", command_name, self.track_insert)
+
+        path = context.get_path_at_cursor(view)
+        word_replaced = re.split("[./]", path[0]).pop()
+        if (path is not word_replaced):
+            Completion.before = re.sub(word_replaced + "$", "", path[0])
+
+    def finish_tracking(self, view, command_name=None):
+        self.track_insert["active"] = False
+        self.track_insert["end_line"] = context.get_line_at_cursor(view)[0]
+        verbose("<-- insert", command_name, self.track_insert)
+
+    def abort_tracking(self):
+        self.track_insert["active"] = False
+
     def on_text_command(self, view, command_name, args):
         # check if a completion may be inserted
         if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
-            start(view, command_name)
+            self.start_tracking(view, command_name)
         elif command_name == "hide_auto_complete":
             Completion.active = False
-            abort()
+            self.abort_tracking()
 
     def on_post_text_command(self, view, command_name, args):
         # check if a completion is inserted
         current_line = context.get_line_at_cursor(view)[0]
-        insert = command_name in config["TRIGGER_ACTION"] and ACTION["line_at_start"] != current_line
+        insert = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
         insert = insert or command_name in config["INSERT_ACTION"]
 
         if insert is True:
-            # completion is inserted, trigger event
+            self.finish_tracking(view, command_name)
             self.on_post_insert_completion(view, command_name)
 
     """
@@ -157,8 +155,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     """
     def on_query_completions(self, view, prefix, locations):
         # check if a completion may be inserted
-        if ACTION["active"] is False:
-            start(view)
+        if self.track_insert["active"] is False:
+            self.start_tracking(view)
 
         if (config["DISABLE_AUTOCOMPLETION"] is True):
             return None
@@ -193,7 +191,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             - replacing temporary variables (~$)
             - replacing query partials, like "../<inserted path>"
         """
-        stop(view, command_name)
         if Completion.active is False:
             return None
 
