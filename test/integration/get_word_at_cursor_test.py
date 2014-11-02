@@ -7,13 +7,23 @@ from FuzzyFilePath.context import get_word_at_cursor
 
 class Test(TestCase):
 
+	def should_return_character_before_word(self, viewHelper):
+		# path = get_path('"./path/in/quotes" another in', "in")
+		viewHelper.set_line('"./path/in/quotes" another in')
+		viewHelper.move_cursor(0, 10)
+
+		word = get_word_at_cursor(viewHelper.view)[0]
+
+		assert word == "/in", "expected '%s' to be '/in'" % word
+
+
 	def should_return_word_at_cursor(self, viewHelper):
 		viewHelper.set_line('notPartOfPath	/absolute/pathAtCursor	')
 		viewHelper.move_cursor(0, 25)
 
 		word = get_word_at_cursor(viewHelper.view)[0]
 
-		assert word == "pathAtCursor", "expected '%s' to be 'pathAtCursor'" % word
+		assert word == "/pathAtCursor", "expected '%s' to be '/pathAtCursor'" % word
 
 
 	def should_not_return_empty_strings(self, viewHelper):
