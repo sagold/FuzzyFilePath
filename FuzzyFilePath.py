@@ -14,6 +14,9 @@
     # bugs
 
         - $module does not trigger completions
+        - wrong match:
+            FFP  --> trigger insert_path    component = require("./com"); ['component', (86, 95)]
+            FFP  <-- insert insert_path ['././$components', (90, 105)]
 
     # errors
 
@@ -40,6 +43,9 @@ from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
+query = Query()
+project_files = None
+
 class Completion:
     active = False
     before = None
@@ -58,10 +64,6 @@ class Completion:
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
         return path
-
-
-query = Query()
-project_files = None
 
 
 def plugin_loaded():
@@ -110,14 +112,17 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     track_insert = {
         "active": False,
         "start_line": "",
-        "end_line": ""
+        "start_path": "",
+        "end_line": "",
+        "end_path": ""
     }
 
     def start_tracking(self, view, command_name=None):
         self.track_insert["active"] = True
         self.track_insert["start_line"] = context.get_line_at_cursor(view)[0]
         self.track_insert["end_line"] = None
-        verbose("--> trigger", command_name, self.track_insert)
+        self.track_insert["start_path"] = context.get_path_at_cursor(view)
+        verbose("--> trigger", command_name, self.track_insert["start_line"], self.track_insert["start_path"])
 
         path = context.get_path_at_cursor(view)
         word_replaced = re.split("[./]", path[0]).pop()
@@ -127,7 +132,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
         self.track_insert["end_line"] = context.get_line_at_cursor(view)[0]
-        verbose("<-- insert", command_name, self.track_insert)
+        self.track_insert["end_path"] = context.get_path_at_cursor(view)
+        verbose("<-- insert", command_name, self.track_insert["end_path"])
 
     def abort_tracking(self):
         self.track_insert["active"] = False
