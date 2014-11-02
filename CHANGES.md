@@ -1,8 +1,10 @@
-14/10/26
+14/11/02
 
-- remove bugged merge of exlude\_folder\_patterns and exlude\_folders. Thus exlude\_folders are always applied
 - fix bug in instant completions (missing string-cleanup method)
+- fix trigger to update cached files
+- remove bugged merge of exlude\_folder\_patterns and exlude\_folders. Thus exlude\_folders are always applied
 - fix bug in updating cache (triggered for invalid file extensions)
+- refactorings
 
 14/10/03
 
