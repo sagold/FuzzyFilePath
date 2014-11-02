@@ -151,7 +151,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             self.on_post_insert_completion(view, command_name)
 
     """
-        filepath completion
+        query filepath completion
     """
     def on_query_completions(self, view, prefix, locations):
         # check if a completion may be inserted
