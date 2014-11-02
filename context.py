@@ -26,6 +26,7 @@ def get_word_at_cursor(view):
     selection = view.sel()[0]
     position = selection.begin()
     region = view.word(position)
+    region.a -= 1
     word = view.substr(region)
     # validate
     valid = not re.sub("[\"\'\s\(\)]*", "", word).strip() == ""
@@ -53,19 +54,25 @@ def get_word_at_cursor(view):
 
 # tested
 def get_path(line, word):
-    #! returns first match
+    last_match = None
+
+    #! returns last match
     if word is None or word is "":
         return word
 
     needle = re.escape(word)
     full_words = line.split(" ")
+
     for full_word in full_words:
         if word in line:
             path = extract_path_from(full_word, needle)
             if not path is None:
-                return path
+                last_match = path
 
-    return word
+    if last_match is None:
+        return word
+    else:
+        return last_match
 
 #! fails if needle occurs also before path (line)
 def extract_path_from(word, needle):
