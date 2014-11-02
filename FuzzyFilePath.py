@@ -58,6 +58,7 @@ class Completion:
 
     def get_final_path(path):
         if Completion.before is not None:
+            Completion.before = re.escape(Completion.before)
             path = re.sub("^" + Completion.before, "", path)
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
