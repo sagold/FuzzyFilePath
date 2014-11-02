@@ -29,7 +29,7 @@
                 Completion.before = re.sub(word_replaced + "$", "", path[0])
             sre_constants.error: unbalanced parenthesis
 
-    @version 0.0.8
+    @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime

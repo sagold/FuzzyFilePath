@@ -82,10 +82,10 @@ _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User
 
 #### `disable_autocompletions`:Boolean
 Whenever Sublime Text queries completion suggestions, FuzzyFilePath will propose filepaths if the current query meets its requirements.
-This may conflict with other plugins. Set `"disable_autocompletions": true` to disable this automatic filepath completions.
+This may conflict with other plugins. Set `"disable_autocompletions": true` to disable this automatic behaviour.
 
 #### `disable_keymap_actions`:Boolean
-Set `"disable_keymap_actions": false` to disables all FuzzyFilePath commands triggered by shortcuts. Default shortcut definitions are
+Set `"disable_keymap_actions": true` to disable all FuzzyFilePath commands triggered by shortcuts. Default shortcut definitions are
 found in _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_. This may prevent conflicts with
 other plugins.
 
@@ -158,7 +158,7 @@ See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - 
 	"auto_trigger": true,
 	"scopes": [
 		{
-			"scope": "\\.js\\s",
+			"scope": "\\.js$",
 
 			"auto": false,
 			"extensions": ["js", "json"],
@@ -256,4 +256,3 @@ See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding 
 
 - uses file discovery based on current directory instead of fuzzy search
 - adds properties for images in autocompletion description
-
