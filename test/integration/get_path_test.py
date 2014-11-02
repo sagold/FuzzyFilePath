@@ -2,7 +2,7 @@
 	get word at cursor
 """
 from FuzzyFilePath.test.tools import TestCase
-from FuzzyFilePath.FuzzyFilePath import get_path
+from FuzzyFilePath.context import get_path
 
 
 class Test(TestCase):
@@ -25,10 +25,10 @@ class Test(TestCase):
 		assert path is 'undefined', "expected '%s' to be 'undefined" % path
 
 
-	def should_be_restricted_to_quotes(self, viewHelper):
-		path = get_path('"./path/in/quotes" another in', "in")
+	# def should_be_restricted_to_quotes(self, viewHelper):
+	# 	path = get_path('"./path/in/quotes" another in', "/in")
 
-		assert path == "./path/in/quotes", "expected '%s' to be './path/in/quotes'" % path
+	# 	assert path == "./path/in/quotes", "expected '%s' to be './path/in/quotes'" % path
 
 
 	def should_include_special_characters(self, viewHelper):
@@ -42,6 +42,8 @@ class Test(TestCase):
 
 		assert path == "/component/common/$index", "expected '%s' to be '/component/common/$index'" % path
 
-	# def should_return_match_within_quotes(self, viewHelper):
-	# 	path = get_path('another needle "./path/to/needle"', "needle")
-	# 	assert path == "./path/to/needle", "expected '%s' to be './path/to/needle'" % path
+	def should_return_match_within_quotes(self, viewHelper):
+		path = get_path('another needle "./path/to/needle"', "needle")
+
+		assert path == "./path/to/needle", "expected '%s' to be './path/to/needle'" % path
+

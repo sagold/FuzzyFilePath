@@ -2,12 +2,12 @@ import sublime
 import os
 import re
 import threading
+from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.config import config
 
 def posix(path):
     return path.replace("\\", "/")
 
-
-DEBUG = False
 
 # stores all files and its fragments within property files
 class CacheFolder(threading.Thread):
@@ -23,9 +23,8 @@ class CacheFolder(threading.Thread):
 
     def run(self):
         # cache files in folder
-        if DEBUG:
-            print("FFP: caching folder", self.folder)
         self.files = self.read(self.folder)
+        verbose("caching folder", self.folder, self.files)
 
     def read(self, folder, base=None):
         """return all files in folder"""
@@ -45,12 +44,15 @@ class CacheFolder(threading.Thread):
 
                 if extension in self.extensions:
                     # $ hack, reversed in post_commit_completion
-                    folder_cache[posix(relative_path)] = [re.sub("\$", "_D011AR_", posix(filename)), extension, posix(filename) + "\t" + extension]
+                    folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
-
+                # scan inner directories if they are not to be excluded
                 if (not ressource in self.exclude_folders):
+                    verbose("caching folder contents:", ressource, current_path)
                     folder_cache.update(self.read(current_path, base))
+                else:
+                    verbose("cache: ignoring folder:", ressource, current_path)
 
         return folder_cache
 
@@ -80,7 +82,6 @@ class ProjectFiles:
     # @param {boolean} with_extension   insert extension
     # @return {List} containing sublime completions
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
-
         project_files = self.get_files(project_folder)
         if (project_files is None):
             return False
@@ -99,11 +100,15 @@ class ProjectFiles:
         # get matching files
         result = []
         for file in project_files:
-
             properties = project_files.get(file)
+            """
+                properties[0] = escaped filename without extension, like "test/mock/project/index"
+                properties[1] = file extension, like "html"
+                properties[2] = file displayed as suggestion, like 'test/mock/project/index     html'
+            """
             if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, file, re.IGNORECASE)):
 
-                completion = self.get_completion(file, properties, base_path, with_extension)
+                completion = self.get_completion(properties[0] + "." + properties[1], properties, base_path, with_extension)
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
@@ -118,7 +123,6 @@ class ProjectFiles:
 
     # @return {list} completion
     def get_completion(self, target_path, target, base_path=False, with_extension=True):
-
         # absolute path
         if base_path is False:
             if with_extension is True:
@@ -174,7 +178,7 @@ class ProjectFiles:
         self.update(parent_folder)
 
     def file_is_cached(self, folder, file_name=None):
-        """ returns True if the given file is cached
+        """ returns False if the given file is not within cache
 
             Parameters
             ----------
@@ -184,11 +188,16 @@ class ProjectFiles:
         if file_name is None:
             return self.folder_is_cached(folder)
 
+        name, extension = os.path.splitext(file_name)
+        extension = extension[1:]
+        if not extension in self.valid_extensions:
+            verbose("cache", "file to cache has no valid extension", extension)
+            return True
+
         if self.folder_is_cached(folder):
             file_name = file_name.replace(folder + '/', "")
             if (self.cache.get(folder).files.get(file_name)):
                 return True
-            #print(file_name + " not within", self.cache.get(folder).files)
 
         return False
 
@@ -198,10 +207,14 @@ class ProjectFiles:
     # rebuild folder cache
     def update(self, folder, file_name=None):
         if (self.file_is_cached(folder, file_name)):
+            verbose("cache", "already cached", file_name)
             return False
 
         if self.folder_is_cached(folder):
+            verbose("cache", "already cached", folder)
             del self.cache[folder]
+
+        verbose("cache", "cache update", file_name)
 
         self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();

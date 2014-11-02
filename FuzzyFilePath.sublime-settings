@@ -56,7 +56,7 @@
 
 		{
 			// css
-			"scope": "source\\.css.*meta\\.property",
+			"scope": "source\\.css.*\\.property-value",
 
 			"auto": false,
 			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],

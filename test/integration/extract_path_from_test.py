@@ -1,5 +1,5 @@
 from FuzzyFilePath.test.tools import TestCase
-from FuzzyFilePath.FuzzyFilePath import extract_path_from
+from FuzzyFilePath.context import extract_path_from
 
 
 class Test(TestCase):

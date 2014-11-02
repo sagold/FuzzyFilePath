@@ -6,6 +6,10 @@ Fuzzy search and autocomplete filenames inside current project directory. Search
 
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/master/FuzzyFilePathDemo.gif" />
 
+*Notes*
+
+- check out [`replace\_on\_insert' option](#configuration_settings_replaceoninsert). This might be very helpul in tweaking completions.
+
 ---
 
 1. [Installation](#installation)
@@ -85,6 +89,10 @@ Set `"disable_keymap_actions": true` to disable all FuzzyFilePath commands trigg
 found in _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_. This may prevent conflicts with
 other plugins.
 
+#### `exclude_folders`:Array
+Skips scanning of given folders. This greatly improves performance on startup (read files) and queries (filter file list).
+i.e. `"exclude_folders": ["node_modules]` will ignore all files and folders in _node\_modules_ (highly recommended).
+
 #### `extensionsToSuggest`:Array
 FuzzyFilePath will only cache and suggest filetypes defined in this array.<br />
 i.e. `"extensionsToSuggest": ["gif", "jpg", "jpg", "png"]` will only suggest imagepaths for the given type
@@ -122,7 +130,7 @@ i.e. `"extensions": ["js", "json"]` will only list javascript or json files.
 If `"insertExtension": false`, files will be inserted without their file extension.<br />
 i.e. javascript AMD imports requires `/modules/dummy` to reference `modules/dummy.js`
 
-##### replace\_on\_insert:Array
+##### <a name="configuration_settings_replaceoninsert">replace\_on\_insert:Array</a>
 An array containing substitutions for the inserted path. After a selected filepath completion is inserted,
 the path may be further adjusted. Each item within _replace\_on\_insert_  must be another array like
 `[Search:RegExp, Replace:RegExp]`. Use cases:
