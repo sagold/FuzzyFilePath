@@ -1,5 +1,7 @@
 import re, os
 
+from FuzzyFilePath.common.verbose import verbose
+
 def posix(path):
     return path.replace("\\", "/")
 
@@ -63,6 +65,7 @@ class Query:
         """
         triggered = force_type is not False
         properties = self.get_scope_properties(scope)
+        # verbose("scope", "search result for: " + scope, properties)
         query_string = self.get_input_properties(needle)
 
         if triggered is False and properties is False and query_string["is_path"] is False:
