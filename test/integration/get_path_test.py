@@ -2,7 +2,7 @@
 	get word at cursor
 """
 from FuzzyFilePath.test.tools import TestCase
-from FuzzyFilePath.FuzzyFilePath import get_path
+from FuzzyFilePath.context import get_path
 
 
 class Test(TestCase):
