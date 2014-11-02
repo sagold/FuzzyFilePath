@@ -2,7 +2,7 @@ import sublime
 import sublime_plugin
 from FuzzyFilePath.common.config import config
 
-class FFPReplaceRegionCommand(sublime_plugin.TextCommand):
+class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
 
     # helper: replaces range with string
     def run(self, edit, a, b, string):
