@@ -14,6 +14,7 @@
     # bugs
 
         - $module does not trigger completions
+        - long idle time for multi cursor in paths (~> do not query anything!)
         - wrong match:
             FFP  --> trigger insert_path    component = require("./com"); ['component', (86, 95)]
             FFP  <-- insert insert_path ['././$components', (90, 105)]
@@ -29,7 +30,7 @@
                 Completion.before = re.sub(word_replaced + "$", "", path[0])
             sre_constants.error: unbalanced parenthesis
 
-    @version 0.0.9
+    @version 0.0self.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
