@@ -18,6 +18,62 @@
 	// configuration of suggestions and insertions by scope
 	"scopes": [
 
+		// html
+
+		{
+			// html script tag
+			"scope": "tag\\.script.*html.*string",
+
+			"auto": true,
+			"extensions": ["js"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// html style tag
+			"scope": "tag\\.inline.*html.*string",
+
+			"auto": true,
+			"extensions": ["css"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// html
+			"scope": "text\\.html.*string",
+
+			"auto": false,
+			"extensions": ["css", "png", "jpg"],
+			"insertExtension": true,
+			"relative": false
+		},
+
+		// css
+
+		{
+			// css property function or string
+			"scope": "source\\.css.*(function|string)",
+
+			"auto": true,
+			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		{
+			// css
+			"scope": "source\\.css.*\\.property-value",
+
+			"auto": false,
+			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
+			"insertExtension": true,
+			"relative": true
+		},
+
+		// javascript
+
 		{
 			// JS AMD
 			"scope": "require.*string",
@@ -52,26 +108,6 @@
 			"extensions": ["*"],
 			"insertExtension": true,
 			"relative": true
-		},
-
-		{
-			// css
-			"scope": "source\\.css.*\\.property-value",
-
-			"auto": false,
-			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
-			"insertExtension": true,
-			"relative": true
-		},
-
-		{
-			// html
-			"scope": "text\\.html.*string",
-
-			"auto": false,
-			"extensions": ["css", "png", "jpg"],
-			"insertExtension": true,
-			"relative": false
 		},
 
 		{
