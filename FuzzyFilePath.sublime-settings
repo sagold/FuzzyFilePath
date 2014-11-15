@@ -8,7 +8,7 @@
 	// file extensions to show on filepath auto completion
 	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
 
-	"exclude_folders": ["node_modules"],
+	"exclude_folders": ["node_modules", "bower_components/.*/bower_components"],
 
 	// if current string matches "./", "../", "/folder/to",
 	// auto suggest files, independent of scope settings
@@ -53,23 +53,14 @@
 		// css
 
 		{
-			// css property function or string
-			"scope": "source\\.css.*(function|string)",
-
-			"auto": true,
-			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
-			"insertExtension": true,
-			"relative": true
-		},
-
-		{
 			// css
-			"scope": "source\\.css.*\\.property-value",
+			"scope": "source\\.css.*(function|string|property-value)",
 
 			"auto": false,
 			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
 			"insertExtension": true,
-			"relative": true
+			"relative": false,
+			"base_directory": "/test/mock/project/"
 		},
 
 		// javascript
