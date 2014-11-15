@@ -8,7 +8,7 @@
 	// file extensions to show on filepath auto completion
 	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
 
-	"exclude_folders": ["node_modules", "bower_components/.*/bower_components"],
+	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components", "bower\\_components/.*/test" ],
 
 	// if current string matches "./", "../", "/folder/to",
 	// auto suggest files, independent of scope settings

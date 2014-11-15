@@ -30,10 +30,15 @@ class CacheFolder(threading.Thread):
         """return all files in folder"""
         folder_cache = {}
         base = base if base is not None else folder
-        ressources = os.listdir(folder)
 
-        for ressource in ressources:
+        # test ignore expressions on current path
+        for test in self.exclude_folders:
+            if re.search(test, folder) is not None:
+                print("cache", "SKIP", folder)
+                return folder_cache
 
+        # ressources =
+        for ressource in os.listdir(folder):
             current_path = os.path.join(folder, ressource)
 
             if (os.path.isfile(current_path)):
@@ -47,13 +52,9 @@ class CacheFolder(threading.Thread):
                     folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
-                # scan inner directories if they are not to be excluded
-                if (not ressource in self.exclude_folders):
-                    verbose("caching folder contents:", ressource, current_path)
-                    folder_cache.update(self.read(current_path, base))
-                else:
-                    verbose("cache: ignoring folder:", ressource, current_path)
+                folder_cache.update(self.read(current_path, base))
 
+        print ("cached folder", folder, "files: ", len(folder_cache))
         return folder_cache
 
 
@@ -96,6 +97,8 @@ class ProjectFiles:
         regex = ".*"
         for i in needle:
             regex += i + ".*"
+
+        print("cache scan", len(project_files), "files for", needle, valid_extensions);
 
         # get matching files
         result = []
@@ -216,6 +219,7 @@ class ProjectFiles:
 
         verbose("cache", "cache update", file_name)
 
+        print("updating cache", self.exclude_folders, self.valid_extensions, folder)
         self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
         return True
