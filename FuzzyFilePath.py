@@ -4,7 +4,6 @@
     # possible tasks
 
         - use test-triggers like "graffin:" instead/additionally to scope-triggers
-
         - support multiple folders
         - Cursor Position after replacement:
             require("../../../../optimizer|cursor|")
@@ -21,16 +20,7 @@
 
     # errors
 
-        14/10/27
-
-            Traceback (most recent call last):
-              File "/Applications/Sublime Text.app/Contents/MacOS/sublime_plugin.py", line 374, in on_text_command
-                res = callback.on_text_command(v, name, args)
-              File "/Users/Gott/Dropbox/Applications/SublimeText/Packages/FuzzyFilePath/FuzzyFilePath.py", line 180, in on_text_command
-                Completion.before = re.sub(word_replaced + "$", "", path[0])
-            sre_constants.error: unbalanced parenthesis
-
-    @version 0.0self.9
+    @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
@@ -107,7 +97,6 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 
 
 class FuzzyFilePath(sublime_plugin.EventListener):
-
     """
         track and validate: on_post_insert_completion
     """
@@ -129,7 +118,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         path = context.get_path_at_cursor(view)
         word_replaced = re.split("[./]", path[0]).pop()
         if (path is not word_replaced):
-            Completion.before = re.sub(word_replaced + "$", "", path[0])
+            Completion.before = re.sub(re.escape(word_replaced) + "$", "", path[0])
 
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
