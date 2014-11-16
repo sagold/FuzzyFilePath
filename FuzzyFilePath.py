@@ -55,6 +55,7 @@ def get_path_at_cursor(view):
     """
     result = Scope.get_path(view)
     if result is False:
+        # prone to errors, see CURRENT TASK
         result = context.get_path_at_cursor(view)
     verbose("path", "at cursor", result)
     return result
@@ -101,6 +102,7 @@ def update_settings():
 
     config["DISABLE_KEYMAP_ACTIONS"] = settings.get("disable_keymap_actions", config["DISABLE_KEYMAP_ACTIONS"]);
     config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
+    config["DEBUG"] = settings.get("DEBUG", config["DEBUG"])
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
@@ -219,10 +221,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         Completion.active = False
         path = get_path_at_cursor(view)
-        print("post", "cleanup path insertion", path)
         # remove path query completely
         final_path = Completion.get_final_path(path[0])
-        print("post", "final path", final_path)
         # replace current query with final path
         view.run_command("ffp_replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
