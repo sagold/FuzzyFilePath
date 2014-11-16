@@ -122,6 +122,8 @@ class Query:
             "needle": needle
         }
 
+        needle = re.sub("^(./)*", "./", needle)
+
         if needle.startswith("./"):
             properties["is_path"] = True
             properties["relative"] = self.current_folder
