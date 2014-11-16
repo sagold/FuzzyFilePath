@@ -1,7 +1,6 @@
 from FuzzyFilePath.test.tools import TestCase
 from FuzzyFilePath.Scope import Scope
 
-
 class Test(TestCase):
 
 	def should_return_scope_contents(self, viewHelper):
@@ -81,14 +80,14 @@ class Test(TestCase):
 		assert valid == False, "expected '%s' to be 'False'" % valid
 		viewHelper.undo(1)
 
-	# def should_be_valid_if_empty(self, viewHelper):
-	# 	viewHelper.set_js_syntax()
-	# 	viewHelper.set_line('require("")')
-	# 	viewHelper.move_cursor(0, 9)
-	# 	content = Scope.get_content(viewHelper.view)
+	def should_be_valid_if_empty(self, viewHelper):
+		viewHelper.set_js_syntax()
+		viewHelper.set_line('require("")')
+		viewHelper.move_cursor(0, 9)
+		content = Scope.get_content(viewHelper.view)[0]
 
-	# 	valid = Scope.valid_path(content)
+		valid = Scope.valid_path(content)
 
-	# 	assert valid == True, "expected '%s' to be 'True'" % valid
+		assert valid == True, "expected '%s' to be 'True'" % valid
 
 
