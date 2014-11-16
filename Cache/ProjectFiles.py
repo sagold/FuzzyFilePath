@@ -34,7 +34,7 @@ class CacheFolder(threading.Thread):
         # test ignore expressions on current path
         for test in self.exclude_folders:
             if re.search(test, folder) is not None:
-                print("cache", "SKIP", folder)
+                verbose("cache", "SKIP", folder)
                 return folder_cache
 
         # ressources =
@@ -54,7 +54,7 @@ class CacheFolder(threading.Thread):
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
                 folder_cache.update(self.read(current_path, base))
 
-        print ("cached folder", folder, "files: ", len(folder_cache))
+        verbose("cached folder", folder, "files: ", len(folder_cache))
         return folder_cache
 
 
@@ -98,7 +98,7 @@ class ProjectFiles:
         for i in needle:
             regex += i + ".*"
 
-        print("cache scan", len(project_files), "files for", needle, valid_extensions);
+        verbose("cache scan", len(project_files), "files for", needle, valid_extensions);
 
         # get matching files
         result = []
@@ -217,9 +217,7 @@ class ProjectFiles:
             verbose("cache", "already cached", folder)
             del self.cache[folder]
 
-        verbose("cache", "cache update", file_name)
-
-        print("updating cache", self.exclude_folders, self.valid_extensions, folder)
+        verbose("cache", "cache update", file_name, folder)
         self.cache[folder] = CacheFolder(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
         return True
