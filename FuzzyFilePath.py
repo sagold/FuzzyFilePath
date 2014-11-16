@@ -1,6 +1,14 @@
 """ FuzzyFilePath
     Manages filepath autocompletions
 
+    # CURRENT TASK
+
+            fix get_path_at_cursor
+            - may still return wrong needle position
+            - validate string in current scope first
+            - then try extending current region until complete path is found
+                (instead of searching needle in line which may match wrong position)
+
     # possible tasks
 
         - use test-triggers like "graffin:" instead/additionally to scope-triggers
