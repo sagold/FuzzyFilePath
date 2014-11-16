@@ -122,7 +122,7 @@ class Query:
             "needle": needle
         }
 
-        needle = re.sub("^(./)*", "./", needle)
+        needle = re.sub("^(./)+", "./", needle)
 
         if needle.startswith("./"):
             properties["is_path"] = True
