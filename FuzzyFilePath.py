@@ -38,12 +38,26 @@ import os
 
 import FuzzyFilePath.context as context
 from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
+from FuzzyFilePath.Scope import Scope
 from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
 query = Query()
 project_files = None
+
+
+def get_path_at_cursor(view):
+    """
+        Return path at current cursor position.
+        Either returns cleaned scope value or tries to find it by extracting current line. Retrieving path via scope is
+        the prefered way, but requires a valid scope which is not always given (css: background-image: url();)
+    """
+    result = Scope.get_path(view)
+    if result is False:
+        result = context.get_path_at_cursor(view)
+    verbose("path", "at cursor", result)
+    return result
 
 class Completion:
     active = False
@@ -90,8 +104,9 @@ def update_settings():
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
-
-    # triggers autocomplete
+    """
+        trigger customized autocomplete
+    """
     def run(self, edit, type="default", replace_on_insert=[]):
         if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
@@ -120,10 +135,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         self.track_insert["active"] = True
         self.track_insert["start_line"] = context.get_line_at_cursor(view)[0]
         self.track_insert["end_line"] = None
-        self.track_insert["start_path"] = context.get_path_at_cursor(view)
+        self.track_insert["start_path"] = get_path_at_cursor(view)
         verbose("--> trigger", command_name, self.track_insert["start_line"], self.track_insert["start_path"])
 
-        path = context.get_path_at_cursor(view)
+        path = get_path_at_cursor(view)
         word_replaced = re.split("[./]", path[0]).pop()
         if (path is not word_replaced):
             Completion.before = re.sub(re.escape(word_replaced) + "$", "", path[0])
@@ -131,7 +146,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
         self.track_insert["end_line"] = context.get_line_at_cursor(view)[0]
-        self.track_insert["end_path"] = context.get_path_at_cursor(view)
+        self.track_insert["end_path"] = get_path_at_cursor(view)
         verbose("<-- insert", command_name, self.track_insert["end_path"])
 
     def abort_tracking(self):
@@ -169,7 +184,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.valid is False:
             return False
 
-        needle = context.get_path_at_cursor(view)[0]
+        # needle = context.get_path_at_cursor(view)[0]
+        needle = get_path_at_cursor(view)[0]
         current_scope = view.scope_name(locations[0])
 
         if query.build(current_scope, needle, query.relative) is False:
@@ -202,9 +218,11 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             return None
 
         Completion.active = False
-        path = context.get_path_at_cursor(view)
+        path = get_path_at_cursor(view)
+        print("post", "cleanup path insertion", path)
         # remove path query completely
         final_path = Completion.get_final_path(path[0])
+        print("post", "final path", final_path)
         # replace current query with final path
         view.run_command("ffp_replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
