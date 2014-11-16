@@ -1,17 +1,10 @@
 """ FuzzyFilePath
     Manages filepath autocompletions
 
-    # CURRENT TASK
-
-            fix get_path_at_cursor
-            - may still return wrong needle position
-            - validate string in current scope first
-            - then try extending current region until complete path is found
-                (instead of searching needle in line which may match wrong position)
-
     # possible tasks
 
-        - use test-triggers like "graffin:" instead/additionally to scope-triggers
+        - option to trigger by current line context, i.e. url() or <img ... src="">
+        - alternatively use triggers like "graffin:" instead/additionally to scope-triggers
         - support multiple folders
         - Cursor Position after replacement:
             require("../../../../optimizer|cursor|")
@@ -20,6 +13,7 @@
 
     # bugs
 
+        - uncleaned completion if triggered in middle of word (~> Completion before)
         - long idle time
             - for multi cursor in paths (~> do not query anything!)
             - ???
@@ -191,7 +185,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.build(current_scope, needle, query.relative) is False:
             return None
 
+        print("FFP QUERYING FILES")
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
+        print("FFP QUERYING FILES DONE")
 
         if len(completions[0]) > 0:
             verbose("completions", len(completions[0]), "matches found for", query.needle)
@@ -221,6 +217,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         path = get_path_at_cursor(view)
         # remove path query completely
         final_path = Completion.get_final_path(path[0])
+        verbose("insert", "final path", final_path)
         # replace current query with final path
         view.run_command("ffp_replace_region", { "a": path[1].a, "b": path[1].b, "string": final_path })
 
