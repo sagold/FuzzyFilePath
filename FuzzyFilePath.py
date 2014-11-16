@@ -20,11 +20,9 @@
 
     # bugs
 
-        - $module does not trigger completions
-        - long idle time for multi cursor in paths (~> do not query anything!)
-        - wrong match:
-            FFP  --> trigger insert_path    component = require("./com"); ['component', (86, 95)]
-            FFP  <-- insert insert_path ['././$components', (90, 105)]
+        - long idle time
+            - for multi cursor in paths (~> do not query anything!)
+            - ???
 
     # errors
 
