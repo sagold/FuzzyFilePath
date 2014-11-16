@@ -5,26 +5,35 @@ import re
 
 class Scope:
 
+	def get_path(view):
+		if not Scope.is_string(view):
+			return False
+
+		content = Scope.get_content(view)
+		if (Scope.valid_path(content[0])):
+			return content
+		else:
+			return False
+
 	def get_current_scope(view):
 		# return inner scope at current cursor position
 		scopes = view.scope_name(view.sel()[0].a).strip().split(" ")
 		return scopes.pop()
 
-	def is_string_scope(view):
+	def is_string(view):
 		# return boolean if current cursor is within a string
 		return "string" in Scope.get_current_scope(view)
 
-	def get_scope_content(view):
+	def get_content(view):
 		# returns the contents of the current scope
 		region = view.extract_scope(view.sel()[0].a)
 		scope_content = view.substr(region).strip()
 		# string may be: "", strip it
-		if re.search("[\"\'()]", scope_content[0]):
-			scope_content = scope_content[1:]
-		if re.search("[\"\'()]", scope_content[-1]):
-			scope_content = scope_content[:-1]
-
-		return scope_content
+		# if re.search("[\"\'()]", scope_content[0]):
+		# 	scope_content = scope_content[1:]
+		# if re.search("[\"\'()]", scope_content[-1]):
+		# 	scope_content = scope_content[:-1]
+		return [scope_content, region]
 
 	def valid_path(string):
 		# returns true if the string may be a valid filepath
@@ -49,7 +58,7 @@ class Test(TestCase):
 		viewHelper.set_line('require("./path/in/string/scope")')
 		viewHelper.move_cursor(0, 12)
 
-		is_string = Scope.is_string_scope(viewHelper.view)
+		is_string = Scope.is_string(viewHelper.view)
 
 		assert is_string == True, "expected '%s' to be 'True'" % is_string
 
@@ -58,7 +67,7 @@ class Test(TestCase):
 		viewHelper.set_line('require(./path/in/string/scope)')
 		viewHelper.move_cursor(0, 12)
 
-		is_string = Scope.is_string_scope(viewHelper.view)
+		is_string = Scope.is_string(viewHelper.view)
 
 		assert is_string == False, "expected '%s' to be 'False'" % is_string
 
@@ -67,7 +76,7 @@ class Test(TestCase):
 		viewHelper.set_line('require("./path/in/string/scope")')
 		viewHelper.move_cursor(0, 12)
 
-		content = Scope.get_scope_content(viewHelper.view)
+		content = Scope.get_content(viewHelper.view)[0]
 
 		assert content == "./path/in/string/scope", "expected '%s' to be './path/in/string/scope'" % content
 
@@ -75,7 +84,7 @@ class Test(TestCase):
 		viewHelper.set_js_syntax()
 		viewHelper.set_line('require("./path/in/string/$scope.js")')
 		viewHelper.move_cursor(0, 12)
-		content = Scope.get_scope_content(viewHelper.view)
+		content = Scope.get_content(viewHelper.view)[0]
 
 		valid = Scope.valid_path(content)
 
@@ -85,7 +94,7 @@ class Test(TestCase):
 		viewHelper.set_js_syntax()
 		viewHelper.set_line('require("./path(string/$scope.js")')
 		viewHelper.move_cursor(0, 12)
-		content = Scope.get_scope_content(viewHelper.view)
+		content = Scope.get_content(viewHelper.view)[0]
 
 		valid = Scope.valid_path(content)
 
@@ -95,8 +104,7 @@ class Test(TestCase):
 		viewHelper.set_js_syntax()
 		viewHelper.set_line('require("./path/i\'n/string/$scope.js")')
 		viewHelper.move_cursor(0, 12)
-		content = Scope.get_scope_content(viewHelper.view)
-		print("content", content)
+		content = Scope.get_content(viewHelper.view)[0]
 
 		valid = Scope.valid_path(content)
 
@@ -106,21 +114,21 @@ class Test(TestCase):
 		viewHelper.set_js_syntax()
 		viewHelper.set_line('require("valid/path/contains\nlinebreak")')
 		viewHelper.move_cursor(0, 12)
-		content = Scope.get_scope_content(viewHelper.view)
+		content = Scope.get_content(viewHelper.view)[0]
 
 		valid = Scope.valid_path(content)
 
 		assert valid == False, "expected '%s' to be 'False'" % valid
 		viewHelper.undo(1)
 
-	def should_be_valid_if_empty(self, viewHelper):
-		viewHelper.set_js_syntax()
-		viewHelper.set_line('require("")')
-		viewHelper.move_cursor(0, 9)
-		content = Scope.get_scope_content(viewHelper.view)
+	# def should_be_valid_if_empty(self, viewHelper):
+	# 	viewHelper.set_js_syntax()
+	# 	viewHelper.set_line('require("")')
+	# 	viewHelper.move_cursor(0, 9)
+	# 	content = Scope.get_content(viewHelper.view)
 
-		valid = Scope.valid_path(content)
+	# 	valid = Scope.valid_path(content)
 
-		assert valid == True, "expected '%s' to be 'True'" % valid
+	# 	assert valid == True, "expected '%s' to be 'True'" % valid
 
 
