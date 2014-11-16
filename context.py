@@ -12,6 +12,57 @@ def get_line_at_cursor(view):
     return [line, region]
 
 def get_path_at_cursor(view):
+    pre = ""
+    post = ""
+    selection = view.sel()[0]
+    position = selection.begin()
+
+    # get regions
+    word_region = view.word(position)
+    line_region = view.line(position)
+    final_region = view.line(position)
+    line = view.substr(line_region)
+    line_to = view.substr(line_region)
+
+    """ get path start """
+    line_region.b = word_region.b
+    line_to = view.substr(line_region)
+    print("line", line, "line to", line_to)
+    # line_to = re.escape(line_to)
+    path_start = re.match(".*[\s\"\'\(]([$.A-Za-z0-9/]*$)", line_to)
+    if path_start and path_start.group(1):
+        pre = path_start.group(1)
+        print("path start: '", pre, "'")
+
+    line_to = re.sub(re.escape(pre) + "$", "", line_to)
+    final_region.a += len(line_to)
+
+    """ get path end """
+    line_region = view.line(position)
+    line_region.a = word_region.b
+    line_from = view.substr(line_region)
+    print("line from current word", line_from)
+
+    path_end = re.match("^([$.A-Za-z0-9/]*)", line_from)
+    if path_end and path_end.group(1):
+        post = path_end.group(1)
+        print("path start: '", post, "'")
+
+    # line_from = re.sub("^" + re.escape(post), "", line_from)
+    # final_region.b -= len(line_to)
+
+
+    full_path = pre + post
+    print("final path: '", full_path ,"'")
+
+    """region in path"""
+    final_region.b = final_region.a + len(full_path)
+    print("final path by region: '", view.substr(final_region) ,"'")
+
+    return [full_path, final_region]
+
+
+def _get_path_at_cursor(view):
     word = get_word_at_cursor(view)
     line = get_line_at_cursor(view)
     path = get_path(line[0], word[0])
