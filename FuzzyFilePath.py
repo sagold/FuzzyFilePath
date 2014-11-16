@@ -194,7 +194,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
 
         if len(completions[0]) > 0:
-            verbose("completions", len(completions[0]), "matches found for", query.needle, completions[0])
+            verbose("completions", len(completions[0]), "matches found for", query.needle)
             Completion.active = True
             Completion.replaceOnInsert = query.replace_on_insert
             # vintageous
