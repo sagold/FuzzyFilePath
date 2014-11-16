@@ -28,10 +28,12 @@ class Scope:
 		region = view.extract_scope(view.sel()[0].a)
 		scope_content = view.substr(region).strip()
 		# string may be: "", strip it
-		# if re.search("[\"\'()]", scope_content[0]):
-		# 	scope_content = scope_content[1:]
-		# if re.search("[\"\'()]", scope_content[-1]):
-		# 	scope_content = scope_content[:-1]
+		if re.search("[\"\']", scope_content[0]):
+			scope_content = scope_content[1:]
+			region.a += 1
+		if re.search("[\"\']", scope_content[-1]):
+			scope_content = scope_content[:-1]
+			region.b -= 1
 		return [scope_content, region]
 
 	def valid_path(string):
