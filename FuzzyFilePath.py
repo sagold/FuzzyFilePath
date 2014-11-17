@@ -29,7 +29,7 @@ import re
 import os
 
 import FuzzyFilePath.context as context
-from FuzzyFilePath.Cache.ProjectFiles import ProjectFiles
+from FuzzyFilePath.Project.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Scope import Scope
 from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
@@ -47,7 +47,6 @@ def get_path_at_cursor(view):
     """
     result = Scope.get_path(view)
     if result is False:
-        # prone to errors, see CURRENT TASK
         result = context.get_path_at_cursor(view)
     verbose("path", "at cursor", result)
     return result
@@ -63,9 +62,13 @@ class Completion:
         Completion.replaceOnInsert = []
 
     def get_final_path(path):
+
         if Completion.before is not None:
             Completion.before = re.escape(Completion.before)
             path = re.sub("^" + Completion.before, "", path)
+
+        print("build final path", path, "before", Completion.before, "to", path)
+
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:

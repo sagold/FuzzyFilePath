@@ -15,10 +15,8 @@ class Query:
     project_folder = None
     skip_update_replace = False
 
-
     def __init__(self):
         self.reset()
-
 
     def reset(self):
         self.extensions = ["*"]
@@ -27,7 +25,6 @@ class Query:
         self.extension = True
         self.replace_on_insert = []
         self.skip_update_replace = False
-
 
     def update(self, folders, file_name):
         self.valid = is_valid(folders, file_name)
@@ -58,7 +55,8 @@ class Query:
               - path starts with ../ or ./
               - triggered manually (overrides all)
 
-            Keyword arguments:
+            Parameters:
+            -----------
             current_scope -- complete scope on current cursor position
             needle -- path to search
             force_type -- "default", "relative", "absolute" (default False)
@@ -141,12 +139,15 @@ class Query:
 
         return properties
 
-##
-# validate current project-files
-#
-# @param {Array} folders    list of current project folders
-# @param {String} filename  filepath and filename of current view
+
 def is_valid(folders, file_name):
+    """ Validate current project-files
+
+        Parameters
+        ----------
+        folders : array -- list of current project folders
+        filename : string -- filepath and filename of current view
+    """
     if (file_name is None):
         # print("__QueryFilePath__ [A] filename is None")
         return False
