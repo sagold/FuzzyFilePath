@@ -1,88 +1,43 @@
 import sublime
 import os
 import re
-import threading
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.config import config
-
-def posix(path):
-    return path.replace("\\", "/")
-
-
-# stores all files and its fragments within property files
-class CacheFolder(threading.Thread):
-
-    def __init__(self, exclude_folders, extensions, folder):
-        threading.Thread.__init__(self)
-
-        self.exclude_folders = exclude_folders
-        self.extensions = extensions
-        self.folder = folder
-        self.files = None
-        threading.Thread.__init__(self)
-
-    def run(self):
-        # cache files in folder
-        self.files = self.read(self.folder)
-        verbose("caching folder", self.folder, self.files)
-
-    def read(self, folder, base=None):
-        """return all files in folder"""
-        folder_cache = {}
-        base = base if base is not None else folder
-
-        # test ignore expressions on current path
-        for test in self.exclude_folders:
-            if re.search(test, folder) is not None:
-                verbose("cache", "SKIP", folder)
-                return folder_cache
-
-        # ressources =
-        for ressource in os.listdir(folder):
-            current_path = os.path.join(folder, ressource)
-
-            if (os.path.isfile(current_path)):
-
-                relative_path = os.path.relpath(current_path, base)
-                filename, extension = os.path.splitext(relative_path)
-                extension = extension[1:]
-
-                if extension in self.extensions:
-                    # $ hack, reversed in post_commit_completion
-                    folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
-
-            elif (not ressource.startswith('.') and os.path.isdir(current_path)):
-                folder_cache.update(self.read(current_path, base))
-
-        verbose("cached folder", folder, "files: ", len(folder_cache))
-        return folder_cache
+from FuzzyFilePath.Project.Cache import Folder as CacheFolder
 
 
 class ProjectFiles:
-    """ loads and caches files
-        folders are added with add(<path_to_parent_folder>)
-    """
+
     cache = {}
     valid_extensions = None
     exclude_folders = None
 
-    # @constructor
-    # @param {array} file_extensions    to load/suggest
-    # @param {array} exclude_folders
     def __init__(self, file_extensions, exclude_folders):
+        """
+            Manages path suggestions by loading, caching and filtering project files. Add folders by
+            `add(<path_to_parent_folder>)`
 
+            Parameters
+            ----------
+            file_extensions : array -- to load/suggest
+            exclude_folders : array -- regex items for paths to exclude
+        """
         self.valid_extensions = file_extensions
         self.exclude_folders = exclude_folders
 
-    # retrieves a list of valid completions, containing fuzzy searched needle
-    #
-    # @param {string} needle            to search in files
-    # @param {string} project_folder    folder to search in, cached via add
-    # @param {array} valid_extensions
-    # @param {string|False} base_path   of current file, creates a relative path if not False
-    # @param {boolean} with_extension   insert extension
-    # @return {List} containing sublime completions
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
+        """
+            retrieves a list of valid completions, containing fuzzy searched needle
+
+            Parameters
+            ----------
+            needle : string -- to search in files
+            project_folder : string -- folder to search in, cached via add
+            valid_extensions : array -- list of valid file extensions
+            base_path : string -- of current file, creates a relative path if not False
+            with_extension : boolean -- insert extension
+
+            return : List -- containing sublime completions
+        """
         project_files = self.get_files(project_folder)
         if (project_files is None):
             return False
