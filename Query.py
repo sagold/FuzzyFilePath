@@ -158,6 +158,6 @@ def is_valid(folders, file_name):
         return False
     # multiple folders?
     if (len(folders) > 1):
-
+        print("FFP", "multiple folder not yet supported")
 
     return True
