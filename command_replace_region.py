@@ -14,18 +14,118 @@ class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
 
 
 
+# style, tag, prefix, separator
+rules = [
+	{
+		# html
+		"scope": "meta.tag.*string[^\s]*html$",
+		# <* src
+		"tagName": ["img", "script"],
+		"prefix": ["src"],
+		"extensions": ["png", "gif", "jpeg", "jpg", "svg"]
+	},
+	{
+		# html
+		"scope": "meta\\.tag.*string[^\s]*\\.html",
+		# "scope": "html",
+		# <link href
+		"tagName": ["link"],
+		"prefix": ["href"],
+		"extensions": ["css"]
+	},
+	{
+		# css
+		"scope": "meta\\.property\\-value\\.css",
+		# *: url
+		"prefix": ["url"],
+		"style": ["background-image", "background", "list-type", "list-type-image"],
+		"extensions": ["png", "gif", "jpeg", "jpg"]
+	},
+	{
+		# css
+		"scope": "meta\\.property\\-value\\.css",
+		# src: url
+		"prefix": ["url"],
+		"style": ["src"],
+		"extensions": ["woff", "ttf", "svg"]
+	},
+	{
+		# js
+		"scope": "source\\.js",
+		# import * from *
+		"prefix": ["from", "import"],
+		"extensions": ["js"]
+	},
+	{
+		# js
+		"scope": "source\\.js.*string",
+		# AMD
+		"prefix": "define",
+		"extensions": ["js"]
+	},
+	{
+		# js
+		"scope": "source\\.js.*string",
+		# js webpack require: require(*)
+		"prefix": ["require"],
+		"extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"]
+	},
+	{
+		# js
+		"scope": "source\\.js.*string",
+		# object.src = *
+		"prefix": ["src"],
+		"extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"]
+	}
+]
+
+statements = ["prefix", "tagName", "style"]
+
+def check_rule(rule, result):
+	valid = True
+	for statement in statements:
+		if rule.get(statement) is not None and result.get(statement) is not None and result.get(statement) not in rule.get(statement):
+			# print("False for", statement, result.get(statement), "not in", rule.get(statement))
+			valid = False
+
+	return valid
+
+def find_rule(result, scope):
+	global rules
+	for rule in rules:
+		if check_rule(rule, result) and re.search(rule["scope"], scope):
+			return rule
+	return False
+
+
 """
 	<img src="assets/header.png" />
 	<div id="inline" style="background-image: url(header.png);">
+	<div id="inline" style="background: #fff url(header.png) repeat-x;">
 	background-image: url(header);
 	background-image: url('header');
 	<script type="text/javascript" src="boot.js">
 	<link type="text/css" href="styles.css">
 	require("schalalala")
-	import "schalalala"
-	import schacka
+	require(schalalala)
+	define(["module/path/to/index", "prefixed/index"], function (module, prefixed) {
+	import "schalalala/\in header.png"
+	import schacka from schallala/header in.png
 	asdasdalöfkalfdkadlöfsdf
+	document.getElementById("my-img").src = "dummyimage.com/100x100/eb00eb/fff";
+	<div>some text content</div>
+	<div>
+		some text content
+	</div>
 """
+
+NEEDLE_SEPARATOR = "\"\'\(\)"
+NEEDLE_SEPARATOR_BEFORE = "\"\'\("
+NEEDLE_SEPARATOR_AFTER = "^\"\'\)"
+NEEDLE_CHARACTERS = "A-Za-z0-9\-\_$"
+NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>"
+DELIMITER = "\s\:\(\[\="
+
 
 import re
 class DebugCommand(sublime_plugin.TextCommand):
@@ -42,6 +142,7 @@ class DebugCommand(sublime_plugin.TextCommand):
 		view = self.view
 		selection = view.sel()[0]
 		position = selection.begin()
+		valid = True
 
 		# regions
 		word_region = view.word(position)
@@ -60,19 +161,30 @@ class DebugCommand(sublime_plugin.TextCommand):
 
 		# grab everything in 'separators'
 		needle = ""
-		separator = ""
+		separator = False
 		pre_match = ""
-		pre_quotes = re.search("([\"\'\(])([^\"\'\(\)]*)$", pre)
+		pre_quotes = re.search("(["+NEEDLE_SEPARATOR_BEFORE+"])([^"+NEEDLE_SEPARATOR+"]*)$", pre)
 		if pre_quotes:
 			# print("pre_quotes: '" + pre_quotes.group(2))
 			needle += pre_quotes.group(2) + word
 			separator = pre_quotes.group(1)
 			pre_match = pre_quotes.group(2)
 
-			post_quotes = re.search("^([^\"\'\)]*)", post)
+		else:
+			pre_quotes = re.search("(\s)([^"+NEEDLE_SEPARATOR+"\s]*)$", pre)
+			if pre_quotes:
+				needle = pre_quotes.group(2) + word
+				separator = pre_quotes.group(1)
+				pre_match = pre_quotes.group(2)
+
+		if pre_quotes:
+			post_quotes = re.search("^(["+NEEDLE_SEPARATOR_AFTER+"]*)", post)
 			if post_quotes:
 				# print("post_quotes: '" + post_quotes.group(1))
 				needle += post_quotes.group(1)
+			else:
+				print("no post quotes found => invalid")
+				valid = False
 		else:
 			needle = word
 
@@ -85,17 +197,56 @@ class DebugCommand(sublime_plugin.TextCommand):
 		# print("prefix line", prefix_line)
 
 
-		prefix = re.search("\s*([A-Za-z0-9\-\_]*)[=\s\:\(]*$", prefix_line)
+		#define? (["...", "..."]) -> before?
+		#before: ABC =:([
+		# print("prefix line", prefix_line)
+		prefix = re.search("\s*(["+NEEDLE_CHARACTERS+"]+)["+DELIMITER+"]*$", prefix_line)
+		if prefix is None:
+			# validate array, like define(["...", ".CURSOR."])
+			prefix = re.search("^\s*(["+NEEDLE_CHARACTERS+"]+)["+DELIMITER+"]+", prefix_line)
+
 		if prefix:
 			print("prefix:", prefix.group(1))
+			prefix = prefix.group(1)
 
-		tag = re.search("<\s*([A-Za-z0-9\-\_]*)\s*[^>]*$", prefix_line)
+		tag = re.search("<\s*(["+NEEDLE_CHARACTERS+"]*)\s*[^>]*$", prefix_line)
 		if tag:
 			tag = tag.group(1)
 			print("tag:", tag)
 
-		style = re.search("\s*([A-Za-z0-9\-\_]*)\s*\:[^\:]*$", prefix_line)
+		style = re.search("\s*(["+NEEDLE_CHARACTERS+"]*)\s*\:[^\:]*$", prefix_line)
 		if style:
 			style = style.group(1)
 			print("style:", style)
+
+		if separator is False:
+			print("separator undefined => invalid")
+			valid = False
+
+		elif re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
+			print("invalid characters in needle => invalid")
+			valid = False
+
+		elif prefix is None and separator.strip() == "":
+			print("prefix undefined => invalid")
+			valid = False
+
+		print("valid:", valid)
+
+		if valid is False:
+			return False
+
+		result = {
+			"needle": needle,
+			"valid": valid,
+			"prefix": prefix,
+			"tagName": tag,
+			"style": style
+		}
+
+		current_scope = view.scope_name(word_region.a)
+		rule = find_rule(result, current_scope)
+
+		if rule:
+			print("valid rule AND correct scope", rule, result)
 
