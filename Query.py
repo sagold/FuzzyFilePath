@@ -149,18 +149,15 @@ def is_valid(folders, file_name):
         filename : string -- filepath and filename of current view
     """
     if (file_name is None):
-        # print("__QueryFilePath__ [A] filename is None")
         return False
     # single file?
     if (len(folders) == 0):
-        # print("__QueryFilePath__ [A] no folders")
         return False
     # independent file?
     if (not folders[0] in file_name):
-        # print("__QueryFilePath__ [A] independent file")
         return False
     # multiple folders?
     if (len(folders) > 1):
-        print("__QueryFilePath__ [W] multiple folders not yet supported")
+
 
     return True

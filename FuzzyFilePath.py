@@ -67,7 +67,7 @@ class Completion:
             Completion.before = re.escape(Completion.before)
             path = re.sub("^" + Completion.before, "", path)
 
-        print("build final path", path, "before", Completion.before, "to", path)
+
 
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
@@ -188,9 +188,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if query.build(current_scope, needle, query.relative) is False:
             return None
 
-        print("FFP QUERYING FILES")
+
         completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
-        print("FFP QUERYING FILES DONE")
+
 
         if len(completions[0]) > 0:
             verbose("completions", len(completions[0]), "matches found for", query.needle)
