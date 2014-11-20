@@ -4,6 +4,7 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.path import Path
 from FuzzyFilePath.common.config import config
 
+
 class Query:
 
     def __init__(self):
@@ -14,7 +15,6 @@ class Query:
         self.relative = False
         self.replace_on_insert = []
         self.skip_update_replace = False
-
 
     def build(self, needle, properties, current_folder, force_type=False):
 
@@ -33,16 +33,14 @@ class Query:
         needle_folder = current_folder if needle_is_relative else False
         needle_folder = properties.get("relative", needle_folder)
 
-
-        print("REPLACE query", properties.get("replace_on_insert"))
-
+        # add evaluation to object
         self.replace_on_insert = self.replace_on_insert if self.skip_update_replace else properties.get("replace_on_insert", [])
         self.relative = Query.get_path_type(needle_folder, current_folder, force_type)
         self.needle = Query.build_needle_query(needle, current_folder)
         self.extensions = properties.get("extensions", ["js"])
 
+        # return trigger search
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else properties.get("auto", config["AUTO_TRIGGER"]))
-
 
     def build_needle_query(needle, current_folder):
         needle = re.sub("../", "", needle)
@@ -50,20 +48,16 @@ class Query:
             needle = current_folder + re.sub("\.\/", "", needle)
         return needle
 
-
     def get_path_type(relative, current_folder, force_type=False):
-
         if relative is None:
             relative = False
         elif relative is True:
             relative = current_folder
-
         # ???
         if force_type is not False and force_type is not "default":
             relative = "relative"
 
         return relative
-
 
     def override_replace_on_insert(self, replacements):
         self.replace_on_insert = replacements
