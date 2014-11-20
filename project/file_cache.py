@@ -21,11 +21,11 @@ class FileCache(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        print("FFP UPDATING PROJECTFILES")
+
         # cache files in folder
         self.files = self.read(self.folder)
         verbose("caching folder", self.folder, self.files)
-        print("FFP UPDATING PROJECTFILES DONE", len(self.files))
+
 
     def read(self, folder, base=None):
         """return all files in folder"""
