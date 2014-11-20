@@ -66,11 +66,10 @@ def plugin_loaded():
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
-    global project_files, config
+    global project_files
 
-    exclude_folders = []
-    project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+
     exclude_folders = settings.get("exclude_folders", ["node_modules"])
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
 
@@ -78,7 +77,6 @@ def update_settings():
     config["DISABLE_KEYMAP_ACTIONS"] = settings.get("disable_keymap_actions", config["DISABLE_KEYMAP_ACTIONS"]);
     config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
     config["AUTO_TRIGGER"] = settings.get("auto_trigger", config["AUTO_TRIGGER"])
-
 
 
 def cleanup_completion(view):
