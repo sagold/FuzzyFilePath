@@ -20,7 +20,7 @@ import os
 # import FuzzyFilePath.context as context
 from FuzzyFilePath.expression import Context
 from FuzzyFilePath.Project.ProjectFiles import ProjectFiles
-from FuzzyFilePath.Scope import Scope
+# from FuzzyFilePath.Scope import Scope
 from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
