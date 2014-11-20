@@ -7,5 +7,6 @@ config = {
 	"INSERT_ACTION": ["commit_completion", "insert_best_completion"],
 	# dynamic
 	"DISABLE_AUTOCOMPLETION": False,
-	"DISABLE_KEYMAP_ACTIONS": False
+	"DISABLE_KEYMAP_ACTIONS": False,
+	"AUTO_TRIGGER": True
 }
