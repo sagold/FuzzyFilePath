@@ -7,8 +7,6 @@ def posix(path):
 
 class Query:
 
-    scopes = []
-
     auto_trigger = False
     valid = False
     current_folder = None
@@ -26,21 +24,8 @@ class Query:
         self.replace_on_insert = []
         self.skip_update_replace = False
 
-    def update(self, folders, file_name):
-        self.valid = is_valid(folders, file_name)
-        if self.valid is False:
-            return False
 
-        project_folder = folders[0]
-        current_folder = os.path.dirname(file_name)
-        current_folder = os.path.relpath(current_folder, project_folder)
-        current_folder = "" if current_folder == "." else current_folder
-
-        self.project_folder = project_folder
-        self.current_folder = posix(current_folder)
-        return True
-
-    def build(self, scope, needle, force_type=False):
+    def build(self, needle, properties, force_type=False):
         """ Setup properties for completion query
 
             Behaviour
@@ -62,8 +47,7 @@ class Query:
             force_type -- "default", "relative", "absolute" (default False)
         """
         triggered = force_type is not False
-        properties = self.get_scope_properties(scope)
-        # verbose("scope", "search result for: " + scope, properties)
+
         query_string = self.get_input_properties(needle)
 
         if triggered is False and properties is False and query_string["is_path"] is False:
@@ -100,18 +84,9 @@ class Query:
 
         return self.active
 
-
-    def get_scope_properties(self, current_scope):
-        for properties in self.scopes:
-            scope = properties.get("scope").replace("//", "")
-            if re.search(scope, current_scope):
-                return properties
-        return False
-
     def override_replace_on_insert(self, replacements):
         self.replace_on_insert = replacements
         self.skip_update_replace = True
-
 
     def get_input_properties(self, needle):
         properties = {
@@ -138,29 +113,3 @@ class Query:
             properties["needle"] = needle
 
         return properties
-
-
-def is_valid(folders, file_name):
-    """ Validate current project-files
-
-        Parameters
-        ----------
-        folders : array -- list of current project folders
-        filename : string -- filepath and filename of current view
-    """
-    if (file_name is None):
-        # print("__QueryFilePath__ [A] filename is None")
-        return False
-    # single file?
-    if (len(folders) == 0):
-        # print("__QueryFilePath__ [A] no folders")
-        return False
-    # independent file?
-    if (not folders[0] in file_name):
-        # print("__QueryFilePath__ [A] independent file")
-        return False
-    # multiple folders?
-    if (len(folders) > 1):
-        print("__QueryFilePath__ [W] multiple folders not yet supported")
-
-    return True
