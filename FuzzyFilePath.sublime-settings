@@ -71,10 +71,11 @@
 
 			"auto": true,
 			"extensions": ["js"],
-			"insertExtension": false,
 			"relative": true,
 
 			"replace_on_insert": [
+				// remove extension
+				["\\.js$", ""],
 				// in case bower_components are resolved absolute
 				["^[\\.\\./]*/bower_components/", ""],
 				// nodejs will load index.js by default, remove
@@ -88,16 +89,16 @@
 
 			"auto": false,
 			"extensions": ["js", "json"],
-			"insertExtension": true
-		},
 
+			// remove extension
+			"replace_on_insert": [["\\.js$", ""]]
+		},
 		{
 			// json
 			"scope": "source\\.json.*string",
 
 			"auto": false,
 			"extensions": ["*"],
-			"insertExtension": true,
 			"relative": true
 		},
 
@@ -106,7 +107,6 @@
 			"scope": ".",
 			"auto": false,
 			"extensions": ["*"],
-			"insertExtension": true
 		}
 	]
 }
