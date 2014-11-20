@@ -17,30 +17,20 @@ import sublime_plugin
 import re
 import os
 
-import FuzzyFilePath.context as context
+# import FuzzyFilePath.context as context
 from FuzzyFilePath.expression import Context
 from FuzzyFilePath.Project.ProjectFiles import ProjectFiles
 from FuzzyFilePath.Scope import Scope
 from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
+from FuzzyFilePath.common.selection import Selection
 
 query = Query()
 project_files = None
 
-class Selection:
-
-    def get_position(view):
-        return view.sel()[0].begin()
-
-    def get_line(view):
-        position = Selection.get_position(view)
-        line_region = view.line(position)
-        return view.substr(line_region)
-
-    def get_scope(view):
-        return view.scope_name(Selection.get_position(view))
-
+def posix(path):
+    return path.replace("\\", "/")
 
 class Completion:
 
@@ -82,7 +72,6 @@ def update_settings():
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    query.scopes = settings.get("scopes", [])
     query.auto_trigger = (settings.get("auto_trigger", True))
     exclude_folders = settings.get("exclude_folders", ["node_modules"])
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
@@ -105,7 +94,7 @@ def cleanup_completion(view):
 
 
 
-def query_completions(view, prefix, locations):
+def query_completions(view, project_folder, current_folder):
 
     # parse current context
     expression = Context.get_context(view)
@@ -121,17 +110,19 @@ def query_completions(view, prefix, locations):
         print("no valid trigger for current expression", expression)
         return False
 
-    if query.build(expression.get("needle"), trigger, query.relative) is False:
-        # query is valid, but should not be triggered: not forced, no auto-options
+    if query.build(expression.get("needle"), trigger, current_folder, query.relative) is False:
+        # query is valid, but may not be triggered: not forced, no auto-options
+        print("query abort")
         return False
 
 
     print("FFP QUERYING FILES")
-    completions = project_files.search_completions(query.needle, query.project_folder, query.extensions, query.relative, query.extension)
+    print(query.needle, project_folder, query.extensions, query.relative, query.extension)
+    completions = project_files.search_completions(query.needle, project_folder, query.extensions, query.relative, query.extension)
     print("FFP QUERYING FILES DONE")
 
 
-    if len(completions[0]) > 0:
+    if completions and len(completions[0]) > 0:
         verbose("completions", len(completions[0]), "matches found for", query.needle)
         Completion.active = True
         Completion.replaceOnInsert = query.replace_on_insert
@@ -158,6 +149,7 @@ def file_in_project(filename, folders):
         return False
     if (len(folders) > 1):
         print("__QueryFilePath__ [W] multiple folders not yet supported")
+    return True
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
@@ -193,8 +185,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             self.start_tracking(view)
 
         if config["DISABLE_AUTOCOMPLETION"] is False and self.is_project_file:
-            return query_completions(view, prefix, locations)
+            print("query", self.project_folder, self.current_folder)
+            return query_completions(view, self.project_folder, self.current_folder)
         else:
+            print("disabled or not a project", self.is_project_file)
             return False
 
 
@@ -206,11 +200,15 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # update project by file
     def on_post_save_async(self, view):
-        if project_files is not None:
-            folders = sublime.active_window().folders()
-            match = [folder for folder in folders if folder in view.file_name()]
-            if len(match) > 0:
-                project_files.update(folder, view.file_name())
+        if project_files is None:
+            return False
+
+        folders = sublime.active_window().folders()
+        match = [folder for folder in folders if folder in view.file_name()]
+        if len(match) > 0:
+            return project_files.update(match[0], view.file_name())
+        else:
+            return False
 
 
     # validate and update project folders
@@ -220,14 +218,17 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         # abort if file is not within a project
         self.is_project_file = file_in_project(file_name, folders)
+        print(self.is_project_file, file_name, folders)
         if not self.is_project_file:
+            print("not a project file")
             query.valid = False
             return False
 
-        self.project_folder = folders[0]
+        project_folder = folders[0]
         current_folder = os.path.dirname(file_name)
         current_folder = os.path.relpath(current_folder, project_folder)
         current_folder = "" if current_folder == "." else current_folder
+        self.project_folder = project_folder
         self.current_folder = posix(current_folder)
 
         project_files.add(self.project_folder)
