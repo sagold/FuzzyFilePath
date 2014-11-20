@@ -1,6 +1,8 @@
-var module = require("./$module"),
+var module = require("././$module.js"),
 	//com<HIT INSERT_PATH WITH CURSOR HERE>:
-	component = require("com"
+	component = require("./$module")
 
 
-module.exports = function boot() {}
+
+module.exports = function ("asdasd") {}
+m
