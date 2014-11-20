@@ -19,7 +19,6 @@ rules = [
 
         "extensions": ["png", "gif", "jpeg", "jpg", "svg"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     },
     {
@@ -32,7 +31,6 @@ rules = [
 
         "extensions": ["css"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     },
     {
@@ -44,7 +42,6 @@ rules = [
 
         "extensions": ["png", "gif", "jpeg", "jpg"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     },
     {
@@ -56,7 +53,6 @@ rules = [
 
         "extensions": ["woff", "ttf", "svg"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     },
     {
@@ -67,18 +63,16 @@ rules = [
 
         "extensions": ["js"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     },
     {
         # js
         "scope": "source\\.js.*string",
         # AMD
-        "prefix": "define",
+        "prefix": ["define"],
 
         "extensions": ["js"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     },
     {
@@ -89,8 +83,15 @@ rules = [
 
         "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
         "auto": True,
-        "insertExtension": True,
-        "relative": True
+        "relative": True,
+        "replace_on_insert": [
+        	# remove extension
+        	["\\.js$", ""],
+        	# in case bower_components are resolved absolute
+        	["^[\\.\\./]*/bower_components/", ""],
+        	# nodejs will load index.js by default, remove
+        	["/index$", ""]
+        ]
     },
     {
         # js
@@ -100,7 +101,6 @@ rules = [
 
         "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
         "auto": True,
-        "insertExtension": True,
         "relative": True
     }
 ]
