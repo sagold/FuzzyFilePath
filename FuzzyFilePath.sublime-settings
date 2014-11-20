@@ -24,8 +24,8 @@
 	        "tagName": ["img", "script"],
 	        "prefix": ["src"],
 
-	        "extensions": ["png", "gif", "jpeg", "jpg", "svg"],
 	        "auto": true,
+	        "extensions": ["png", "gif", "jpeg", "jpg", "svg"],
 	        "relative": true
 	    },
 	    {
@@ -36,8 +36,8 @@
 	        "tagName": ["link"],
 	        "prefix": ["href"],
 
-	        "extensions": ["css"],
 	        "auto": true,
+	        "extensions": ["css"],
 	        "relative": true
 	    },
 	    {
@@ -47,8 +47,8 @@
 	        "prefix": ["url"],
 	        "style": ["background-image", "background", "list-type", "list-type-image"],
 
-	        "extensions": ["png", "gif", "jpeg", "jpg"],
 	        "auto": true,
+	        "extensions": ["png", "gif", "jpeg", "jpg"],
 	        "relative": true
 	    },
 	    {
@@ -58,8 +58,8 @@
 	        "prefix": ["url"],
 	        "style": ["src"],
 
-	        "extensions": ["woff", "ttf", "svg"],
 	        "auto": true,
+	        "extensions": ["woff", "ttf", "svg"],
 	        "relative": true
 	    },
 	    {
@@ -68,8 +68,8 @@
 	        // import * from *
 	        "prefix": ["from", "import"],
 
-	        "extensions": ["js"],
 	        "auto": true,
+	        "extensions": ["js"],
 	        "relative": true
 	    },
 	    {
@@ -88,8 +88,8 @@
 	        // js webpack require: require(*)
 	        "prefix": ["require"],
 
-	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
 	        "auto": true,
+	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
 	        "relative": true,
 	        "replace_on_insert": [
 	        	// remove extension
@@ -106,8 +106,8 @@
 	        // object.src = *
 	        "prefix": ["src"],
 
-	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
 	        "auto": true,
+	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
 	        "relative": true
 	    }
 	]

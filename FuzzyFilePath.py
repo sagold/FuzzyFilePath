@@ -8,6 +8,7 @@
     # errors
 
         - @cleanup_completion: cleanup performs no cleanup
+        - trigger completion shortcut not working
 
     @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -227,6 +228,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         self.current_folder = Path.sanitize(current_folder)
 
         project_files.add(self.project_folder)
+
 
     def start_tracking(self, view, command_name=None):
         self.track_insert["active"] = True
