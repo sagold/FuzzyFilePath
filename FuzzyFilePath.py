@@ -25,12 +25,10 @@ from FuzzyFilePath.Query import Query
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
+from FuzzyFilePath.common.path import Path
 
 query = Query()
 project_files = None
-
-def posix(path):
-    return path.replace("\\", "/")
 
 class Completion:
 
@@ -49,12 +47,13 @@ class Completion:
             path = re.sub("^" + Completion.before, "", path)
             Completion.before = None
 
-        print("build final path", path, "before", Completion.before, "to", path)
 
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
+
+        print("build final path", path, "before", Completion.before, "to", path, Completion.replaceOnInsert)
         return path
 
 
@@ -72,13 +71,13 @@ def update_settings():
     exclude_folders = []
     project_folders = sublime.active_window().project_data().get("folders", [])
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    query.auto_trigger = (settings.get("auto_trigger", True))
     exclude_folders = settings.get("exclude_folders", ["node_modules"])
     project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
 
+    config["DEBUG"] = settings.get("DEBUG", config["DEBUG"])
     config["DISABLE_KEYMAP_ACTIONS"] = settings.get("disable_keymap_actions", config["DISABLE_KEYMAP_ACTIONS"]);
     config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
-    config["DEBUG"] = settings.get("DEBUG", config["DEBUG"])
+    config["AUTO_TRIGGER"] = settings.get("auto_trigger", config["AUTO_TRIGGER"])
 
 
 
@@ -110,15 +109,14 @@ def query_completions(view, project_folder, current_folder):
         print("no valid trigger for current expression", expression)
         return False
 
+    print("trigger found", trigger)
+
     if query.build(expression.get("needle"), trigger, current_folder, query.relative) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
-        print("query abort")
         return False
 
 
-    print("FFP QUERYING FILES")
-    print(query.needle, project_folder, query.extensions, query.relative, query.extension)
-    completions = project_files.search_completions(query.needle, project_folder, query.extensions, query.relative, query.extension)
+    completions = project_files.search_completions(query.needle, project_folder, query.extensions, query.relative)
     print("FFP QUERYING FILES DONE")
 
 
@@ -126,6 +124,7 @@ def query_completions(view, project_folder, current_folder):
         verbose("completions", len(completions[0]), "matches found for", query.needle)
         Completion.active = True
         Completion.replaceOnInsert = query.replace_on_insert
+        print("REPLACE", Completion.replaceOnInsert)
         # vintageous
         view.run_command('_enter_insert_mode')
     else:
@@ -218,10 +217,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         # abort if file is not within a project
         self.is_project_file = file_in_project(file_name, folders)
-        print(self.is_project_file, file_name, folders)
         if not self.is_project_file:
-            print("not a project file")
-            query.valid = False
             return False
 
         project_folder = folders[0]
@@ -229,7 +225,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         current_folder = os.path.relpath(current_folder, project_folder)
         current_folder = "" if current_folder == "." else current_folder
         self.project_folder = project_folder
-        self.current_folder = posix(current_folder)
+        self.current_folder = Path.sanitize(current_folder)
 
         project_files.add(self.project_folder)
 

@@ -24,7 +24,7 @@ class ProjectFiles:
         self.valid_extensions = file_extensions
         self.exclude_folders = exclude_folders
 
-    def search_completions(self, needle, project_folder, valid_extensions, base_path=False, with_extension=True):
+    def search_completions(self, needle, project_folder, valid_extensions, base_path=False):
         """
             retrieves a list of valid completions, containing fuzzy searched needle
 
@@ -66,7 +66,7 @@ class ProjectFiles:
             """
             if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, file, re.IGNORECASE)):
 
-                completion = self.get_completion(properties[0] + "." + properties[1], properties, base_path, with_extension)
+                completion = self.get_completion(properties[0], properties[2], base_path)
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
@@ -80,19 +80,13 @@ class ProjectFiles:
         return thread.files
 
     # @return {list} completion
-    def get_completion(self, target_path, target, base_path=False, with_extension=True):
+    def get_completion(self, target_path, path_display, base_path=False):
         # absolute path
         if base_path is False:
-            if with_extension is True:
-                return (target[2], "/" + target[0] + "." + target[1])
-            else:
-                return (target[2], "/" + target[0])
+            return (path_display, "/" + target_path)
         # create relative path
         else:
-            if with_extension is True:
-                return (target[2], self.get_relative_path(target_path, base_path))
-            else:
-                return (target[2], self.get_relative_path(target[0], base_path))
+            return (path_display, self.get_relative_path(target_path, base_path))
 
     # return {string} path from base to target
     def get_relative_path(self, target, base):
