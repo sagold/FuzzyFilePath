@@ -77,6 +77,7 @@ def update_settings():
     config["DISABLE_KEYMAP_ACTIONS"] = settings.get("disable_keymap_actions", config["DISABLE_KEYMAP_ACTIONS"]);
     config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
     config["AUTO_TRIGGER"] = settings.get("auto_trigger", config["AUTO_TRIGGER"])
+    config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
 
 
 def cleanup_completion(view):

@@ -1,5 +1,6 @@
 import re
 import sublime
+from FuzzyFilePath.common.config import config
 
 NEEDLE_SEPARATOR = "\"\'\(\)"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\("
@@ -7,105 +8,6 @@ NEEDLE_SEPARATOR_AFTER = "^\"\'\)"
 NEEDLE_CHARACTERS = "A-Za-z0-9\-\_$"
 NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>"
 DELIMITER = "\s\:\(\[\="
-
-# style, tag, prefix, separator
-rules = [
-    {
-        # html
-        "scope": "meta.tag.*string.*\\.html",
-        # <* src
-        "tagName": ["img", "script"],
-        "prefix": ["src"],
-
-        "extensions": ["png", "gif", "jpeg", "jpg", "svg"],
-        "auto": True,
-        "relative": True
-    },
-    {
-        # html
-        "scope": "meta\\.tag.*string.*\\.html",
-        # "scope": "html",
-        # <link href
-        "tagName": ["link"],
-        "prefix": ["href"],
-
-        "extensions": ["css"],
-        "auto": True,
-        "relative": True
-    },
-    {
-        # css
-        "scope": "meta\\.property\\-value\\.css",
-        # *: url
-        "prefix": ["url"],
-        "style": ["background-image", "background", "list-type", "list-type-image"],
-
-        "extensions": ["png", "gif", "jpeg", "jpg"],
-        "auto": True,
-        "relative": True
-    },
-    {
-        # css
-        "scope": "meta\\.property\\-value\\.css",
-        # src: url
-        "prefix": ["url"],
-        "style": ["src"],
-
-        "extensions": ["woff", "ttf", "svg"],
-        "auto": True,
-        "relative": True
-    },
-    {
-        # js
-        "scope": "source\\.js",
-        # import * from *
-        "prefix": ["from", "import"],
-
-        "extensions": ["js"],
-        "auto": True,
-        "relative": True
-    },
-    {
-        # js
-        "scope": "source\\.js.*string",
-        # AMD
-        "prefix": ["define"],
-
-        "extensions": ["js"],
-        "auto": True,
-        "relative": True
-    },
-    {
-        # js
-        "scope": "source\\.js.*string",
-        # js webpack require: require(*)
-        "prefix": ["require"],
-
-        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
-        "auto": True,
-        "relative": True,
-        "replace_on_insert": [
-        	# remove extension
-        	["\\.js$", ""],
-        	# in case bower_components are resolved absolute
-        	["^[\\.\\./]*/bower_components/", ""],
-        	# nodejs will load index.js by default, remove
-        	["/index$", ""]
-        ]
-    },
-    {
-        # js
-        "scope": "source\\.js.*string",
-        # object.src = *
-        "prefix": ["src"],
-
-        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
-        "auto": True,
-        "relative": True
-    }
-]
-
-statements = ["prefix", "tagName", "style"]
 
 
 def get_context(view):
@@ -124,11 +26,8 @@ def get_context(view):
 	word = view.substr(word_region)
 	pre = view.substr(pre_region)
 	post = view.substr(post_region)
-	# print(pre + "|" + word + "|" + post)
 
 	needle_region = view.word(position)
-
-	# print("\n")
 
 	# grab everything in 'separators'
 	needle = ""
@@ -136,7 +35,7 @@ def get_context(view):
 	pre_match = ""
 	pre_quotes = re.search("(["+NEEDLE_SEPARATOR_BEFORE+"])([^"+NEEDLE_SEPARATOR+"]*)$", pre)
 	if pre_quotes:
-		# # print("pre_quotes: '" + pre_quotes.group(2))
+		# print("pre_quotes: '" + pre_quotes.group(2))
 		needle += pre_quotes.group(2) + word
 		separator = pre_quotes.group(1)
 		pre_match = pre_quotes.group(2)
@@ -155,7 +54,7 @@ def get_context(view):
 	if pre_quotes:
 		post_quotes = re.search("^(["+NEEDLE_SEPARATOR_AFTER+"]*)", post)
 		if post_quotes:
-			# # print("post_quotes: '" + post_quotes.group(1))
+			# print("post_quotes: '" + post_quotes.group(1))
 			needle += post_quotes.group(1)
 
 			needle_region.b += len(post_quotes.group(1))
@@ -166,14 +65,10 @@ def get_context(view):
 	else:
 		needle = word
 
-	# print("needle:'" + needle + "'")
-	# print("separator:", separator)
-
 	# grab prefix
 	prefix_region = sublime.Region(line_region.a, pre_region.b - len(pre_match) - 1)
 	prefix_line = view.substr(prefix_region)
 	# # print("prefix line", prefix_line)
-
 
 	#define? (["...", "..."]) -> before?
 	# before: ABC =:([
@@ -217,8 +112,6 @@ def get_context(view):
 			"region": needle_region
 		}
 
-
-
 class Context:
 
 	def get_context(view):
@@ -226,7 +119,7 @@ class Context:
 
 	def check_trigger(trigger, expression):
 		# returns True if the expression statements match the trigger
-		for statement in set(statements).intersection(trigger):
+		for statement in set(config["TRIGGER_STATEMENTS"]).intersection(trigger):
 			values = trigger.get(statement)
 			# statement values may be None (or any other value...)
 			if type(values) is list and not expression.get(statement) in values:
@@ -238,7 +131,7 @@ class Context:
 		return True
 
 	def find_trigger(expression, scope):
-		for trigger in rules:
+		for trigger in config["TRIGGER"]:
 			# if the trigger is defined for the current scope
 			# REQUIRED? scope = properties.get("scope").replace("//", "")
 			if re.search(trigger["scope"], scope):
@@ -257,7 +150,5 @@ class Context:
 		current_scope = view.scope_name(word_region.a)
 		context = get_context(view)
 		rule = Context.find_rule(context, current_scope)
-		if rule:
-			# print("\nVALID context", context, "\nVALID rule:", rule)
-			return [rule, context]
-		return False
+
+		return [rule, context] if rule else False

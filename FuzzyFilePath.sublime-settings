@@ -17,96 +17,98 @@
 	// All options may be overriden in <Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User>
 	// configuration of suggestions and insertions by scope
 	"scopes": [
+	    {
+	        // html
+	        "scope": "meta.tag.*string.*\\.html",
+	        // <* src
+	        "tagName": ["img", "script"],
+	        "prefix": ["src"],
 
-		// html
+	        "extensions": ["png", "gif", "jpeg", "jpg", "svg"],
+	        "auto": true,
+	        "relative": true
+	    },
+	    {
+	        // html
+	        "scope": "meta\\.tag.*string.*\\.html",
+	        // "scope": "html",
+	        // <link href
+	        "tagName": ["link"],
+	        "prefix": ["href"],
 
-		{
-			// html script tag
-			"scope": "tag\\.script.*html.*string",
+	        "extensions": ["css"],
+	        "auto": true,
+	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": "meta\\.property\\-value\\.css",
+	        // *: url
+	        "prefix": ["url"],
+	        "style": ["background-image", "background", "list-type", "list-type-image"],
 
-			"auto": true,
-			"extensions": ["js"],
-			"insertExtension": true,
-			"relative": true
-		},
+	        "extensions": ["png", "gif", "jpeg", "jpg"],
+	        "auto": true,
+	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": "meta\\.property\\-value\\.css",
+	        // src: url
+	        "prefix": ["url"],
+	        "style": ["src"],
 
-		{
-			// html style tag
-			"scope": "tag\\.inline.*html.*string",
+	        "extensions": ["woff", "ttf", "svg"],
+	        "auto": true,
+	        "relative": true
+	    },
+	    {
+	        // js
+	        "scope": "source\\.js",
+	        // import * from *
+	        "prefix": ["from", "import"],
 
-			"auto": true,
-			"extensions": ["css"],
-			"insertExtension": true,
-			"relative": true
-		},
+	        "extensions": ["js"],
+	        "auto": true,
+	        "relative": true
+	    },
+	    {
+	        // js
+	        "scope": "source\\.js.*string",
+	        // AMD
+	        "prefix": ["define"],
 
-		{
-			// html
-			"scope": "text\\.html.*string",
+	        "extensions": ["js"],
+	        "auto": true,
+	        "relative": true
+	    },
+	    {
+	        // js
+	        "scope": "source\\.js.*string",
+	        // js webpack require: require(*)
+	        "prefix": ["require"],
 
-			"auto": false,
-			"extensions": ["css", "png", "jpg"],
-			"insertExtension": true,
-			"relative": false
-		},
+	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
+	        "auto": true,
+	        "relative": true,
+	        "replace_on_insert": [
+	        	// remove extension
+	        	["\\.js$", ""],
+	        	// in case bower_components are resolved absolute
+	        	["^[\\.\\./]*/bower_components/", ""],
+	        	// nodejs will load index.js by default, remove
+	        	["/index$", ""]
+	        ]
+	    },
+	    {
+	        // js
+	        "scope": "source\\.js.*string",
+	        // object.src = *
+	        "prefix": ["src"],
 
-		// css
-
-		{
-			// css
-			"scope": "source\\.css.*(function|string|property-value)",
-
-			"auto": false,
-			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
-			"insertExtension": true,
-			"relative": false,
-			"base_directory": "/test/mock/project/"
-		},
-
-		// javascript
-
-		{
-			// JS AMD
-			"scope": "require.*string",
-
-			"auto": true,
-			"extensions": ["js"],
-			"relative": true,
-
-			"replace_on_insert": [
-				// remove extension
-				["\\.js$", ""],
-				// in case bower_components are resolved absolute
-				["^[\\.\\./]*/bower_components/", ""],
-				// nodejs will load index.js by default, remove
-				["/index$", ""]
-			]
-		},
-
-		{
-			// js
-			"scope": "\\.js\\s",
-
-			"auto": false,
-			"extensions": ["js", "json"],
-
-			// remove extension
-			"replace_on_insert": [["\\.js$", ""]]
-		},
-		{
-			// json
-			"scope": "source\\.json.*string",
-
-			"auto": false,
-			"extensions": ["*"],
-			"relative": true
-		},
-
-		{
-			// default, for all scopes
-			"scope": ".",
-			"auto": false,
-			"extensions": ["*"],
-		}
+	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
+	        "auto": true,
+	        "relative": true
+	    }
 	]
 }
