@@ -1,6 +1,7 @@
 import re
 import sublime
 from FuzzyFilePath.common.config import config
+from FuzzyFilePath.common.selection import Selection
 
 NEEDLE_SEPARATOR = "\"\'\(\)"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\("
@@ -9,11 +10,9 @@ NEEDLE_CHARACTERS = "A-Za-z0-9\-\_$"
 NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>"
 DELIMITER = "\s\:\(\[\="
 
-
 def get_context(view):
-	selection = view.sel()[0]
-	position = selection.begin()
 	valid = True
+	position = Selection.get_position(view)
 
 	# regions
 	word_region = view.word(position)
@@ -56,11 +55,10 @@ def get_context(view):
 		if post_quotes:
 			# print("post_quotes: '" + post_quotes.group(1))
 			needle += post_quotes.group(1)
-
 			needle_region.b += len(post_quotes.group(1))
 
 		else:
-			# print("no post quotes found => invalid")
+			print("no post quotes found => invalid")
 			valid = False
 	else:
 		needle = word
@@ -92,25 +90,23 @@ def get_context(view):
 		# print("style:", style)
 
 	if separator is False:
-		# print("separator undefined => invalid")
+		# print("context", "separator undefined => invalid", needle)
 		valid = False
 	elif re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
-		# print("invalid characters in needle => invalid")
+		# print("context", "invalid characters in needle => invalid", needle)
 		valid = False
 	elif prefix is None and separator.strip() == "":
-		# print("prefix undefined => invalid")
+		# print("context", "prefix undefined => invalid", needle)
 		valid = False
 
-	if valid is False:
-		return False
-	else:
-		return {
-			"needle": needle,
-			"prefix": prefix,
-			"tagName": tag,
-			"style": style,
-			"region": needle_region
-		}
+	return {
+		"is_valid": valid,
+		"needle": needle,
+		"prefix": prefix,
+		"tagName": tag,
+		"style": style,
+		"region": needle_region
+	}
 
 class Context:
 
