@@ -109,6 +109,14 @@
 	        "auto": true,
 	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
 	        "relative": true
+	    },
+	    {
+	        // js any (by command only)
+	        "scope": "source\\.js",
+
+	        "auto": false,
+	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
+	        "relative": true
 	    }
 	]
 }
