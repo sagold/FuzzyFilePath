@@ -16,7 +16,7 @@ class Query:
         self.replace_on_insert = []
         self.skip_update_replace = False
 
-    def build(self, needle, properties, current_folder, force_type=False):
+    def build(self, needle, properties, current_folder, project_folder, force_type=False):
 
         triggered = force_type is not False
 
@@ -35,9 +35,13 @@ class Query:
 
         # add evaluation to object
         self.replace_on_insert = self.replace_on_insert if self.skip_update_replace else properties.get("replace_on_insert", [])
+        # !is base path in search
         self.relative = Query.get_path_type(needle_folder, current_folder, force_type)
         self.needle = Query.build_needle_query(needle, current_folder)
         self.extensions = properties.get("extensions", ["js"])
+
+        print(" --- final query type ", self.relative)
+        print(" --- final needle ", self.needle)
 
         # return trigger search
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else properties.get("auto", config["AUTO_TRIGGER"]))
@@ -49,15 +53,16 @@ class Query:
         return needle
 
     def get_path_type(relative, current_folder, force_type=False):
-        if relative is None:
-            relative = False
-        elif relative is True:
-            relative = current_folder
-        # ???
-        if force_type is not False and force_type is not "default":
-            relative = "relative"
+        if force_type == "absolute":
+            return False
+        elif force_type == "relative":
+            return current_folder
 
-        return relative
+        if relative is None:
+            return False
+        elif relative is True:
+            return current_folder
+
 
     def override_replace_on_insert(self, replacements):
         self.replace_on_insert = replacements
