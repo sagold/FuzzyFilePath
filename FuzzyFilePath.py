@@ -7,9 +7,6 @@
 
     # errors
 
-        - @cleanup_completion: cleanup performs no cleanup
-        - trigger completion shortcut not working
-
     @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
@@ -47,7 +44,6 @@ class Completion:
             Completion.before = re.escape(Completion.before)
             path = re.sub("^" + Completion.before, "", path)
             Completion.before = None
-
 
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
@@ -95,36 +91,45 @@ def cleanup_completion(view):
 
 def query_completions(view, project_folder, current_folder):
 
-    # parse current context
+    # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
-    if expression is False:
-        # current context is not valid
-        print("current context is not valid")
-        return False
-
     # check if there is a trigger for the current expression
     current_scope = Selection.get_scope(view)
     trigger = Context.find_trigger(expression, current_scope)
+
+    # expression | trigger  | force |   ACTION
+    # ----------------------------------------------------
+    # invalid    | False    | False |   abort
+    # invalid    | False    | True  |   query needle
+    # valid      | False    | False |   abort
+    # valid      | False    | True  |   query needle
+    # invalid    | True     | False |   query
+    # invalid    | True     | True  |   query + override
+    # valid      | True     | False |   query
+    # valid      | True     | True  |   query + override
+
+    # currently trigger is required in query.build
     if trigger is False:
-        print("no valid trigger for current expression", expression)
+        print("no valid trigger")
         return False
 
-    print("trigger found", trigger)
+    if expression["is_valid"] is False and query.relative is False:
+        return False
 
-    if query.build(expression.get("needle"), trigger, current_folder, query.relative) is False:
+    if query.build(expression.get("needle"), trigger, current_folder, project_folder, query.relative) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
         return False
 
-
     completions = project_files.search_completions(query.needle, project_folder, query.extensions, query.relative)
     print("FFP QUERYING FILES DONE")
+    print(completions)
+    print("\n")
 
 
     if completions and len(completions[0]) > 0:
         verbose("completions", len(completions[0]), "matches found for", query.needle)
         Completion.active = True
         Completion.replaceOnInsert = query.replace_on_insert
-        print("REPLACE", Completion.replaceOnInsert)
         # vintageous
         view.run_command('_enter_insert_mode')
     else:
@@ -178,13 +183,11 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         "end_line": ""
     }
 
-
     def on_query_completions(self, view, prefix, locations):
         if self.track_insert["active"] is False:
             self.start_tracking(view)
 
         if config["DISABLE_AUTOCOMPLETION"] is False and self.is_project_file:
-            print("query", self.project_folder, self.current_folder)
             return query_completions(view, self.project_folder, self.current_folder)
         else:
             print("disabled or not a project", self.is_project_file)
@@ -227,7 +230,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         self.project_folder = project_folder
         self.current_folder = Path.sanitize(current_folder)
 
-        project_files.add(self.project_folder)
+        if project_files:
+            project_files.add(self.project_folder)
 
 
     def start_tracking(self, view, command_name=None):
