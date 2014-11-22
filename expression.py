@@ -33,9 +33,9 @@ def get_context(view):
 	needle = ""
 	separator = False
 	pre_match = ""
+	# search for a separator before current word, i.e. <">path/to/<position>
 	pre_quotes = re.search("(["+NEEDLE_SEPARATOR_BEFORE+"])([^"+NEEDLE_SEPARATOR+"]*)$", pre)
 	if pre_quotes:
-		# print("pre_quotes: '" + pre_quotes.group(2))
 		needle += pre_quotes.group(2) + word
 		separator = pre_quotes.group(1)
 		pre_match = pre_quotes.group(2)
@@ -43,6 +43,7 @@ def get_context(view):
 		needle_region.a -= len(pre_quotes.group(2))
 
 	else:
+		# use whitespace as separator
 		pre_quotes = re.search("(\s)([^"+NEEDLE_SEPARATOR+"\s]*)$", pre)
 		if pre_quotes:
 			needle = pre_quotes.group(2) + word
@@ -54,15 +55,19 @@ def get_context(view):
 	if pre_quotes:
 		post_quotes = re.search("^(["+NEEDLE_SEPARATOR_AFTER+"]*)", post)
 		if post_quotes:
-			# print("post_quotes: '" + post_quotes.group(1))
 			needle += post_quotes.group(1)
 			needle_region.b += len(post_quotes.group(1))
-
 		else:
 			print("no post quotes found => invalid")
 			valid = False
+
+	elif not re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
+		needle = pre + word
+		needle_region.a = pre_region.a
+
 	else:
 		needle = word
+
 
 	# grab prefix
 	prefix_region = sublime.Region(line_region.a, pre_region.b - len(pre_match) - 1)
