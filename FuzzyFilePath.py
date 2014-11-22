@@ -1,11 +1,27 @@
 """ FuzzyFilePath
     Manages filepath autocompletions
 
-    # tasks
+    # task: project-directory !
 
-        - project-directory !
+        ## absolute
 
-    # errors
+            1. global base_directory: cache folders from there?
+                => would deny suggesions outside folder
+            2. by trigger rule
+
+            for absolute paths: in "/test/mock/project/"
+            if base directory is set: to "/test/mock"
+            resolve to "/project/filename"
+            => replace on post_insert_completion (no trailing slash)
+            => if path is invalid, default insertion is inserted
+
+        ## relative
+
+            resolve file from base_directory, not from current files path
+
+            1. set in each scope rule?
+            2. may be overriden
+
 
     @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -22,6 +38,7 @@ from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.common.path import Path
 
+
 project_files = None
 
 def plugin_loaded():
@@ -36,6 +53,7 @@ def update_settings():
     global project_files
 
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    project_settings = sublime.active_window().active_view().settings().get('FuzzyFilePath', False)
     # update cache settings
     exclude_folders = settings.get("exclude_folders", ["node_modules"])
     project_files = ProjectFiles()
@@ -45,6 +63,17 @@ def update_settings():
         config[key] = settings.get(key.lower(), config[key])
     # mapping
     config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
+
+    # merge project settings stored in "settings: { FuzzyFilePath: ..."
+    if project_settings:
+        for key in config:
+            config[key] = project_settings.get(key.lower(), config[key])
+
+    # validate base_directory
+    if config["BASE_DIRECTORY"]:
+        config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
+
+    print("FFP base directory: '", config["BASE_DIRECTORY"], "'")
 
 
 class Completion:
@@ -73,6 +102,10 @@ class Completion:
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
 
+        if config["BASE_DIRECTORY"] and path.startswith("/"):
+            path = re.sub("^\/" + config["BASE_DIRECTORY"], "", path)
+            path = Path.sanitize(path)
+
         return path
 
 
@@ -80,6 +113,7 @@ class Query:
     """
         Build current query based on received modifiers
     """
+    absolute = False
     extensions = ["*"]
     base_path = False
     replace_on_insert = []
@@ -91,9 +125,10 @@ class Query:
         Query.replace_on_insert = []
         Query.skip_update_replace = False
 
-    def build(needle, properties, current_folder, project_folder, force_type=False):
+    def build(needle, trigger, current_folder, project_folder, force_type=False):
 
         triggered = force_type is not False
+        base_directory = trigger.get("base_directory", False)
 
         needle = Path.sanitize(needle)
         needle_is_absolute = Path.is_absolute(needle)
@@ -101,31 +136,43 @@ class Query:
         needle_is_path = needle_is_absolute or needle_is_relative
 
         # abort if autocomplete is not available
-        if triggered is False and properties["auto"] is False and needle_is_path is False:
+        if triggered is False and trigger["auto"] is False and needle_is_path is False:
             return False
 
         # test path to trigger auto-completion by needle
-        if triggered is False and properties["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
+        if triggered is False and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
             force_type = "absolute"
 
-        # determine needle folder
+        # change base folder to base directory
+        if base_directory:
+            print("use base directory to resolve", base_directory, "instead of", current_folder)
+
+            if base_directory is True:
+                current_folder = config["BASE_DIRECTORY"]
+            else:
+                current_folder = Path.sanitize_base_directory(base_directory)
+
+        # determines folder which is used as base to trace path
         needle_folder = current_folder if needle_is_relative else False
-        needle_folder = properties.get("relative", needle_folder)
+        needle_folder = trigger.get("relative", needle_folder)
+
+
 
         # print("triggered", triggered)
-        # print("auto?", properties["auto"])
+        # print("auto?", trigger["auto"])
         # print("current folder", current_folder)
         # print("needle relative:", needle_is_relative)
         # print("needle absolute:", needle_is_absolute)
         # print("needle folder", needle_folder)
 
         # add evaluation to object
-        Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else properties.get("replace_on_insert", [])
+        Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else trigger.get("replace_on_insert", [])
         Query.base_path = Query.get_path_type(needle_folder, current_folder, force_type)
+
         Query.needle = Query.build_needle_query(needle, current_folder)
-        Query.extensions = properties.get("extensions", ["js"])
+        Query.extensions = trigger.get("extensions", ["js"])
         # return trigger search
-        return triggered or (config["AUTO_TRIGGER"] if needle_is_path else properties.get("auto", config["AUTO_TRIGGER"]))
+        return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
     def build_needle_query(needle, current_folder):
         current_folder = "" if not current_folder else current_folder
