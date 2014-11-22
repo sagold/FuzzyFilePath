@@ -1,26 +1,5 @@
-""" FuzzyFilePath
-    Manages filepath autocompletions
+""" FuzzyFilePath - autocomplete filepaths
 
-    # task: project-directory !
-
-        ## absolute
-
-            1. global base_directory: cache folders from there?
-                => would deny suggesions outside folder
-            2. by trigger rule
-
-            for absolute paths: in "/test/mock/project/"
-            if base directory is set: to "/test/mock"
-            resolve to "/project/filename"
-            => replace on post_insert_completion (no trailing slash)
-            => if path is invalid, default insertion is inserted
-
-        ## relative
-
-            resolve file from base_directory, not from current files path
-
-            1. set in each scope rule?
-            2. may be overriden
 
 
     @version 0.0.9
