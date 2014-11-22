@@ -82,6 +82,7 @@ class Completion:
     """
     active = False  # completion currently in progress (servce suggestions)
     onInsert = []   # substitutions for building final path
+    base_directory = False  # base directory to set for absolute path, enabled by query...
 
     def start(post_replacements=[]):
         Completion.replaceOnInsert = post_replacements
@@ -89,6 +90,8 @@ class Completion:
 
     def stop():
         Completion.active = False
+        # set by query....
+        Completion.base_directory = False
 
     def is_active():
         return Completion.active
@@ -102,8 +105,8 @@ class Completion:
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
 
-        if config["BASE_DIRECTORY"] and path.startswith("/"):
-            path = re.sub("^\/" + config["BASE_DIRECTORY"], "", path)
+        if Completion.base_directory and path.startswith("/"):
+            path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
 
         return path
@@ -144,34 +147,24 @@ class Query:
             force_type = "absolute"
 
         # change base folder to base directory
-        if base_directory:
-            print("use base directory to resolve", base_directory, "instead of", current_folder)
-
-            if base_directory is True:
-                current_folder = config["BASE_DIRECTORY"]
-            else:
-                current_folder = Path.sanitize_base_directory(base_directory)
+        if base_directory is True:
+            current_folder = config["BASE_DIRECTORY"]
+        elif base_directory:
+            current_folder = Path.sanitize_base_directory(base_directory)
+        # notify completion to replace path
+        if base_directory and needle_is_absolute:
+            Completion.base_directory = current_folder
 
         # determines folder which is used as base to trace path
         needle_folder = current_folder if needle_is_relative else False
         needle_folder = trigger.get("relative", needle_folder)
-
-
-
-        # print("triggered", triggered)
-        # print("auto?", trigger["auto"])
-        # print("current folder", current_folder)
-        # print("needle relative:", needle_is_relative)
-        # print("needle absolute:", needle_is_absolute)
-        # print("needle folder", needle_folder)
-
         # add evaluation to object
         Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else trigger.get("replace_on_insert", [])
         Query.base_path = Query.get_path_type(needle_folder, current_folder, force_type)
 
         Query.needle = Query.build_needle_query(needle, current_folder)
         Query.extensions = trigger.get("extensions", ["js"])
-        # return trigger search
+        # return bool(start search)
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
     def build_needle_query(needle, current_folder):
