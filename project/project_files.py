@@ -41,7 +41,6 @@ class ProjectFiles:
 
             return : List -- containing sublime completions
         """
-        print("completions in folder", project_folder, "base_path: '", base_path, "'")
         project_files = self.get_files(project_folder)
         if (project_files is None):
             return False
