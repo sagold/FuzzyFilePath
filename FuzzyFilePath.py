@@ -180,7 +180,6 @@ def query_completions(view, project_folder, current_folder):
 
     # currently trigger is required in Query.build
     if trigger is False:
-        print("no valid trigger")
         return False
 
     if not expression["valid_needle"]:
@@ -206,22 +205,6 @@ def query_completions(view, project_folder, current_folder):
 
     Query.reset()
     return completions
-
-
-
-def file_in_project(filename, folders):
-    if (filename is None):
-        # print("__QueryFilePath__ [A] file has not yet been saved")
-        return False
-    if (len(folders) == 0):
-        # print("__QueryFilePath__ [A] no project/folder")
-        return False
-    if (not folders[0] in filename):
-        # print("__QueryFilePath__ [A] file not within project folders")
-        return False
-    if (len(folders) > 1):
-        print("__QueryFilePath__ [W] multiple folders not yet supported")
-    return True
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
@@ -285,18 +268,14 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def on_activated(self, view):
         file_name = view.file_name()
         folders = sublime.active_window().folders()
-
+        self.is_project_file = Path.in_project(file_name, folders)
         # abort if file is not within a project
-        self.is_project_file = file_in_project(file_name, folders)
         if not self.is_project_file:
+            sublime.status_message("FFP abort. File is not within a project")
             return False
 
-        project_folder = folders[0]
-        current_folder = os.path.dirname(file_name)
-        current_folder = os.path.relpath(current_folder, project_folder)
-        current_folder = "" if current_folder == "." else current_folder
-        self.project_folder = project_folder
-        self.current_folder = Path.sanitize(current_folder)
+        self.project_folder = folders[0]
+        self.current_folder = Path.get_relative_folder(file_name, folders[0])
 
         if project_files:
             project_files.add(self.project_folder)
