@@ -6,7 +6,7 @@ from FuzzyFilePath.common.selection import Selection
 NEEDLE_SEPARATOR = "\"\'\(\)"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\("
 NEEDLE_SEPARATOR_AFTER = "^\"\'\)"
-NEEDLE_CHARACTERS = "A-Za-z0-9\-\_$"
+NEEDLE_CHARACTERS = "\.A-Za-z0-9\-\_$"
 NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>"
 DELIMITER = "\s\:\(\[\="
 
