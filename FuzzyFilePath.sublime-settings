@@ -1,4 +1,6 @@
 {
+	"project_directory": "",
+
 	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
 	"base_directory": "",
 
@@ -9,7 +11,7 @@
 	"disable_keymap_actions": false,
 
 	// file extensions to show on filepath auto completion
-	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
+	"extensionsToSuggest": ["css", "scss", "less", "html", "gif", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
 
 	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components", "bower\\_components/.*/test" ],
 
@@ -41,30 +43,6 @@
 
 	        "auto": true,
 	        "extensions": ["css"],
-	        "relative": true
-	    },
-	    {
-	        // css
-	        "scope": "meta\\.property\\-value\\.css",
-	        // src: url
-	        "prefix": ["url"],
-	        "style": ["src"],
-
-	        "auto": true,
-	        "base_directory": true,
-	        "extensions": ["woff", "ttf", "svg", "otf"],
-	        "relative": true
-	    },
-	    {
-	        // css
-	        "scope": "meta\\.property\\-value\\.css",
-	        // *: url
-	        "prefix": ["url"],
-	        "style": ["background-image", "background", "list-type", "list-type-image"],
-
-	        "auto": true,
-	        "base_directory": true,
-	        "extensions": ["png", "gif", "jpeg", "jpg"],
 	        "relative": true
 	    },
 	    {
@@ -112,7 +90,7 @@
 	        "prefix": ["src"],
 
 	        "auto": true,
-	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
+	        "extensions": ["png", "gif", "jpg", "jpeg"],
 	        "relative": true
 	    },
 	    {
@@ -122,6 +100,55 @@
 	        "auto": false,
 	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
 	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": "meta\\.property\\-value\\.css",
+	        // src: url
+	        "prefix": ["url"],
+	        "style": ["src"],
+
+	        "auto": true,
+	        "base_directory": true,
+	        "extensions": ["woff", "ttf", "svg", "otf"],
+	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": "meta\\.property\\-value\\.css",
+	        // x: url
+	        "prefix": ["url"],
+	        "style": ["background-image", "background", "list-type", "list-type-image"],
+
+	        "auto": true,
+	        "base_directory": true,
+	        "extensions": ["png", "gif", "jpeg", "jpg"],
+	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": "meta\\.property.*\\.css",
+	        // *: url
+	        "prefix": ["url"],
+
+	        "auto": true,
+	        "base_directory": true,
+	        "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
+	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": ".*\\.(css|sass|less)",
+	        // *: url
+	        "prefix": ["import"],
+
+	        "auto": true,
+	        "extensions": ["css", "scss", "less"],
+	        "relative": true,
+	        "replace_on_insert": [
+	        	// remove extension
+	        	["\\.[A-Za-z]*$", ""],
+	        ]
 	    }
 	]
 }
