@@ -65,8 +65,7 @@ class ProjectFiles:
                 properties[2] = file displayed as suggestion, like 'test/mock/project/index     html'
             """
             if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, file, re.IGNORECASE)):
-
-                completion = self.get_completion(properties[0], properties[2], base_path)
+                completion = self.get_completion(file, properties[2], base_path)
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
