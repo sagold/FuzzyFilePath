@@ -12,6 +12,7 @@ DELIMITER = "\s\:\(\[\="
 
 def get_context(view):
 	valid = True
+	valid_needle = True
 	position = Selection.get_position(view)
 
 	# regions
@@ -94,6 +95,7 @@ def get_context(view):
 		valid = False
 	elif re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
 		# print("context", "invalid characters in needle => invalid", needle)
+		valid_needle = False
 		valid = False
 	elif prefix is None and separator.strip() == "":
 		# print("context", "prefix undefined => invalid", needle)
@@ -101,6 +103,7 @@ def get_context(view):
 
 	return {
 		"is_valid": valid,
+		"valid_needle": valid_needle,
 		"needle": needle,
 		"prefix": prefix,
 		"tagName": tag,
