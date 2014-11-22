@@ -49,6 +49,8 @@ class ProjectFiles:
         # basic: strip any dots
         needle = re.sub("\.\./", "", needle)
         needle = re.sub("\.\/", "", needle)
+        # remove starting slash
+        needle = re.sub("^\/", "", needle)
         # cleanup
         needle = re.sub('["\'\(\)$]', '', needle)
 
