@@ -1,4 +1,7 @@
 {
+	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
+	"base_directory": "",
+
 	// disable automatic path completions
 	"disable_autocompletions": false,
 
@@ -43,23 +46,25 @@
 	    {
 	        // css
 	        "scope": "meta\\.property\\-value\\.css",
-	        // *: url
-	        "prefix": ["url"],
-	        "style": ["background-image", "background", "list-type", "list-type-image"],
-
-	        "auto": true,
-	        "extensions": ["png", "gif", "jpeg", "jpg"],
-	        "relative": true
-	    },
-	    {
-	        // css
-	        "scope": "meta\\.property\\-value\\.css",
 	        // src: url
 	        "prefix": ["url"],
 	        "style": ["src"],
 
 	        "auto": true,
-	        "extensions": ["woff", "ttf", "svg"],
+	        "base_directory": true,
+	        "extensions": ["woff", "ttf", "svg", "otf"],
+	        "relative": true
+	    },
+	    {
+	        // css
+	        "scope": "meta\\.property\\-value\\.css",
+	        // *: url
+	        "prefix": ["url"],
+	        "style": ["background-image", "background", "list-type", "list-type-image"],
+
+	        "auto": true,
+	        "base_directory": true,
+	        "extensions": ["png", "gif", "jpeg", "jpg"],
 	        "relative": true
 	    },
 	    {
