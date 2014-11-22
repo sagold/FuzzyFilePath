@@ -4,7 +4,6 @@
     # tasks
 
         - project-directory !
-        - support multiple folders
 
     # errors
 
@@ -82,13 +81,13 @@ class Query:
         Build current query based on received modifiers
     """
     extensions = ["*"]
-    relative = False
+    base_path = False
     replace_on_insert = []
     skip_update_replace = False
 
     def reset():
         Query.extensions = ["*"]
-        Query.relative = False
+        Query.base_path = False
         Query.replace_on_insert = []
         Query.skip_update_replace = False
 
@@ -105,25 +104,32 @@ class Query:
         if triggered is False and properties["auto"] is False and needle_is_path is False:
             return False
 
+        # test path to trigger auto-completion by needle
+        if triggered is False and properties["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
+            force_type = "absolute"
+
         # determine needle folder
         needle_folder = current_folder if needle_is_relative else False
         needle_folder = properties.get("relative", needle_folder)
 
+        # print("triggered", triggered)
+        # print("auto?", properties["auto"])
+        # print("current folder", current_folder)
+        # print("needle relative:", needle_is_relative)
+        # print("needle absolute:", needle_is_absolute)
+        # print("needle folder", needle_folder)
+
         # add evaluation to object
         Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else properties.get("replace_on_insert", [])
-        # !is base path in search
-        Query.relative = Query.get_path_type(needle_folder, current_folder, force_type)
-
-        print("base folder", Query.relative, "by", needle_folder, current_folder, force_type)
-
+        Query.base_path = Query.get_path_type(needle_folder, current_folder, force_type)
         Query.needle = Query.build_needle_query(needle, current_folder)
         Query.extensions = properties.get("extensions", ["js"])
-
         # return trigger search
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else properties.get("auto", config["AUTO_TRIGGER"]))
 
     def build_needle_query(needle, current_folder):
-        needle = re.sub("../", "", needle)
+        current_folder = "" if not current_folder else current_folder
+        needle = re.sub("\.\./", "", needle)
         if needle.startswith("./"):
             needle = current_folder + re.sub("\.\/", "", needle)
         return needle
@@ -149,6 +155,7 @@ def cleanup_completion(view, post_remove):
     expression = Context.get_context(view)
     # remove path query completely
     final_path = Completion.get_final_path(expression["needle"], post_remove)
+    verbose("cleanup", "expression", expression.get("needle"), " -> ", final_path)
     # replace current query with final path
     view.run_command("ffp_replace_region", { "a": expression["region"].a, "b": expression["region"].b, "string": final_path })
 
@@ -161,6 +168,8 @@ def query_completions(view, project_folder, current_folder):
     # check if there is a trigger for the current expression
     current_scope = Selection.get_scope(view)
     trigger = Context.find_trigger(expression, current_scope)
+
+    print("expression", expression)
 
     # expression | trigger  | force | ACTION            | CURRENT
     # -----------|----------|-------|-------------------|--------
@@ -182,14 +191,15 @@ def query_completions(view, project_folder, current_folder):
         # print("INVALID NEEDLE", expression["needle"], "maybe?", re.sub("[^\.A-Za-z0-9\-\_$]", "", word))
         expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
 
-    # if expression["is_valid"] is False and Query.relative is False:
+    # if expression["is_valid"] is False and Query.base_path is False:
     #     return False
 
-    if Query.build(expression.get("needle"), trigger, current_folder, project_folder, Query.relative) is False:
+    if Query.build(expression.get("needle"), trigger, current_folder, project_folder, Query.base_path) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
         return False
 
-    completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.relative)
+    print("QUERY", Query.needle, "project: '", project_folder, "' relative: '", Query.base_path, "'")
+    completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
     print("completions", completions)
 
     if completions and len(completions[0]) > 0:
@@ -209,7 +219,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
 
-        Query.relative = type
+        Query.base_path = type
         if len(replace_on_insert) > 0:
             verbose("insert path", "override replace", replace_on_insert)
             Query.override_replace_on_insert(replace_on_insert)
@@ -239,7 +249,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if config["DISABLE_AUTOCOMPLETION"] is False and self.is_project_file:
             return query_completions(view, self.project_folder, self.current_folder)
         else:
-            print("disabled or not a project", self.is_project_file)
+            verbose("disabled or not a project", self.is_project_file)
             return False
 
     def on_post_insert_completion(self, view, command_name):
@@ -281,9 +291,12 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             sublime.status_message("FFP abort. File is not within a project")
             return False
 
+        # default to False fails for relative resolution from base_directory
+        # but False is required for query of absolute path
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
-        print("current folder", self.current_folder)
-        project_files.add(self.project_folder)
+
+        if project_files:
+            project_files.add(self.project_folder)
 
 
     # track post insert insertion
@@ -299,6 +312,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         needle = Context.get_context(view).get("needle")
         word = re.escape(Selection.get_word(view))
         self.post_remove = re.sub(word + "$", "", needle)
+        verbose("cleanup", "remove:", self.post_remove, "of", needle)
 
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
