@@ -2,25 +2,28 @@ import sublime
 import os
 import re
 from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.path import Path
 from FuzzyFilePath.project.file_cache import FileCache
 
 
 class ProjectFiles:
+    """
+        Manages path suggestions by loading, caching and filtering project files. Add folders by
+        `add(<path_to_parent_folder>)`
+    """
 
     cache = {}
     valid_extensions = None
     exclude_folders = None
 
-    def __init__(self, file_extensions, exclude_folders):
-        """
-            Manages path suggestions by loading, caching and filtering project files. Add folders by
-            `add(<path_to_parent_folder>)`
-
-            Parameters
-            ----------
-            file_extensions : array -- to load/suggest
-            exclude_folders : array -- regex items for paths to exclude
-        """
+    def update_settings(self, file_extensions, exclude_folders):
+        if self.valid_extensions != file_extensions or self.exclude_folders != exclude_folders:
+            print("FFP rebuilding cache")
+            #rebuild cache
+            for folder in self.cache:
+                self.cache[folder] = FileCache(exclude_folders, file_extensions, folder)
+                self.cache.get(folder).start();
+        # store settings
         self.valid_extensions = file_extensions
         self.exclude_folders = exclude_folders
 
@@ -38,6 +41,7 @@ class ProjectFiles:
 
             return : List -- containing sublime completions
         """
+        print("completions in folder", project_folder, "base_path: '", base_path, "'")
         project_files = self.get_files(project_folder)
         if (project_files is None):
             return False
@@ -57,15 +61,16 @@ class ProjectFiles:
 
         # get matching files
         result = []
-        for file in project_files:
-            properties = project_files.get(file)
+        for filepath in project_files:
+            properties = project_files.get(filepath)
             """
                 properties[0] = escaped filename without extension, like "test/mock/project/index"
                 properties[1] = file extension, like "html"
                 properties[2] = file displayed as suggestion, like 'test/mock/project/index     html'
             """
-            if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, file, re.IGNORECASE)):
-                completion = self.get_completion(file, properties[2], base_path)
+            if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, filepath, re.IGNORECASE)):
+                completion = self.get_completion(filepath, properties[2], base_path)
+
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
@@ -85,36 +90,7 @@ class ProjectFiles:
             return (path_display, "/" + target_path)
         # create relative path
         else:
-            return (path_display, self.get_relative_path(target_path, base_path))
-
-    # return {string} path from base to target
-    def get_relative_path(self, target, base):
-
-        bases = base.split("/")
-        targets = target.split("/")
-        result = ""
-        index = 0
-
-        # step back base, until in same folder
-        size = min(len(bases), len(targets))
-        while (index < size and bases[index] == targets[index]):
-            index += 1
-
-        # strip common folders
-        del bases[0:index]
-        del targets[0:index]
-
-        if (len(bases) == 0):
-            # from base path?
-            result = './'
-        else:
-            result = "../" * len(bases)
-
-        result += "/".join(targets)
-        # !Do Debug "//"
-        result = re.sub("//", "/", result);
-
-        return result
+            return (path_display, Path.trace(base_path, target_path))
 
     def add(self, parent_folder):
         """ caches all files within the given folder

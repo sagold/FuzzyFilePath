@@ -22,12 +22,33 @@ class Path:
         folder = "" if folder == "." else folder
         return Path.sanitize(folder)
 
-    def in_project(file_name, folders):
-        if file_name is None:
-           return False
-        if (len(folders) == 0):
-           return False
-        if (not folders[0] in file_name):
-           return False
-        return True
+    # return {string} path from base to target
+    def trace(from_folder, to_folder):
+        if not from_folder:
+            return Path.sanitize("./" + to_folder)
 
+        bases = from_folder.split("/")
+        targets = to_folder.split("/")
+        result = ""
+        index = 0
+
+        # step back base, until in same folder
+        size = min(len(bases), len(targets))
+        while (index < size and bases[index] == targets[index]):
+            index += 1
+
+        # strip common folders
+        del bases[0:index]
+        del targets[0:index]
+
+        if (len(bases) == 0):
+            # from base path?
+            result = './'
+        else:
+            result = "../" * len(bases)
+
+        result += "/".join(targets)
+        # !Do Debug "//"
+        result = re.sub("//", "/", result);
+
+        return result
