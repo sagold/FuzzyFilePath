@@ -65,6 +65,9 @@ def update_settings():
     """ restart projectFiles with new plugin and project settings """
     global project_files
 
+    # executed too often, may be a problem with caching files
+    print("RELOADING SETTINGS")
+
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
 
     exclude_folders = settings.get("exclude_folders", ["node_modules"])
@@ -101,10 +104,10 @@ def query_completions(view, project_folder, current_folder):
     # ----------------------------------------------------
     # invalid    | False    | False |   abort
     # invalid    | False    | True  |   query needle
-    # valid      | False    | False |   abort
-    # valid      | False    | True  |   query needle
     # invalid    | True     | False |   query
     # invalid    | True     | True  |   query + override
+    # valid      | False    | False |   abort
+    # valid      | False    | True  |   query needle
     # valid      | True     | False |   query
     # valid      | True     | True  |   query + override
 
@@ -121,10 +124,6 @@ def query_completions(view, project_folder, current_folder):
         return False
 
     completions = project_files.search_completions(query.needle, project_folder, query.extensions, query.relative)
-    print("FFP QUERYING FILES DONE")
-    print(completions)
-    print("\n")
-
 
     if completions and len(completions[0]) > 0:
         verbose("completions", len(completions[0]), "matches found for", query.needle)
@@ -137,6 +136,7 @@ def query_completions(view, project_folder, current_folder):
         Completion.active = False
 
     query.reset()
+    print("completions", completions)
     return completions
 
 
@@ -193,7 +193,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             print("disabled or not a project", self.is_project_file)
             return False
 
-
     def on_post_insert_completion(self, view, command_name):
         if Completion.active is True:
             cleanup_completion(view)
@@ -211,7 +210,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             return project_files.update(match[0], view.file_name())
         else:
             return False
-
 
     # validate and update project folders
     def on_activated(self, view):
@@ -234,25 +232,26 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             project_files.add(self.project_folder)
 
 
+    # track post insert insertion
     def start_tracking(self, view, command_name=None):
         self.track_insert["active"] = True
         self.track_insert["start_line"] = Selection.get_line(view)
         self.track_insert["end_line"] = None
-        # verbose("--> trigger", command_name, self.track_insert["start_line"])
-        word_replaced = re.split("[./]", self.track_insert["start_line"]).pop()
-        if (self.track_insert["start_line"] is not word_replaced):
-            Completion.before = re.sub(re.escape(word_replaced) + "$", "", self.track_insert["start_line"])
-
+        """
+            - sublime inserts completions by replacing the current word
+            - this results in wrong path insertions if the query contains word_separators like slashes
+            - thus the path until current word has to be removed after insertion
+        """
+        needle = Context.get_context(view).get("needle")
+        word = re.escape(Selection.get_word(view))
+        Completion.before = re.sub(word + "$", "", needle)
 
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
         self.track_insert["end_line"] = Selection.get_line(view)
-        # verbose("<-- insert", command_name)
-
 
     def abort_tracking(self):
         self.track_insert["active"] = False
-
 
     def on_text_command(self, view, command_name, args):
         # check if a completion may be inserted
@@ -261,7 +260,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         elif command_name == "hide_auto_complete":
             Completion.active = False
             self.abort_tracking()
-
 
     # check if a completion is inserted and trigger on_post_insert_completion
     def on_post_text_command(self, view, command_name, args):
