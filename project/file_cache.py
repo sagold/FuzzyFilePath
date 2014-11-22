@@ -21,10 +21,13 @@ class FileCache(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        print("FFP", "caching files...")
 
         # cache files in folder
         self.files = self.read(self.folder)
         verbose("caching folder", self.folder, self.files)
+
+        print("FFP", len(self.files), "files cached")
 
 
     def read(self, folder, base=None):

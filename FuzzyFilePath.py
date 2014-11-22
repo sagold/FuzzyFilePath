@@ -25,6 +25,29 @@ from FuzzyFilePath.common.path import Path
 
 project_files = None
 
+def plugin_loaded():
+    """ load settings """
+    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    settings.add_on_change("extensionsToSuggest", update_settings)
+    update_settings()
+
+
+def update_settings():
+    """ restart projectFiles with new plugin and project settings """
+    global project_files
+
+    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    # update cache settings
+    exclude_folders = settings.get("exclude_folders", ["node_modules"])
+    project_files = ProjectFiles()
+    project_files.update_settings(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
+    # sync settings to config
+    for key in config:
+        config[key] = settings.get(key.lower(), config[key])
+    # mapping
+    config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
+
+
 class Completion:
     """
         Manage active state of completion and post cleanup
@@ -90,6 +113,9 @@ class Query:
         Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else properties.get("replace_on_insert", [])
         # !is base path in search
         Query.relative = Query.get_path_type(needle_folder, current_folder, force_type)
+
+        print("base folder", Query.relative, "by", needle_folder, current_folder, force_type)
+
         Query.needle = Query.build_needle_query(needle, current_folder)
         Query.extensions = properties.get("extensions", ["js"])
 
@@ -119,38 +145,6 @@ class Query:
         Query.skip_update_replace = True
 
 
-def plugin_loaded():
-    """ load settings """
-    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    settings.add_on_change("extensionsToSuggest", update_settings)
-    update_settings()
-
-
-def update_settings():
-    """ restart projectFiles with new plugin and project settings """
-    global project_files
-
-    # executed too often, may be a problem with caching files
-    print("RELOADING SETTINGS")
-
-    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-
-    # init caching of project files
-    exclude_folders = settings.get("exclude_folders", ["node_modules"])
-    project_files = ProjectFiles(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
-
-    # sync settings to config
-    for key in config:
-        config[key] = settings.get(key.lower(), config[key])
-    # mapping
-    config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
-    # config["DEBUG"] = settings.get("DEBUG", config["DEBUG"])
-    # config["DISABLE_KEYMAP_ACTIONS"] = settings.get("disable_keymap_actions", config["DISABLE_KEYMAP_ACTIONS"]);
-    # config["DISABLE_AUTOCOMPLETION"] = settings.get("disable_autocompletions", config["DISABLE_AUTOCOMPLETION"]);
-    # config["AUTO_TRIGGER"] = settings.get("auto_trigger", config["AUTO_TRIGGER"])
-    # config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
-
-
 def cleanup_completion(view, post_remove):
     expression = Context.get_context(view)
     # remove path query completely
@@ -160,6 +154,7 @@ def cleanup_completion(view, post_remove):
 
 
 def query_completions(view, project_folder, current_folder):
+    global Context, Selection
 
     # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
@@ -167,16 +162,16 @@ def query_completions(view, project_folder, current_folder):
     current_scope = Selection.get_scope(view)
     trigger = Context.find_trigger(expression, current_scope)
 
-    # expression | trigger  | force |   ACTION
-    # ----------------------------------------------------
-    # invalid    | False    | False |   abort
-    # invalid    | False    | True  |   query needle
-    # invalid    | True     | False |   query
-    # invalid    | True     | True  |   query + override
-    # valid      | False    | False |   abort
-    # valid      | False    | True  |   query needle
-    # valid      | True     | False |   query
-    # valid      | True     | True  |   query + override
+    # expression | trigger  | force | ACTION            | CURRENT
+    # -----------|----------|-------|-------------------|--------
+    # invalid    | False    | False | abort             | abort
+    # invalid    | False    | True  | query needle      | abort
+    # invalid    | True     | False | query             |
+    # invalid    | True     | True  | query +override   |
+    # valid      | False    | False | abort             | abort
+    # valid      | False    | True  | query needle      | abort
+    # valid      | True     | False | query             |
+    # valid      | True     | True  | query +override   |
 
     # currently trigger is required in Query.build
     if trigger is False:
@@ -195,6 +190,7 @@ def query_completions(view, project_folder, current_folder):
         return False
 
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.relative)
+    print("completions", completions)
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.replace_on_insert)
@@ -268,17 +264,26 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def on_activated(self, view):
         file_name = view.file_name()
         folders = sublime.active_window().folders()
-        self.is_project_file = Path.in_project(file_name, folders)
+
+        self.is_project_file = False
+        self.project_folder = None
+
+        if folders is None or file_name is None:
+            return False
+
+        for folder in folders:
+            if folder in file_name:
+                self.is_project_file = True
+                self.project_folder = folder
+
         # abort if file is not within a project
         if not self.is_project_file:
             sublime.status_message("FFP abort. File is not within a project")
             return False
 
-        self.project_folder = folders[0]
-        self.current_folder = Path.get_relative_folder(file_name, folders[0])
-
-        if project_files:
-            project_files.add(self.project_folder)
+        self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
+        print("current folder", self.current_folder)
+        project_files.add(self.project_folder)
 
 
     # track post insert insertion
