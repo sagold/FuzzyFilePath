@@ -48,9 +48,12 @@ class FileCache(threading.Thread):
                 filename, extension = os.path.splitext(relative_path)
                 extension = extension[1:]
 
+                relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], posix(relative_path))
+
                 if extension in self.extensions:
                     # $ hack, reversed in post_commit_completion
-                    folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
+                    # folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
+                    folder_cache[relative_path] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
                 folder_cache.update(self.read(current_path, base))
