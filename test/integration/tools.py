@@ -13,6 +13,14 @@ class ViewHelper:
 		self.view = view
 		self.edit = edit
 
+	def undo(self, count=1):
+		while count > 0:
+			self.view.run_command("undo")
+			count -= 1
+
+	def set_js_syntax(self):
+		self.view.set_syntax_file("Packages/FuzzyFilePath/test/javascript.tmLanguage")
+
 	def set_line(self, string):
 		self.view.insert(self.edit, 0, string)
 

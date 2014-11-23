@@ -13,10 +13,5 @@
         "args": {
             "type": "absolute"
         }
-    },
-
-    {
-        "keys": ["ctrl+alt+shift+space"],
-        "command": "insert_path"
     }
 ]

@@ -1,85 +1,120 @@
 {
+	// logs scope evaluation to console to debug configuration
+	"log": false,
+
+	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
+	"base_directory": "",
+
 	// disable automatic path completions
 	"disable_autocompletions": false,
 
 	// disable keymaps
 	"disable_keymap_actions": false,
 
-	// file extensions to show on filepath auto completion
-	"extensionsToSuggest": ["css", "gif", "html", "jpg", "js", "json", "md", "png", "eot", "svg", "ttf", "woff", "otf"],
+	// ignore folders that match following regular expressions
+	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
 
-	"exclude_folders": ["node_modules"],
-
-	// if current string matches "./", "../", "/folder/to",
-	// auto suggest files, independent of scope settings
-	"auto_trigger": true,
-
-	// All options may be overriden in <Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User>
-	// configuration of suggestions and insertions by scope
+	// LIST OF TRIGGERS FOR AUTO COMPLETION
+	// - setting "scopes" in user settings will override all other scopes.
+	// - triggers are evaluated in given order. First match wins
+	// - specialize trigger by 1. scope 2. prefix, style and/or tagname
+	// - command (insert_path) still requires a trigger
 	"scopes": [
+		// MINIMAL AUTO TRIGGER - NOT RECOMMENDED
+		// will always query files for auto completions
+		// {
+		// 	"scope": ".",
+		// 	"extensions": ["*"],
+		// 	"auto": true
+		// },
+	    {
+	        // js - require("") and define([""])
+	        "scope": "source\\.js.*string",		// 1. ignore if scope at cursor does not match expression (super+alt+p)
+	        "prefix": ["require", "define"],	// 2. trigger only if: require(<cursor>, define([<cursor>
+	        // if 1 & 2 are true:
+	        "auto": true,						// auto suggest filepaths, else only by shorctut
+	        "extensions": ["js"],				// show only .js files
+	        "relative": false,					// insert absolute
+	        "base_directory": true,				// insert absolute from the set base directory (above)
+	        "replace_on_insert": [
+	        	["\\.js$", ""],					// after insertion, remove .js from path
+	        	["\\/index$", ""]				// nodejs will load index.js by default => also remove index
+	        ]
+	    },
+	    {
+	        // js - *.src = ""
+	        "scope": "source\\.js.*string",
+	        "prefix": ["src"],
 
-		{
-			// JS AMD
-			"scope": "require.*string",
+	        "auto": true,
+	        "base_directory": true,
+	        "extensions": ["png", "gif", "jpg", "jpeg"],
+	        "relative": true
+	    },
+	    {
+	        // js - from ""
+	        "scope": "source\\.js",
+	        "prefix": ["from"],
 
-			"auto": true,
-			"extensions": ["js"],
-			"insertExtension": false,
-			"relative": true,
+	        "auto": true,
+	        "extensions": ["js"],
+	        "relative": true
+	    },
+	    {
+	        // html - <img src="" and <script src="" and <* style="*: url()
+	        "scope": "meta.tag.*string.*\\.html",
+	        // <* src
+	        "prefix": ["src", "url"],
 
-			"replace_on_insert": [
-				// in case bower_components are resolved absolute
-				["^[\\.\\./]*/bower_components/", ""],
-				// nodejs will load index.js by default, remove
-				["/index$", ""]
-			]
-		},
+	        "auto": true,
+	        "base_directory": true,
+	        "extensions": ["js", "png", "gif", "jpeg", "jpg", "svg"],
+	        "relative": true
+	    },
+	    {
+	        // html - <link href=""
+	        "scope": "meta\\.tag.*string.*\\.html",
+	        // "scope": "html",
+	        // <link href
+	        "tagName": ["link"],
+	        "prefix": ["href"],
 
-		{
-			// js
-			"scope": "\\.js\\s",
+	        "auto": true,
+	        "extensions": ["css"],
+	        "relative": true
+	    },
+	    {
+	        // css - *: url()
+	        "scope": "meta\\.property.*\\.css",
+	        // *: url
+	        "prefix": ["url"],
 
-			"auto": false,
-			"extensions": ["js", "json"],
-			"insertExtension": true
-		},
+	        "auto": true,
+	        "relative": true,
+	        "base_directory": true,
+	        "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
+	    },
+	    {
+	        // css - import ""
+	        "scope": ".*\\.(css|sass|less)",
+	        // *: url
+	        "prefix": ["import"],
 
-		{
-			// json
-			"scope": "source\\.json.*string",
+	        "auto": true,
+	        "extensions": ["css", "scss", "less"],
+	        "relative": true,
+	        "replace_on_insert": [
+	        	// remove extension
+	        	["\\.(scss|less)$", ""],
+	        ]
+	    },
+	    {
+	        // * - any source file (by command only)
+	        "scope": "source",
 
-			"auto": false,
-			"extensions": ["*"],
-			"insertExtension": true,
-			"relative": true
-		},
-
-		{
-			// css
-			"scope": "source\\.css.*\\.property-value",
-
-			"auto": false,
-			"extensions": ["png", "jpg", "gif", "eot", "svg", "ttf", "woff", "otf"],
-			"insertExtension": true,
-			"relative": true
-		},
-
-		{
-			// html
-			"scope": "text\\.html.*string",
-
-			"auto": false,
-			"extensions": ["css", "png", "jpg"],
-			"insertExtension": true,
-			"relative": false
-		},
-
-		{
-			// default, for all scopes
-			"scope": ".",
-			"auto": false,
-			"extensions": ["*"],
-			"insertExtension": true
-		}
+	        "auto": false,
+	        "extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
+	        "relative": true
+	    },
 	]
 }

@@ -1,10 +1,5 @@
 [
     {
-        "keys": ["ctrl+super+space"],
-        "command": "insert_path"
-    },
-
-    {
         "keys": ["ctrl+alt+space"],
         "command": "insert_path",
         "args": {
