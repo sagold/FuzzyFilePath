@@ -1,38 +1,33 @@
 <!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
-
+<html>
 	<head>
-
-		<title></title>
+		<title>FuzzyFilePath project mock</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+		<link href="./styles/styles.css"></link>
 		<style type="text/css">
-
-			* {
-
-				margin:				0;
-				padding:			0;
-				background-image: 	url("./assets/header.png");
-			}
-
 			@font-face {
-				font-family:	"icon";
-				src: 			url('./assets/fonts/glyph.ttf') format("truetype"),
-								url(./assets/fonts/glyph.svg) format("svg");
+				font-family: "icon";
+				src: url(./assets/fonts/glyph.ttf),
+					url("./assets/fonts/glyph.svg");
 			}
-
 		</style>
 
-		<script type="text/javascript" src="./boot.js" ></script>
-		<script type="text/javascript" src="./src/main.js"></script>
-		<link href="./styles/styles.css"></link>
+		<script type="text/javascript" src="./boot.js">
+		</script>
+		<script type="text/javascript">
+			define(["/test/mock/project/bower_components/angular"], function (angular) {
+				var main = require("/test/mock/project/app/src/main"),
+					main_relative = require("./src/main");
+			});
+		</script>
 
 	</head>
-
 	<body>
 
-		<img src="./assets/header.png" style="background-image: url(./assets/header.png)" />
+		<div id="page" style="background-image: url(./assets/background.png);">
+			<img src="../bower_components/lib/assets/logo.jpg" />
+		</div>
 
 	</body>
-
 </html>
