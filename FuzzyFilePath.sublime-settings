@@ -25,7 +25,8 @@
 
 	        "auto": true,
 	        "extensions": ["js"],
-	        "relative": true,
+	        "relative": false,
+	        "base_directory": true,
 	        "replace_on_insert": [
 	        	// remove extension
 	        	["\\.js$", ""],
@@ -39,6 +40,7 @@
 	        "prefix": ["src"],
 
 	        "auto": true,
+	        "base_directory": true,
 	        "extensions": ["png", "gif", "jpg", "jpeg"],
 	        "relative": true
 	    },
@@ -55,10 +57,10 @@
 	        // html - <img src="" and <script src="" and <* style="*: url()
 	        "scope": "meta.tag.*string.*\\.html",
 	        // <* src
-	        "tagName": ["img", "script"],
 	        "prefix": ["src", "url"],
 
 	        "auto": true,
+	        "base_directory": true,
 	        "extensions": ["js", "png", "gif", "jpeg", "jpg", "svg"],
 	        "relative": true
 	    },
