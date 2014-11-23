@@ -1,10 +1,9 @@
-{
-	background-image: url("./mock/project/assets/header.png");
-	background-image: url("./project/assets/header.png");
-	src: url("./header.png");
-	src: url("../assets/header.png");
-	background-image: url("hea")
-	font: "";
+* {
+	background-image: url("./assets/header.png");
+}
 
-
+@font-face {
+	font-family:	"icon";
+	src:			url(./assets/fonts/glyph.ttf) format("truetype"),
+					url(./assets/fonts/glyph.svg) format("svg");
 }

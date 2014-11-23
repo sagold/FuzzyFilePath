@@ -6,8 +6,6 @@
 
 		<title></title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-	    <link rel="stylesheet" type="text/css" href="./css/styles.css"/>
 		<style type="text/css">
 
 			* {
@@ -17,17 +15,23 @@
 				background-image: 	url("./assets/header.png");
 			}
 
+			@font-face {
+				font-family:	"icon";
+				src: 			url('./assets/fonts/glyph.ttf') format("truetype"),
+								url(./assets/fonts/glyph.svg) format("svg");
+			}
+
 		</style>
 
-		<script type="text/javascript" src="./$module.js" type="" ></script>
-		<script type="text/javascript"></script>
-		<link href="./css/styles.css"></link>
+		<script type="text/javascript" src="./boot.js" ></script>
+		<script type="text/javascript" src="./src/main.js"></script>
+		<link href="./styles/styles.css"></link>
 
 	</head>
 
 	<body>
 
-		<img src="././assets/header.png" />
+		<img src="./assets/header.png" style="background-image: url(./assets/header.png)" />
 
 	</body>
 
