@@ -14,7 +14,7 @@ class Path:
         return bool(re.match("(\.?\.\/)", string))
 
     def is_absolute(string):
-        return bool(re.match("\/[A-Za-z0-9\_\-\s\.$]*\/", string))
+        return bool(re.match("\/[A-Za-z0-9\_\-\s\.$]*", string))
 
     def sanitize_base_directory(path):
         path = Path.sanitize(path)
