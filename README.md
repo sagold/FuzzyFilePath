@@ -61,7 +61,7 @@ FuzzyFilePath is disabled for single files or files outside the opened folder.
 If your projects contains filenames with special characters, consider modifying Sublime Texts `word_separators`.
 
 i.e. in AngularJs filenames may start with `$`. In _Sublime Text | Preferences | Settings - User_ add:
-```json
+```js
 	"word_separators": "./\\()\"'-:,.;<>~!@#%^&*|+=[]{}`~?"
 ```
 
@@ -73,7 +73,7 @@ The default options, as always, should be set in user-settings:<br />
 _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_
 
 Project specific settings may be set in _Project | Edit Settings_:
-```json
+```js
 {
 	"settings": {
 		"FuzzyFilepath": {
@@ -184,7 +184,7 @@ This option may also be set by [key commands for _insert\_path_](#configuration_
 #### Example
 See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - Default_ for an up to date version
 
-```json
+```js
 {
 	"disable_autocompletions": false,
 	"disable_keymap_actions": false,
@@ -243,7 +243,7 @@ the current scope. While scope rules will be applied
 In _Sublime Text | Preferences | KeyBinding - User_ or <br />
 _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_ add an object like
 
-```json
+```js
 {
 	"keys": ["ctrl+alt+i"],
 	"command": "insert_path"
@@ -253,7 +253,7 @@ _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - De
 This will trigger filepath suggestions on `ctrl+alt+i`, with the current scope rules defined in settings. To override
 the _type_ of the path add an arguments object like:
 
-```json
+```js
 {
 	"keys": ["ctrl+alt+i"],
 	"command": "insert_path",
@@ -265,7 +265,7 @@ the _type_ of the path add an arguments object like:
 
 To override replacements set
 
-```json
+```js
 {
     "keys": ["ctrl+shift+space"],
     "command": "insert_path",
@@ -281,7 +281,7 @@ To override replacements set
 #### Examples
 See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_ for an up to date version
 
-```json
+```js
 [
     {
         "keys": ["ctrl+alt+space"],
