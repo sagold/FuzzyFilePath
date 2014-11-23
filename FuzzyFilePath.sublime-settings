@@ -14,23 +14,31 @@
 	// ignore folders that match following regular expressions
 	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
 
-	// All options may be overriden in <Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User>
-	// configuration of suggestions and insertions by scope
+	// LIST OF TRIGGERS FOR AUTO COMPLETION
+	// - setting "scopes" in user settings will override all other scopes.
+	// - triggers are evaluated in given order. First match wins
+	// - specialize trigger by 1. scope 2. prefix, style and/or tagname
+	// - command (insert_path) still requires a trigger
 	"scopes": [
+		// MINIMAL AUTO TRIGGER - NOT RECOMMENDED
+		// will always query files for auto completions
+		// {
+		// 	"scope": ".",
+		// 	"extensions": ["*"],
+		// 	"auto": true
+		// },
 	    {
 	        // js - require("") and define([""])
-	        "scope": "source\\.js.*string",
-	        "prefix": ["require", "define"],
-
-	        "auto": true,
-	        "extensions": ["js"],
-	        "relative": false,
-	        "base_directory": true,
+	        "scope": "source\\.js.*string",		// 1. ignore if scope at cursor does not match expression (super+alt+p)
+	        "prefix": ["require", "define"],	// 2. trigger only if: require(<cursor>, define([<cursor>
+	        // if 1 & 2 are true:
+	        "auto": true,						// auto suggest filepaths, else only by shorctut
+	        "extensions": ["js"],				// show only .js files
+	        "relative": false,					// insert absolute
+	        "base_directory": true,				// insert absolute from the set base directory (above)
 	        "replace_on_insert": [
-	        	// remove extension
-	        	["\\.js$", ""],
-	        	// nodejs will load index.js by default => also remove index
-	        	["\\/index$", ""]
+	        	["\\.js$", ""],					// after insertion, remove .js from path
+	        	["\\/index$", ""]				// nodejs will load index.js by default => also remove index
 	        ]
 	    },
 	    {
