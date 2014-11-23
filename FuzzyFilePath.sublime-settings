@@ -19,18 +19,51 @@
 	// configuration of suggestions and insertions by scope
 	"scopes": [
 	    {
-	        // html
-	        "scope": "meta.tag.*string.*\\.html",
-	        // <* src
-	        "tagName": ["img", "script"],
+	        // js - require("") and define([""])
+	        "scope": "source\\.js.*string",
+	        "prefix": ["require", "define"],
+
+	        "auto": true,
+	        "extensions": ["js"],
+	        "relative": true,
+	        "replace_on_insert": [
+	        	// remove extension
+	        	["\\.js$", ""],
+	        	// nodejs will load index.js by default => also remove index
+	        	["/index$", ""]
+	        ]
+	    },
+	    {
+	        // js - *.src = ""
+	        "scope": "source\\.js.*string",
 	        "prefix": ["src"],
 
 	        "auto": true,
-	        "extensions": ["png", "gif", "jpeg", "jpg", "svg"],
+	        "extensions": ["png", "gif", "jpg", "jpeg"],
 	        "relative": true
 	    },
 	    {
-	        // html
+	        // js - from ""
+	        "scope": "source\\.js",
+	        "prefix": ["from"],
+
+	        "auto": true,
+	        "extensions": ["js"],
+	        "relative": true
+	    },
+	    {
+	        // html - <img src="" and <script src="" and <* style="*: url()
+	        "scope": "meta.tag.*string.*\\.html",
+	        // <* src
+	        "tagName": ["img", "script"],
+	        "prefix": ["src", "url"],
+
+	        "auto": true,
+	        "extensions": ["js", "png", "gif", "jpeg", "jpg", "svg"],
+	        "relative": true
+	    },
+	    {
+	        // html - <link href=""
 	        "scope": "meta\\.tag.*string.*\\.html",
 	        // "scope": "html",
 	        // <link href
@@ -42,96 +75,18 @@
 	        "relative": true
 	    },
 	    {
-	        // js
-	        "scope": "source\\.js",
-	        // import * from *
-	        "prefix": ["from", "import"],
-
-	        "auto": true,
-	        "extensions": ["js"],
-	        "relative": true
-	    },
-	    {
-	        // js
-	        "scope": "source\\.js.*string",
-	        // AMD
-	        "prefix": ["define"],
-
-	        "extensions": ["js"],
-	        "auto": true,
-	        "relative": true
-	    },
-	    {
-	        // js
-	        "scope": "source\\.js.*string",
-	        // js webpack require: require(*)
-	        "prefix": ["require"],
-
-	        "auto": true,
-	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
-	        "relative": true,
-	        "replace_on_insert": [
-	        	// remove extension
-	        	["\\.js$", ""],
-	        	// nodejs will load index.js by default, remove
-	        	["/index$", ""]
-	        ]
-	    },
-	    {
-	        // js
-	        "scope": "source\\.js.*string",
-	        // object.src = *
-	        "prefix": ["src"],
-
-	        "auto": true,
-	        "extensions": ["png", "gif", "jpg", "jpeg"],
-	        "relative": true
-	    },
-	    {
-	        // js any (by command only)
-	        "scope": "source\\.js",
-
-	        "auto": false,
-	        "extensions": ["js", "html", "sass", "css", "less", "png", "gif", "jpg", "jpeg"],
-	        "relative": true
-	    },
-	    {
-	        // css
-	        "scope": "meta\\.property\\-value\\.css",
-	        // src: url
-	        "prefix": ["url"],
-	        "style": ["src"],
-
-	        "auto": true,
-	        "base_directory": true,
-	        "extensions": ["woff", "ttf", "svg", "otf"],
-	        "relative": true
-	    },
-	    {
-	        // css
-	        "scope": "meta\\.property\\-value\\.css",
-	        // x: url
-	        "prefix": ["url"],
-	        "style": ["background-image", "background", "list-type", "list-type-image"],
-
-	        "auto": true,
-	        "base_directory": true,
-	        "extensions": ["png", "gif", "jpeg", "jpg"],
-	        "relative": true
-	    },
-	    {
-	        // css
+	        // css - *: url()
 	        "scope": "meta\\.property.*\\.css",
 	        // *: url
 	        "prefix": ["url"],
 
 	        "auto": true,
+	        "relative": true,
 	        "base_directory": true,
 	        "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
-	        "relative": true
 	    },
 	    {
-	        // css
+	        // css - import ""
 	        "scope": ".*\\.(css|sass|less)",
 	        // *: url
 	        "prefix": ["import"],
@@ -141,8 +96,16 @@
 	        "relative": true,
 	        "replace_on_insert": [
 	        	// remove extension
-	        	["\\.[A-Za-z]*$", ""],
+	        	["\\.(scss|less)$", ""],
 	        ]
-	    }
+	    },
+	    {
+	        // * - any source file (by command only)
+	        "scope": "source",
+
+	        "auto": false,
+	        "extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
+	        "relative": true
+	    },
 	]
 }
