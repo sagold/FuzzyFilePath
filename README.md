@@ -7,7 +7,7 @@ Fuzzy search filenames inside your current project directory. Highly customizabl
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/develop/FuzzyFilePathDemo.gif" />
 <em style="display: block; text-align: right;">Basic settings support Html, Css and Javascript, but may be adjusted for every language</em>
 
-## Breaking Changes in v0.1.0
+## Breaking changes in 0.1.0
 
 - **change** `exclude_folders` items to be matched as regex
 - **remove** `extensionsToSuggest`, now being retrieved from scope settings
@@ -40,8 +40,8 @@ in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch wit
 
 ## <a name="usage">Usage</a>
 
-**Filepaths will be suggested if there is a matching _scope-rule_ for the current context** and its property _auto_ is set
-to _true_. For a matching _scope-rule_, filepath completions may be forced (ignoring _auto_ property) by the following
+**Filepaths will be suggested if there is a matching [scope-rule](#configuration_settings_scopes) for the current context** and its property _auto_ is set
+to _true_. For a matching [scope-rule](#configuration_settings_scopes), filepath completions may be forced (ignoring _auto_ property) by the following
 shorcuts:
 
 - __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
@@ -87,7 +87,7 @@ Project specific settings may be set in _Project | Edit Settings_:
 ### <a name="configuration_settings">Settings</a>
 
 ##### `base_directory`:String
-Default base directory to use if set in _scope-rule_.
+Default base directory to use if set in [scope-rule](#configuration_settings_scopes).
 i.e. `"base_directory": "dev/src"` will be used for relative or absolute filepath completions if scope-property
 `scope: { "base_directory": true}`.
 
@@ -122,7 +122,7 @@ To lookup a scope within your source code, press `alt+super+p`. The current scop
 status bar.
 
 
-##### `prefix`:String, `style`:String, `tagName`:String
+##### `prefix`:Array, `style`:Array, `tagName`:Array
 The scope selection may be further restricted by theese properties. Since scope settings are not easily adjusted,
 following variables are retrieved from the current context (cursor position and line):
 
@@ -131,6 +131,7 @@ following variables are retrieved from the current context (cursor position and 
 - The **tagName** is set with `<tagName ... 'query'`
 
 Examples
+
 - `<img src="./assets/logo.png">` results in `{"prefix": "src", "tagName": "img"}`
 - `'"property-name": url(./assets/logo.png)'` results in `{"prefix": "url", "style": "property-name"}` and
 - `from 'component'` results in `{"prefix": "from"}`
@@ -219,8 +220,8 @@ See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - 
 ### <a name="configuration_removed_settings">Removed settings</a>
 
 __extensionsToSuggest:Array__
-Valid filetypes are now retrieved from the [extensions](configuration_settings_extensions) property of each _scopes_
-item.
+Valid filetypes are now retrieved from the [extensions](configuration_settings_extensions) property of each _scope_
+entry.
 
 __insertExtension:Boolean__
 Extensions should now be removed by [replace\_on\_insert](#configuration_settings_replaceoninsert).

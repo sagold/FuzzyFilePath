@@ -2,9 +2,11 @@
 
 BREAKING CHANGES
 
-- **change** `exclude_folders` items to be used as regex
+- **change** `exclude_folders` items to be matched as regex
 - **remove** `extensionsToSuggest`, now being retrieved from scope settings
 - **remove** shortcut `super+ctrl+space`
+- **remove** option `auto_trigger`
+- **remove** option `insertExtension`. Should now be done by `replace_on_insert`
 - **change** and extend default scope rules
 - **change** absolute paths to start with "/name"
 - **change** path prefix (./, ../, /) now overwrites scope settings
