@@ -5,6 +5,9 @@ import inspect
 	Convention: for a test to be executed/recognized its name must contains "should"
 """
 class TestCase:
+
+	unit_test = False
+
 	def __init__(self, name):
 		self.name = name
 		self.tests = self.get_tests()
