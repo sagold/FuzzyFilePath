@@ -1,5 +1,10 @@
 """ FuzzyFilePath - autocomplete filepaths
 
+    # tasks
+
+        - check windows, update sublime text 2
+        - add to command palette: settings, base_directory
+
     @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
