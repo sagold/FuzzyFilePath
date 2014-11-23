@@ -1,7 +1,5 @@
 """ FuzzyFilePath - autocomplete filepaths
 
-
-
     @version 0.0.9
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
@@ -16,7 +14,6 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.common.path import Path
-
 
 project_files = None
 
@@ -52,7 +49,7 @@ def update_settings():
     for scope in config["TRIGGER"]:
         ext = scope.get("extensions", [])
         extensionsToSuggest += ext
-    # remove duplicates http://stackoverflow.com/questions/7961363/python-removing-duplicates-in-lists
+    # remove duplicates
     extensionsToSuggest = list(set(extensionsToSuggest))
 
     project_files = ProjectFiles()
@@ -113,27 +110,63 @@ class Completion:
         return path
 
 
+class InsertPathCommand(sublime_plugin.TextCommand):
+    # trigger customized autocomplete
+    def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):
+        if config["DISABLE_KEYMAP_ACTIONS"] is True:
+            return False
+
+        Query.force("filepath_type", type)
+        Query.force("base_directory", base_directory)
+
+        if len(replace_on_insert) > 0:
+            verbose("insert path", "override replace", replace_on_insert)
+            Query.force("replace_on_insert", replace_on_insert)
+
+        if len(extensions) > 0:
+            Query.force("extensions", extensions)
+
+        self.view.run_command('auto_complete', "insert")
+
+
 class Query:
     """
         Build current query based on received modifiers
     """
-    absolute = False
+
+    forces = {
+        # documentation only, will be removed
+        "filepath_type": False,
+        "extensions": [],
+        "base_directory": "",
+        "replace_on_insert": []
+    }
+
     extensions = ["*"]
     base_path = False
     replace_on_insert = []
-    skip_update_replace = False
 
     def reset():
         Query.extensions = ["*"]
         Query.base_path = False
         Query.replace_on_insert = []
-        Query.skip_update_replace = False
+        Query.forces.clear()
 
-    def build(needle, trigger, current_folder, project_folder, force_type=False):
+    def force(key, value):
+        Query.forces[key] = value
+        print("force", Query.forces)
 
+    def get(key, default):
+        return Query.forces.get(key, default)
+
+    def build(needle, trigger, current_folder, project_folder):
+
+        print("force all", Query.forces)
+
+        force_type = Query.get("filepath_type", False)
         triggered = force_type is not False
-        base_directory = trigger.get("base_directory", False)
 
+        filepath_type = "relative"
         needle = Path.sanitize(needle)
         needle_is_absolute = Path.is_absolute(needle)
         needle_is_relative = Path.is_relative(needle)
@@ -148,6 +181,16 @@ class Query:
         if triggered is False and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
             force_type = "absolute"
 
+        # base_directory: override - trigger - False
+        base_directory = trigger.get("base_directory", False)
+        base_directory = Query.get("base_directory", base_directory)
+        # set current directory by force, else by trigger:
+        #
+        # trigger       |
+        # --------------|--------------------
+        # False         | use current file's directory
+        # True          | use settings: base_directory
+        # String        | use string as base_directory
         # change base folder to base directory
         if base_directory is True:
             current_folder = config["BASE_DIRECTORY"]
@@ -157,68 +200,58 @@ class Query:
         if base_directory and needle_is_absolute:
             Completion.base_directory = current_folder
 
+        # filepath_type
+        #
         # needle    | trigger rel   | force     | RESULT
         # ----------|---------------|-----------|---------
-        # absolute  | *             | False     | absolute
-        # relative  | *             | False     | relative
         # ?         | relative      | False     | relative
         # ?         | absolute      | False     | absolute
+        # absolute  | *             | False     | absolute
+        # relative  | *             | False     | relative
         # *         | *             | relative  | relative
         # *         | *             | absolute  | absolute
-
-        needle_type = "relative"
-
         if force_type:
-            needle_type = force_type
+            filepath_type = force_type
         elif needle_is_absolute:
-            needle_type = "absolute"
+            filepath_type = "absolute"
         elif needle_is_relative:
-            needle_type = "relative"
+            filepath_type = "relative"
         elif trigger.get("relative") is True:
-            needle_type = "relative"
+            filepath_type = "relative"
         elif trigger.get("relative") is False:
-            needle_type = "absolute"
+            filepath_type = "absolute"
 
 
-        Query.base_path = False
-        if needle_type == "relative":
-            Query.base_path = current_folder
 
-        print("\ntype of completion\n--------")
-        print(needle_type)
-        # base_path = current_folder if needle_is_relative else False
-        # base_path = trigger.get("relative", base_path)
-        # Query.base_path = Query.get_path_type(base_path, current_folder, force_type)
+        Query.base_path = current_folder if filepath_type == "relative" else False
 
+        # replacements: override - trigger - None
+        Query.replace_on_insert = trigger.get("replace_on_insert", [])
+        Query.replace_on_insert = Query.get("replace_on_insert", Query.replace_on_insert)
+        # extensions: override - trigger - "js"
+        Query.extensions = trigger.get("extensions", ["*"])
+        print("extensions", Query.extensions)
+        Query.extensions = Query.get("extensions", Query.extensions)
+        print("extensions", Query.extensions)
 
-        Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else trigger.get("replace_on_insert", [])
         Query.needle = Query.build_needle_query(needle, current_folder)
-        Query.extensions = trigger.get("extensions", ["js"])
+
+        print("\nfilepath type\n--------")
+        print("type:", filepath_type)
+        print("base_path:", Query.base_path)
+        print("needle:", Query.needle)
+        print("current folder", current_folder)
         # return bool(start search)
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
     def build_needle_query(needle, current_folder):
         current_folder = "" if not current_folder else current_folder
         needle = re.sub("\.\./", "", needle)
+        needle = re.sub("[\\n\\t]", "", needle)
+        needle = needle.strip()
         if needle.startswith("./"):
             needle = current_folder + re.sub("\.\/", "", needle)
         return needle
-
-    def get_path_type(relative, current_folder, force_type=False):
-        if force_type == "absolute":
-            return False
-        elif force_type == "relative":
-            return current_folder
-
-        if relative is None:
-            return False
-        elif relative is True:
-            return current_folder
-
-
-    def override_replace_on_insert(replacements):
-        Query.replace_on_insert = replacements
-        Query.skip_update_replace = True
 
 
 def cleanup_completion(view, post_remove):
@@ -258,47 +291,26 @@ def query_completions(view, project_folder, current_folder):
 
     if not expression["valid_needle"]:
         word = Selection.get_word(view)
-        # print("INVALID NEEDLE", expression["needle"], "maybe?", re.sub("[^\.A-Za-z0-9\-\_$]", "", word))
         expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
 
-    # if expression["is_valid"] is False and Query.base_path is False:
-    #     return False
-
-    if Query.build(expression.get("needle"), trigger, current_folder, project_folder, Query.base_path) is False:
+    if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
         return False
 
-    # print("QUERY", Query.needle, "project: '", project_folder, "' relative: '", Query.base_path, "'")
+    print("QUERY:", Query.needle, "' relative:'", Query.base_path, "'", " extensions:", Query.extensions)
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
     # print("completions", completions)
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.replace_on_insert)
         view.run_command('_enter_insert_mode') # vintageous
-
-        print("\nquery:", Query.needle)
-        print("relative", Query.base_path)
-
     else:
-        sublime.status_message("FFP no completions found for '" + Query.needle + "'")
+        sublime.status_message("FFP no filepaths found for '" + Query.needle + "'")
         Completion.stop()
 
     Query.reset()
     return completions
 
-
-class InsertPathCommand(sublime_plugin.TextCommand):
-    # trigger customized autocomplete
-    def run(self, edit, type="default", replace_on_insert=[]):
-        if config["DISABLE_KEYMAP_ACTIONS"] is True:
-            return False
-
-        Query.base_path = type
-        if len(replace_on_insert) > 0:
-            verbose("insert path", "override replace", replace_on_insert)
-            Query.override_replace_on_insert(replace_on_insert)
-
-        self.view.run_command('auto_complete', "insert")
 
 
 class FuzzyFilePath(sublime_plugin.EventListener):
