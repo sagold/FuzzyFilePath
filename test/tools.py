@@ -5,6 +5,9 @@ import inspect
 	Convention: for a test to be executed/recognized its name must contains "should"
 """
 class TestCase:
+
+	unit_test = False
+
 	def __init__(self, name):
 		self.name = name
 		self.tests = self.get_tests()
@@ -17,3 +20,6 @@ class TestCase:
 			if "should" in name:
 				tests.append(name)
 		return tests
+
+	def assert_equal(self, expect, value):
+		assert expect == value, "expected '{0}' to equal '{1}'".format(expect, value)
