@@ -173,7 +173,7 @@ the path may be further adjusted. Each item within _replace\_on\_insert_  must b
 - If the project path varies, it may be adjusted for the current scope with<br />
 	`["\\/base\\_path\\/module", "vendor"]`.
 - In NodeJs index files are resolved by default, thus set<br />
-	`["index$", ""]` if `"insertExtension": false` to resolve a selection of _../module/index.js_ to _../module_
+	`["index$", ""]` to resolve a selection of _../module/index.js_ to _../module_
 - i.e. [webpack](https://github.com/webpack/webpack) may resolve paths differently. Thus if a bower component
 	is selected, but its folder is not required, the replacement:<br/>
 	`["^[\\.\\./]*/bower_components/", ""]` will fix this.
