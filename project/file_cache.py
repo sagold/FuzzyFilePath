@@ -2,8 +2,8 @@ import sublime
 import os
 import re
 import threading
-from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.config import config
+from common.verbose import verbose
+from common.config import config
 
 def posix(path):
     return path.replace("\\", "/")

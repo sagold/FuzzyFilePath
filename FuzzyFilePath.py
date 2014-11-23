@@ -12,15 +12,17 @@
 import sublime
 import sublime_plugin
 import re
-import os
 
-from FuzzyFilePath.expression import Context
-from FuzzyFilePath.project.project_files import ProjectFiles
-from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.verbose import log
-from FuzzyFilePath.common.config import config
-from FuzzyFilePath.common.selection import Selection
-from FuzzyFilePath.common.path import Path
+from expression import Context
+from project.project_files import ProjectFiles
+from common.verbose import verbose
+from common.verbose import log
+from common.config import config
+from common.selection import Selection
+from common.path import Path
+
+# from Cache.ProjectFiles import ProjectFiles
+# from Query import Query
 
 project_files = None
 scope_cache = {}

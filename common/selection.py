@@ -1,4 +1,3 @@
-
 class Selection:
 
     def get_position(view):

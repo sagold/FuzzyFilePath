@@ -1,9 +1,9 @@
 import sublime
 import os
 import re
-from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.path import Path
-from FuzzyFilePath.project.file_cache import FileCache
+from common.verbose import verbose
+from common.path import Path
+from project.file_cache import FileCache
 
 ID = "search"
 ID_CACHE = "cache"

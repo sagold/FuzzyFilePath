@@ -1,6 +1,6 @@
 import sublime
 import sublime_plugin
-from FuzzyFilePath.common.config import config
+from common.config import config
 
 class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
 
