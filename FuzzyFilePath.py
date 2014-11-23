@@ -55,7 +55,6 @@ def update_settings():
     project_files = ProjectFiles()
     project_files.update_settings(extensionsToSuggest, config["EXCLUDE_FOLDERS"])
 
-
     # validate base_directory
     if config["BASE_DIRECTORY"]:
         config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
@@ -85,28 +84,20 @@ class Completion:
         return Completion.active
 
     def get_final_path(path, post_remove):
-
-        print("\ncleanup:", path)
-
+        # print("\ncleanup:", path)
         # string to replace on post_insert_completion
         post_remove = re.escape(post_remove)
         path = re.sub("^" + post_remove, "", path)
-
-        print("pre:", path)
-
+        # print("pre:", path)
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
-
-        print("replace:", path)
-
+        # print("replace:", path)
         if Completion.base_directory and path.startswith("/"):
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
-
-        print("base, final:", path)
-
+        # print("base, final:", path)
         return path
 
 
