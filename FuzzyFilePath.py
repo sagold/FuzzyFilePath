@@ -5,7 +5,7 @@
         - check windows, update sublime text 2
         - add to command palette: settings, base_directory
 
-    @version 0.0.9
+    @version 0.1.0-alpha
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
@@ -16,12 +16,14 @@ import os
 from FuzzyFilePath.expression import Context
 from FuzzyFilePath.project.project_files import ProjectFiles
 from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.common.path import Path
 
 project_files = None
 scope_cache = {}
+
 
 def plugin_loaded():
     """ load settings """
@@ -43,14 +45,12 @@ def update_settings():
         config[key] = settings.get(key.lower(), config[key])
     # mapping
     config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
-
     # merge project settings stored in "settings: { FuzzyFilePath: ..."
     if project_settings:
         # mapping
         config["TRIGGER"] = project_settings.get("scopes", config["TRIGGER"])
         for key in config:
             config[key] = project_settings.get(key.lower(), config[key])
-
     # build extensions to suggest
     extensionsToSuggest = []
     for scope in config["TRIGGER"]:
@@ -61,13 +61,13 @@ def update_settings():
 
     project_files = ProjectFiles()
     project_files.update_settings(extensionsToSuggest, config["EXCLUDE_FOLDERS"])
-
     # validate base_directory
     if config["BASE_DIRECTORY"]:
         config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
 
-    print("FFP settings", len(config["TRIGGER"]), "triggers loaded")
-    print("FFP base directory: '", config["BASE_DIRECTORY"], "'")
+    log("logging enabled")
+    log("project base directory set to '{0}'".format(config["BASE_DIRECTORY"]))
+    log("{0} scope triggers loaded".format(len(config["TRIGGER"])))
 
 
 class Completion:
@@ -91,20 +91,20 @@ class Completion:
         return Completion.active
 
     def get_final_path(path, post_remove):
-        # print("\ncleanup:", path)
+        log("post cleanup inserted path: '{0}'".format(path))
         # string to replace on post_insert_completion
         post_remove = re.escape(post_remove)
         path = re.sub("^" + post_remove, "", path)
-        # print("pre:", path)
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
-        # print("replace:", path)
+
         if Completion.base_directory and path.startswith("/"):
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
-        # print("base, final:", path)
+
+        log("insert final path '{0}'".format(path))
         return path
 
 
@@ -118,9 +118,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         Query.force("base_directory", base_directory)
 
         if len(replace_on_insert) > 0:
-            verbose("insert path", "override replace", replace_on_insert)
             Query.force("replace_on_insert", replace_on_insert)
-
         if len(extensions) > 0:
             Query.force("extensions", extensions)
 
@@ -131,7 +129,6 @@ class Query:
     """
         Build current query based on received modifiers
     """
-
     forces = {
         # documentation only, will be removed
         "filepath_type": False,
@@ -160,28 +157,24 @@ class Query:
         return bool(Query.get("filepath_type", False))
 
     def build(needle, trigger, current_folder, project_folder):
-
         force_type = Query.get("filepath_type", False)
         triggered = Query.by_command()
-
         filepath_type = "relative"
         needle = Path.sanitize(needle)
         needle_is_absolute = Path.is_absolute(needle)
         needle_is_relative = Path.is_relative(needle)
         needle_is_path = needle_is_absolute or needle_is_relative
-
         # abort if autocomplete is not available
         if not triggered and trigger.get("auto", False) is False and needle_is_path is False:
             # print("FFP no autocomplete")
             return False
-
         # test path to trigger auto-completion by needle
         if not triggered and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
             force_type = "absolute"
-
         # base_directory: override - trigger - False
         base_directory = trigger.get("base_directory", False)
         base_directory = Query.get("base_directory", base_directory)
+        #
         # set current directory by force, else by trigger:
         #
         # trigger       |
@@ -190,6 +183,7 @@ class Query:
         # True          | use settings: base_directory
         # String        | use string as base_directory
         # change base folder to base directory
+        #
         if base_directory is True:
             current_folder = config["BASE_DIRECTORY"]
         elif base_directory:
@@ -197,6 +191,7 @@ class Query:
         # notify completion to replace path
         if base_directory and needle_is_absolute:
             Completion.base_directory = current_folder
+        #
         # filepath_type
         #
         # needle    | trigger rel   | force     | RESULT
@@ -207,6 +202,7 @@ class Query:
         # relative  | *             | False     | relative
         # *         | *             | relative  | relative
         # *         | *             | absolute  | absolute
+        #
         if force_type:
             filepath_type = force_type
         elif needle_is_absolute:
@@ -278,7 +274,7 @@ def query_completions(view, project_folder, current_folder):
         triggers = config["TRIGGER"]
 
     if not bool(triggers):
-        print("FFP abort due to previously evaluated scope")
+        log("abort query, no valid scope-regex for current context")
         return False
 
     # parse current context, may contain 'is_valid: False'
@@ -304,28 +300,38 @@ def query_completions(view, project_folder, current_folder):
     if not expression["valid_needle"]:
         word = Selection.get_word(view)
         expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
-        print("invalid needle:", expression["needle"], "changed to:", expression["needle"])
+        log("changed invalid needle to {0}".format(expression["needle"]))
     else:
-        print("expression", expression)
+        log("context evaluation {0}".format(expression))
 
     if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
+        log("abort valid query: auto trigger disabled")
         return False
 
-    # print("QUERY:", Query.needle, "' relative:'", Query.base_path, "'", " extensions:", Query.extensions)
+    if (config["LOG"]):
+        log("")
+        log("query completions:")
+        log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        log("scope settings: {0}".format(trigger))
+        log("search needle: '{0}'".format(Query.needle))
+        log("in base path: '{0}'".format(Query.base_path))
+
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
-    # print("completions", completions)
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.replace_on_insert)
         view.run_command('_enter_insert_mode') # vintageous
+        log("=> {0} completions found".format(len(completions)))
     else:
         sublime.status_message("FFP no filepaths found for '" + Query.needle + "'")
         Completion.stop()
+        log("=> no valid files found for needle: {0}".format(Query.needle))
+
+    log("")
 
     Query.reset()
     return completions
-
 
 
 class FuzzyFilePath(sublime_plugin.EventListener):
@@ -344,10 +350,13 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     post_remove = "",
 
     def on_query_completions(self, view, prefix, locations):
+        if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
+            return False
+
         if self.track_insert["active"] is False:
             self.start_tracking(view)
 
-        if config["DISABLE_AUTOCOMPLETION"] is False and self.is_project_file:
+        if self.is_project_file:
             return query_completions(view, self.project_folder, self.current_folder)
         else:
             verbose("disabled or not a project", self.is_project_file)
@@ -373,11 +382,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # validate and update project folders
     def on_activated(self, view):
-        file_name = view.file_name()
-        folders = sublime.active_window().folders()
-
         self.is_project_file = False
         self.project_folder = None
+        file_name = view.file_name()
+        folders = sublime.active_window().folders()
 
         if folders is None or file_name is None:
             return False
@@ -386,12 +394,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             if folder in file_name:
                 self.is_project_file = True
                 self.project_folder = folder
-
         # abort if file is not within a project
         if not self.is_project_file:
             sublime.status_message("FFP abort. File is not within a project")
             return False
-
         # default to False fails for relative resolution from base_directory
         # but False is required for query of absolute path
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)

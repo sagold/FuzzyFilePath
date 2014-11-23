@@ -8,6 +8,8 @@ from FuzzyFilePath.common.config import config
 def posix(path):
     return path.replace("\\", "/")
 
+ID = "cache"
+
 # stores all files and its fragments within property files
 class FileCache(threading.Thread):
 
@@ -21,13 +23,9 @@ class FileCache(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        print("FFP", "caching files...")
-
-        # cache files in folder
+        verbose(ID, "add files in", self.folder)
         self.files = self.read(self.folder)
-        verbose("cache", "caching folder", self.folder, self.files)
-
-        print("FFP", len(self.files), "files cached")
+        verbose(ID, len(self.files), "files cached")
 
 
     def read(self, folder, base=None):
@@ -38,7 +36,7 @@ class FileCache(threading.Thread):
         # test ignore expressions on current path
         for test in self.exclude_folders:
             if re.search(test, folder) is not None:
-                verbose("cache", "SKIP\t", folder)
+                verbose(ID, "skip " + folder)
                 return folder_cache
 
         # ressources =
@@ -50,9 +48,7 @@ class FileCache(threading.Thread):
                 relative_path = os.path.relpath(current_path, base)
                 filename, extension = os.path.splitext(relative_path)
                 extension = extension[1:]
-
                 # posix required for windows, else absolute paths are wrong: /asd\ads\
-                # => relative correct ~bug?
                 relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], posix(relative_path))
 
                 if extension in self.extensions:
@@ -62,5 +58,4 @@ class FileCache(threading.Thread):
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
                 folder_cache.update(self.read(current_path, base))
 
-        verbose("cache", "+\t\t", folder, "files: ", len(folder_cache))
         return folder_cache

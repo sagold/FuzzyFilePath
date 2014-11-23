@@ -5,6 +5,8 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.path import Path
 from FuzzyFilePath.project.file_cache import FileCache
 
+ID = "search"
+ID_CACHE = "cache"
 
 class ProjectFiles:
     """
@@ -18,7 +20,6 @@ class ProjectFiles:
 
     def update_settings(self, file_extensions, exclude_folders):
         if self.valid_extensions != file_extensions or self.exclude_folders != exclude_folders:
-            print("FFP rebuilding cache")
             #rebuild cache
             for folder in self.cache:
                 self.cache[folder] = FileCache(exclude_folders, file_extensions, folder)
@@ -58,7 +59,7 @@ class ProjectFiles:
         for i in needle:
             regex += i + ".*"
 
-        verbose("cache scan", len(project_files), "files for", needle, valid_extensions);
+        verbose(ID, "scan", len(project_files), "files for", needle, valid_extensions);
 
         # get matching files
         result = []
@@ -119,7 +120,7 @@ class ProjectFiles:
         name, extension = os.path.splitext(file_name)
         extension = extension[1:]
         if not extension in self.valid_extensions:
-            verbose("cache", "file to cache has no valid extension", extension)
+            verbose(ID_CACHE, "file to cache has no valid extension", extension)
             return True
 
         if self.folder_is_cached(folder):
@@ -134,15 +135,15 @@ class ProjectFiles:
 
     # rebuild folder cache
     def update(self, folder, file_name=None):
-        if (self.file_is_cached(folder, file_name)):
-            verbose("cache", "already cached", file_name)
+        if file_name and self.file_is_cached(folder, file_name):
+            verbose(ID_CACHE, "file", file_name, "already cached")
             return False
 
         if self.folder_is_cached(folder):
-            verbose("cache", "already cached", folder)
+            verbose(ID_CACHE, "folder", folder, "already cached")
             del self.cache[folder]
 
-        verbose("cache", "cache update", file_name, folder)
+        verbose(ID_CACHE, "cache update", file_name, folder)
         self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
         return True

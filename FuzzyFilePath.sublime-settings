@@ -1,4 +1,7 @@
 {
+	// logs scope evaluation to console to debug configuration
+	"log": false,
+
 	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
 	"base_directory": "",
 
