@@ -27,14 +27,6 @@ from common.path import Path
 project_files = None
 scope_cache = {}
 
-
-def plugin_loaded():
-    """ load settings """
-    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    settings.add_on_change("scopes", update_settings)
-    update_settings()
-
-
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
     global project_files, scope_cache
@@ -71,6 +63,12 @@ def update_settings():
     log("logging enabled")
     log("project base directory set to '{0}'".format(config["BASE_DIRECTORY"]))
     log("{0} scope triggers loaded".format(len(config["TRIGGER"])))
+
+
+""" load settings """
+settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+settings.add_on_change("scopes", update_settings)
+update_settings()
 
 
 class Completion:
