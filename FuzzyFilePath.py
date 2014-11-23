@@ -386,8 +386,13 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def on_activated(self, view):
         self.is_project_file = False
         self.project_folder = None
+
+        current_window = sublime.active_window()
+        if not current_window:
+            return False
+
         file_name = view.file_name()
-        folders = sublime.active_window().folders()
+        folders = current_window.folders()
 
         if folders is None or file_name is None:
             return False
