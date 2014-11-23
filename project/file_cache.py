@@ -23,7 +23,7 @@ class FileCache(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        verbose(ID, "add files in", self.folder)
+        verbose(ID, "START adding files in", self.folder)
         self.files = self.read(self.folder)
         verbose(ID, len(self.files), "files cached")
 
