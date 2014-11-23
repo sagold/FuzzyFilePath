@@ -92,7 +92,7 @@
 	        "auto": true,
 	        "relative": true,
 	        "base_directory": true,
-	        "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
+	        "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"]
 	    },
 	    {
 	        // css - import ""
@@ -105,7 +105,7 @@
 	        "relative": true,
 	        "replace_on_insert": [
 	        	// remove extension
-	        	["\\.(scss|less)$", ""],
+	        	["\\.(scss|less)$", ""]
 	        ]
 	    },
 	    {
@@ -115,6 +115,6 @@
 	        "auto": false,
 	        "extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
 	        "relative": true
-	    },
+	    }
 	]
 }
