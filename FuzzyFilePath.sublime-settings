@@ -30,7 +30,7 @@
 	        	// remove extension
 	        	["\\.js$", ""],
 	        	// nodejs will load index.js by default => also remove index
-	        	["/index$", ""]
+	        	["\\/index$", ""]
 	        ]
 	    },
 	    {
