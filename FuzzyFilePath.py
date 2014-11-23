@@ -156,10 +156,13 @@ class Query:
     def get(key, default=None):
         return Query.forces.get(key, default)
 
+    def by_command():
+        return bool(Query.get("filepath_type", False))
+
     def build(needle, trigger, current_folder, project_folder):
 
         force_type = Query.get("filepath_type", False)
-        triggered = force_type is not False
+        triggered = Query.by_command()
 
         filepath_type = "relative"
         needle = Path.sanitize(needle)
@@ -168,12 +171,12 @@ class Query:
         needle_is_path = needle_is_absolute or needle_is_relative
 
         # abort if autocomplete is not available
-        if triggered is False and trigger.get("auto", False) is False and needle_is_path is False:
+        if not triggered and trigger.get("auto", False) is False and needle_is_path is False:
             # print("FFP no autocomplete")
             return False
 
         # test path to trigger auto-completion by needle
-        if triggered is False and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
+        if not triggered and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
             force_type = "absolute"
 
         # base_directory: override - trigger - False
@@ -194,7 +197,6 @@ class Query:
         # notify completion to replace path
         if base_directory and needle_is_absolute:
             Completion.base_directory = current_folder
-
         # filepath_type
         #
         # needle    | trigger rel   | force     | RESULT
@@ -270,7 +272,7 @@ def query_completions(view, project_folder, current_folder):
 
     current_scope = Selection.get_scope(view)
 
-    if not Query.get("filepath_type"):
+    if not Query.by_command():
         triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
     else:
         triggers = config["TRIGGER"]
