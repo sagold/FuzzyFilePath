@@ -3,7 +3,7 @@
 	"log": false,
 
 	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
-	"base_directory": "",
+	"base_directory": false,
 
 	// disable automatic path completions
 	"disable_autocompletions": false,
