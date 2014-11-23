@@ -9,5 +9,5 @@ class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
         if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
 
-        self.view.replace(edit, sublime.Region(a, b), string)
-        # print(self.view.command_history(0))
+        region = sublime.Region(int(a), int(b))
+        self.view.replace(edit, region, string)
