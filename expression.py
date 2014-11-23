@@ -118,9 +118,11 @@ def get_context(view):
 
 class Context:
 
+	@staticmethod
 	def get_context(view):
 		return get_context(view)
 
+	@staticmethod
 	def check_trigger(trigger, expression):
 		# returns True if the expression statements match the trigger
 		for statement in set(config["TRIGGER_STATEMENTS"]).intersection(trigger):
@@ -134,6 +136,7 @@ class Context:
 
 		return True
 
+	@staticmethod
 	def find_trigger(expression, scope, triggers):
 		for trigger in triggers:
 			# if the trigger is defined for the current scope
@@ -145,6 +148,7 @@ class Context:
 
 		return False
 
+	@staticmethod
 	def get_rule(view):
 
 		selection = view.sel()[0]

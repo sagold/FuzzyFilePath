@@ -81,18 +81,22 @@ class Completion:
     onInsert = []   # substitutions for building final path
     base_directory = False  # base directory to set for absolute path, enabled by query...
 
+    @staticmethod
     def start(post_replacements=[]):
         Completion.replaceOnInsert = post_replacements
         Completion.active = True
 
+    @staticmethod
     def stop():
         Completion.active = False
         # set by query....
         Completion.base_directory = False
 
+    @staticmethod
     def is_active():
         return Completion.active
 
+    @staticmethod
     def get_final_path(path, post_remove):
         # string to replace on post_insert_completion
         post_remove = re.escape(post_remove)
@@ -142,21 +146,26 @@ class Query:
     base_path = False
     replace_on_insert = []
 
+    @staticmethod
     def reset():
         Query.extensions = ["*"]
         Query.base_path = False
         Query.replace_on_insert = []
         Query.forces.clear()
 
+    @staticmethod
     def force(key, value):
         Query.forces[key] = value
 
+    @staticmethod
     def get(key, default=None):
         return Query.forces.get(key, default)
 
+    @staticmethod
     def by_command():
         return bool(Query.get("filepath_type", False))
 
+    @staticmethod
     def build(needle, trigger, current_folder, project_folder):
         force_type = Query.get("filepath_type", False)
         triggered = Query.by_command()
@@ -231,6 +240,7 @@ class Query:
         # return bool(start search)
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
+    @staticmethod
     def build_needle_query(needle, current_folder):
         current_folder = "" if not current_folder else current_folder
         needle = re.sub("\.\./", "", needle)
