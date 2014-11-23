@@ -12,26 +12,20 @@
 import sublime
 import sublime_plugin
 import re
-import os
 
-from FuzzyFilePath.expression import Context
-from FuzzyFilePath.project.project_files import ProjectFiles
-from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.verbose import log
-from FuzzyFilePath.common.config import config
-from FuzzyFilePath.common.selection import Selection
-from FuzzyFilePath.common.path import Path
+from expression import Context
+from project.project_files import ProjectFiles
+from common.verbose import verbose
+from common.verbose import log
+from common.config import config
+from common.selection import Selection
+from common.path import Path
+
+# from Cache.ProjectFiles import ProjectFiles
+# from Query import Query
 
 project_files = None
 scope_cache = {}
-
-
-def plugin_loaded():
-    """ load settings """
-    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    settings.add_on_change("scopes", update_settings)
-    update_settings()
-
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
@@ -39,7 +33,12 @@ def update_settings():
 
     scope_cache.clear()
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    project_settings = sublime.active_window().active_view().settings().get('FuzzyFilePath', False)
+
+    # st2 - has to check window
+    project_settings = False
+    current_window = sublime.active_window()
+    if current_window:
+        project_settings = current_window.active_view().settings().get('FuzzyFilePath', False)
 
     # sync settings to config
     for key in config:
@@ -71,6 +70,12 @@ def update_settings():
     log("{0} scope triggers loaded".format(len(config["TRIGGER"])))
 
 
+""" load settings """
+settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+settings.add_on_change("scopes", update_settings)
+update_settings()
+
+
 class Completion:
     """
         Manage active state of completion and post cleanup
@@ -79,22 +84,33 @@ class Completion:
     onInsert = []   # substitutions for building final path
     base_directory = False  # base directory to set for absolute path, enabled by query...
 
+    @staticmethod
     def start(post_replacements=[]):
         Completion.replaceOnInsert = post_replacements
         Completion.active = True
 
+    @staticmethod
     def stop():
         Completion.active = False
         # set by query....
         Completion.base_directory = False
 
+    @staticmethod
     def is_active():
         return Completion.active
 
+    @staticmethod
     def get_final_path(path, post_remove):
+
+        # st2 - disable post_remove: missing events
         # string to replace on post_insert_completion
-        post_remove = re.escape(post_remove)
-        path = re.sub("^" + post_remove, "", path)
+        # post_remove = re.escape(post_remove)
+        # path = re.sub("^" + post_remove, "", path)
+
+        # st2 - sanitize
+        if re.search("\/\.\/", path):
+            path = re.sub("^(\.\.\/)*", "", path)
+
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
@@ -104,6 +120,7 @@ class Completion:
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
 
+        log("final filepath: '{0}'".format(path))
         return path
 
 
@@ -140,21 +157,26 @@ class Query:
     base_path = False
     replace_on_insert = []
 
+    @staticmethod
     def reset():
         Query.extensions = ["*"]
         Query.base_path = False
         Query.replace_on_insert = []
         Query.forces.clear()
 
+    @staticmethod
     def force(key, value):
         Query.forces[key] = value
 
+    @staticmethod
     def get(key, default=None):
         return Query.forces.get(key, default)
 
+    @staticmethod
     def by_command():
         return bool(Query.get("filepath_type", False))
 
+    @staticmethod
     def build(needle, trigger, current_folder, project_folder):
         force_type = Query.get("filepath_type", False)
         triggered = Query.by_command()
@@ -165,7 +187,6 @@ class Query:
         needle_is_path = needle_is_absolute or needle_is_relative
         # abort if autocomplete is not available
         if not triggered and trigger.get("auto", False) is False and needle_is_path is False:
-            # print("FFP no autocomplete")
             return False
         # test path to trigger auto-completion by needle
         if not triggered and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
@@ -183,13 +204,18 @@ class Query:
         # String        | use string as base_directory
         # change base folder to base directory
         #
+        # st2? - fix missing or bugged base_directory
+        adjusted_basepath = current_folder
         if base_directory is True:
-            current_folder = config["BASE_DIRECTORY"]
+            adjusted_basepath = config["BASE_DIRECTORY"]
         elif base_directory:
-            current_folder = Path.sanitize_base_directory(base_directory)
+            adjusted_basepath = Path.sanitize_base_directory(base_directory)
         # notify completion to replace path
         if base_directory and needle_is_absolute:
             Completion.base_directory = current_folder
+        # st2? - fix missing or bugged base_directory
+        if adjusted_basepath is False:
+            adjusted_basepath = current_folder
         #
         # filepath_type
         #
@@ -221,14 +247,14 @@ class Query:
         Query.extensions = trigger.get("extensions", ["*"])
         Query.extensions = Query.get("extensions", Query.extensions)
         Query.needle = Query.build_needle_query(needle, current_folder)
-        # print("\nfilepath type\n--------")
-        # print("type:", filepath_type)
-        # print("base_path:", Query.base_path)
-        # print("needle:", Query.needle)
-        # print("current folder", current_folder)
-        # return bool(start search)
+        log("\nfilepath type\n--------")
+        log("type:", filepath_type)
+        log("base_path:", Query.base_path)
+        log("needle:", Query.needle)
+        log("current folder", current_folder)
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
+    @staticmethod
     def build_needle_query(needle, current_folder):
         current_folder = "" if not current_folder else current_folder
         needle = re.sub("\.\./", "", needle)
@@ -315,7 +341,11 @@ def query_completions(view, project_folder, current_folder):
         log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         log("scope settings: {0}".format(trigger))
         log("search needle: '{0}'".format(Query.needle))
-        log("in base path: '{0}'".format(Query.base_path))
+        log("in base path: '{0}'".format(str(Query.base_path)))
+
+    if Query.base_path:
+        Query.base_path = str(Query.base_path)
+
 
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
 
@@ -362,14 +392,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             verbose("disabled or not a project", self.is_project_file)
             return False
 
-    def on_post_insert_completion(self, view, command_name):
-        if Completion.is_active():
-            cleanup_completion(view, self.post_remove)
-            Completion.stop()
-
-
     # update project by file
-    def on_post_save_async(self, view):
+    def on_post_save(self, view):
         if project_files is None:
             return False
 
@@ -384,8 +408,13 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def on_activated(self, view):
         self.is_project_file = False
         self.project_folder = None
+
+        current_window = sublime.active_window()
+        if not current_window:
+            return False
+
         file_name = view.file_name()
-        folders = sublime.active_window().folders()
+        folders = current_window.folders()
 
         if folders is None or file_name is None:
             return False
@@ -394,6 +423,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             if folder in file_name:
                 self.is_project_file = True
                 self.project_folder = folder
+
         # abort if file is not within a project
         if not self.is_project_file:
             sublime.status_message("FFP abort. File is not within a project")
@@ -401,13 +431,14 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         # default to False fails for relative resolution from base_directory
         # but False is required for query of absolute path
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
-
         if project_files:
             project_files.add(self.project_folder)
 
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
+        if self.track_insert["active"]:
+            return
         self.track_insert["active"] = True
         self.track_insert["start_line"] = Selection.get_line(view)
         self.track_insert["end_line"] = None
@@ -427,6 +458,26 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     def abort_tracking(self):
         self.track_insert["active"] = False
+
+    def on_modified(self, view):
+        command = view.command_history(0)
+        command_name = str(command[0])
+        command_arguments = command[1]
+        self.on_text_command(view, command_name, command_arguments)
+
+    def on_selection_modified(self, view):
+        command = view.command_history(0)
+        command_name = str(command[0])
+        command_arguments = command[1]
+        if command_name is "insert_completion":
+            self.on_post_insert_completion(view, command_name)
+        else:
+            self.on_post_text_command(view, command_name, command_arguments)
+
+    def on_post_insert_completion(self, view, command_name):
+        if Completion.is_active():
+            cleanup_completion(view, self.post_remove)
+            Completion.stop()
 
     def on_text_command(self, view, command_name, args):
         # check if a completion may be inserted

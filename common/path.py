@@ -3,6 +3,7 @@ import os
 
 class Path:
 
+    @staticmethod
     def sanitize(path):
         # sanitize ././
         path = re.sub("^(./)+", "./", path)
@@ -10,12 +11,15 @@ class Path:
         path = path.replace("\\", "/")
         return path
 
+    @staticmethod
     def is_relative(string):
         return bool(re.match("(\.?\.\/)", string))
 
+    @staticmethod
     def is_absolute(string):
         return bool(re.match("\/[A-Za-z0-9\_\-\s\.$]*", string))
 
+    @staticmethod
     def sanitize_base_directory(path):
         path = Path.sanitize(path)
         # no leading nor trailing slash
@@ -23,14 +27,16 @@ class Path:
         path = re.sub("\/*$", "", path)
         return path
 
+    @staticmethod
     def get_relative_folder(file_name, base_directory):
         folder = os.path.dirname(file_name)
         folder = os.path.relpath(folder, base_directory)
         folder = "" if folder == "." else folder
         return Path.sanitize(folder)
 
-    # return {string} path from base to target
+    @staticmethod
     def trace(from_folder, to_folder):
+        # return {string} path from base to target
         if not from_folder:
             return Path.sanitize("./" + to_folder)
 

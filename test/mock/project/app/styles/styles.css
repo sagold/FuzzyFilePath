@@ -1,9 +1,0 @@
-* {
-	background-image: url("./assets/header.png");
-}
-
-@font-face {
-	font-family:	"icon";
-	src:			url(./assets/fonts/glyph.ttf) format("truetype"),
-					url(./assets/fonts/glyph.svg) format("svg");
-}
