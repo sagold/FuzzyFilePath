@@ -25,7 +25,7 @@ class FileCache(threading.Thread):
 
         # cache files in folder
         self.files = self.read(self.folder)
-        verbose("caching folder", self.folder, self.files)
+        verbose("cache", "caching folder", self.folder, self.files)
 
         print("FFP", len(self.files), "files cached")
 
@@ -38,7 +38,7 @@ class FileCache(threading.Thread):
         # test ignore expressions on current path
         for test in self.exclude_folders:
             if re.search(test, folder) is not None:
-                verbose("cache", "SKIP", folder)
+                verbose("cache", "SKIP\t", folder)
                 return folder_cache
 
         # ressources =
@@ -55,11 +55,10 @@ class FileCache(threading.Thread):
 
                 if extension in self.extensions:
                     # $ hack, reversed in post_commit_completion
-                    # folder_cache[posix(relative_path)] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
                     folder_cache[relative_path] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
                 folder_cache.update(self.read(current_path, base))
 
-        verbose("cached folder", folder, "files: ", len(folder_cache))
+        verbose("cache", "+\t\t", folder, "files: ", len(folder_cache))
         return folder_cache
