@@ -21,18 +21,20 @@ from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.common.path import Path
 
 project_files = None
+scope_cache = {}
 
 def plugin_loaded():
     """ load settings """
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    settings.add_on_change("extensionsToSuggest", update_settings)
+    settings.add_on_change("scopes", update_settings)
     update_settings()
 
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
-    global project_files
+    global project_files, scope_cache
 
+    scope_cache.clear()
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     project_settings = sublime.active_window().active_view().settings().get('FuzzyFilePath', False)
 
@@ -150,14 +152,11 @@ class Query:
 
     def force(key, value):
         Query.forces[key] = value
-        print("force", Query.forces)
 
-    def get(key, default):
+    def get(key, default=None):
         return Query.forces.get(key, default)
 
     def build(needle, trigger, current_folder, project_folder):
-
-        print("force all", Query.forces)
 
         force_type = Query.get("filepath_type", False)
         triggered = force_type is not False
@@ -170,7 +169,7 @@ class Query:
 
         # abort if autocomplete is not available
         if triggered is False and trigger.get("auto", False) is False and needle_is_path is False:
-            print("FFP no autocomplete")
+            # print("FFP no autocomplete")
             return False
 
         # test path to trigger auto-completion by needle
@@ -217,26 +216,19 @@ class Query:
         elif trigger.get("relative") is False:
             filepath_type = "absolute"
 
-
-
         Query.base_path = current_folder if filepath_type == "relative" else False
-
         # replacements: override - trigger - None
         Query.replace_on_insert = trigger.get("replace_on_insert", [])
         Query.replace_on_insert = Query.get("replace_on_insert", Query.replace_on_insert)
         # extensions: override - trigger - "js"
         Query.extensions = trigger.get("extensions", ["*"])
-        print("extensions", Query.extensions)
         Query.extensions = Query.get("extensions", Query.extensions)
-        print("extensions", Query.extensions)
-
         Query.needle = Query.build_needle_query(needle, current_folder)
-
-        print("\nfilepath type\n--------")
-        print("type:", filepath_type)
-        print("base_path:", Query.base_path)
-        print("needle:", Query.needle)
-        print("current folder", current_folder)
+        # print("\nfilepath type\n--------")
+        # print("type:", filepath_type)
+        # print("base_path:", Query.base_path)
+        # print("needle:", Query.needle)
+        # print("current folder", current_folder)
         # return bool(start search)
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
@@ -259,16 +251,38 @@ def cleanup_completion(view, post_remove):
     view.run_command("ffp_replace_region", { "a": expression["region"].a, "b": expression["region"].b, "string": final_path })
 
 
+def get_matching_autotriggers(scope, triggers):
+    global scope_cache
+    # get cached evaluation
+    result = scope_cache.get(scope)
+    if result is None:
+        # evaluate triggers on current scope
+        result = [trigger for trigger in triggers if trigger.get("auto") and re.search(trigger.get("scope"), scope)]
+        # add to cache
+        scope_cache[scope] = result if len(result) > 0 else False
+        result = scope_cache.get(scope)
+
+    return result
+
+
 def query_completions(view, project_folder, current_folder):
     global Context, Selection
+
+    current_scope = Selection.get_scope(view)
+
+    if not Query.get("filepath_type"):
+        triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
+    else:
+        triggers = config["TRIGGER"]
+
+    if not bool(triggers):
+        print("FFP abort due to previously evaluated scope")
+        return False
 
     # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
     # check if there is a trigger for the current expression
-    current_scope = Selection.get_scope(view)
-    trigger = Context.find_trigger(expression, current_scope)
-
-    print("expression", expression)
+    trigger = Context.find_trigger(expression, current_scope, triggers)
 
     # expression | trigger  | force | ACTION            | CURRENT
     # -----------|----------|-------|-------------------|--------
@@ -288,12 +302,15 @@ def query_completions(view, project_folder, current_folder):
     if not expression["valid_needle"]:
         word = Selection.get_word(view)
         expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
+        print("invalid needle:", expression["needle"], "changed to:", expression["needle"])
+    else:
+        print("expression", expression)
 
     if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
         return False
 
-    print("QUERY:", Query.needle, "' relative:'", Query.base_path, "'", " extensions:", Query.extensions)
+    # print("QUERY:", Query.needle, "' relative:'", Query.base_path, "'", " extensions:", Query.extensions)
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
     # print("completions", completions)
 

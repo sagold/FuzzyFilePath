@@ -90,7 +90,7 @@ def get_context(view):
 		tag = tag.group(1)
 		# print("tag:", tag)
 
-	style = re.search("\s*(["+NEEDLE_CHARACTERS+"]*)\s*\:[^\:]*$", prefix_line)
+	style = re.search("[\s\"\'']*(["+NEEDLE_CHARACTERS+"]*)[\s\"\']*\:[^\:]*$", prefix_line)
 	if style:
 		style = style.group(1)
 		# print("style:", style)
@@ -134,8 +134,8 @@ class Context:
 
 		return True
 
-	def find_trigger(expression, scope):
-		for trigger in config["TRIGGER"]:
+	def find_trigger(expression, scope, triggers):
+		for trigger in triggers:
 			# if the trigger is defined for the current scope
 			# REQUIRED? scope = properties.get("scope").replace("//", "")
 			if re.search(trigger["scope"], scope):
