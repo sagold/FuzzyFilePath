@@ -51,7 +51,7 @@ class FileCache(threading.Thread):
                 filename, extension = os.path.splitext(relative_path)
                 extension = extension[1:]
 
-                relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], posix(relative_path))
+                relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], relative_path)
 
                 if extension in self.extensions:
                     # $ hack, reversed in post_commit_completion
