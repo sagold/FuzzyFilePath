@@ -4,6 +4,7 @@
 
         - check windows, update sublime text 2
         - add to command palette: settings, base_directory
+        - add force update cached folder
 
     @version 0.1.0-alpha
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -91,7 +92,6 @@ class Completion:
         return Completion.active
 
     def get_final_path(path, post_remove):
-        log("post cleanup inserted path: '{0}'".format(path))
         # string to replace on post_insert_completion
         post_remove = re.escape(post_remove)
         path = re.sub("^" + post_remove, "", path)
@@ -104,7 +104,6 @@ class Completion:
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
 
-        log("insert final path '{0}'".format(path))
         return path
 
 
@@ -244,7 +243,7 @@ def cleanup_completion(view, post_remove):
     expression = Context.get_context(view)
     # remove path query completely
     final_path = Completion.get_final_path(expression["needle"], post_remove)
-    verbose("cleanup", "expression", expression.get("needle"), " -> ", final_path)
+    log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
     # replace current query with final path
     view.run_command("ffp_replace_region", { "a": expression["region"].a, "b": expression["region"].b, "string": final_path })
 
@@ -295,6 +294,7 @@ def query_completions(view, project_folder, current_folder):
 
     # currently trigger is required in Query.build
     if trigger is False:
+        log("abort completion, no trigger found")
         return False
 
     if not expression["valid_needle"]:
