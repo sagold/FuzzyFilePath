@@ -101,11 +101,16 @@ class Completion:
 
     @staticmethod
     def get_final_path(path, post_remove):
-        log("cleanup filepate: '{0}'".format(path))
 
+        # st2 - disable post_remove: missing events
         # string to replace on post_insert_completion
-        post_remove = re.escape(post_remove)
-        path = re.sub("^" + post_remove, "", path)
+        # post_remove = re.escape(post_remove)
+        # path = re.sub("^" + post_remove, "", path)
+
+        # st2 - sanitize
+        if re.search("\/\.\/", path):
+            path = re.sub("^(\.\.\/)*", "", path)
+
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
@@ -115,7 +120,7 @@ class Completion:
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
 
-        log("final filepate: '{0}'".format(path))
+        log("final filepath: '{0}'".format(path))
         return path
 
 
@@ -182,7 +187,6 @@ class Query:
         needle_is_path = needle_is_absolute or needle_is_relative
         # abort if autocomplete is not available
         if not triggered and trigger.get("auto", False) is False and needle_is_path is False:
-            # print("FFP no autocomplete")
             return False
         # test path to trigger auto-completion by needle
         if not triggered and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
@@ -200,13 +204,18 @@ class Query:
         # String        | use string as base_directory
         # change base folder to base directory
         #
+        # st2? - fix missing or bugged base_directory
+        adjusted_basepath = current_folder
         if base_directory is True:
-            current_folder = config["BASE_DIRECTORY"]
+            adjusted_basepath = config["BASE_DIRECTORY"]
         elif base_directory:
-            current_folder = Path.sanitize_base_directory(base_directory)
+            adjusted_basepath = Path.sanitize_base_directory(base_directory)
         # notify completion to replace path
         if base_directory and needle_is_absolute:
             Completion.base_directory = current_folder
+        # st2? - fix missing or bugged base_directory
+        if adjusted_basepath is False:
+            adjusted_basepath = current_folder
         #
         # filepath_type
         #
@@ -257,9 +266,6 @@ class Query:
 
 
 def cleanup_completion(view, post_remove):
-
-    print("cleanup completion")
-
     expression = Context.get_context(view)
     # remove path query completely
     final_path = Completion.get_final_path(expression["needle"], post_remove)
@@ -335,7 +341,11 @@ def query_completions(view, project_folder, current_folder):
         log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         log("scope settings: {0}".format(trigger))
         log("search needle: '{0}'".format(Query.needle))
-        log("in base path: '{0}'".format(Query.base_path))
+        log("in base path: '{0}'".format(str(Query.base_path)))
+
+    if Query.base_path:
+        Query.base_path = str(Query.base_path)
+
 
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
 
@@ -382,18 +392,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             verbose("disabled or not a project", self.is_project_file)
             return False
 
-    def on_modified(view):
-        print("view modified")
-
-    def on_selection_modified(view):
-        print("selection modified")
-
-    # def on_post_insert_completion(self, view, command_name):
-    #     if Completion.is_active():
-    #         cleanup_completion(view, self.post_remove)
-    #         Completion.stop()
-
-
     # update project by file
     def on_post_save(self, view):
         if project_files is None:
@@ -425,6 +423,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             if folder in file_name:
                 self.is_project_file = True
                 self.project_folder = folder
+
         # abort if file is not within a project
         if not self.is_project_file:
             sublime.status_message("FFP abort. File is not within a project")
@@ -432,13 +431,14 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         # default to False fails for relative resolution from base_directory
         # but False is required for query of absolute path
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
-
         if project_files:
             project_files.add(self.project_folder)
 
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
+        if self.track_insert["active"]:
+            return
         self.track_insert["active"] = True
         self.track_insert["start_line"] = Selection.get_line(view)
         self.track_insert["end_line"] = None
@@ -459,21 +459,38 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def abort_tracking(self):
         self.track_insert["active"] = False
 
-    # def on_text_command(self, view, command_name, args):
-    #     # check if a completion may be inserted
-    #     if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
-    #         self.start_tracking(view, command_name)
-    #         print("on text command", command_name)
+    def on_modified(self, view):
+        command = view.command_history(0)
+        command_name = str(command[0])
+        command_arguments = command[1]
+        self.on_text_command(view, command_name, command_arguments)
 
-    #     elif command_name == "hide_auto_complete":
-    #         Completion.stop()
-    #         self.abort_tracking()
-    #         print("on text command", command_name)
+    def on_selection_modified(self, view):
+        command = view.command_history(0)
+        command_name = str(command[0])
+        command_arguments = command[1]
+        if command_name is "insert_completion":
+            self.on_post_insert_completion(view, command_name)
+        else:
+            self.on_post_text_command(view, command_name, command_arguments)
+
+    def on_post_insert_completion(self, view, command_name):
+        if Completion.is_active():
+            cleanup_completion(view, self.post_remove)
+            Completion.stop()
+
+    def on_text_command(self, view, command_name, args):
+        # check if a completion may be inserted
+        if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
+            self.start_tracking(view, command_name)
+        elif command_name == "hide_auto_complete":
+            Completion.stop()
+            self.abort_tracking()
 
     # check if a completion is inserted and trigger on_post_insert_completion
-    # def on_post_text_command(self, view, command_name, args):
-    #     current_line = Selection.get_line(view)
-    #     command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
-    #     if command_trigger or command_name in config["INSERT_ACTION"]:
-    #         self.finish_tracking(view, command_name)
-    #         self.on_post_insert_completion(view, command_name)
+    def on_post_text_command(self, view, command_name, args):
+        current_line = Selection.get_line(view)
+        command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
+        if command_trigger or command_name in config["INSERT_ACTION"]:
+            self.finish_tracking(view, command_name)
+            self.on_post_insert_completion(view, command_name)
