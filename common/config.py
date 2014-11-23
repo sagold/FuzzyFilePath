@@ -11,5 +11,6 @@ config = {
 	"DISABLE_AUTOCOMPLETION": False,
 	"DISABLE_KEYMAP_ACTIONS": False,
 	"AUTO_TRIGGER": True,
-	"TRIGGER": []
+	"TRIGGER": [],
+	"EXCLUDE_FOLDERS": ["node\\_modules", "bower\\_components/.*/bower\\_components"]
 }
