@@ -11,10 +11,6 @@
 	// ignore folders that match following regular expressions
 	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
 
-	// if current string matches "./", "../", "/folder/to",
-	// auto suggest files, independent of scope settings
-	"auto_trigger": true,
-
 	// All options may be overriden in <Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User>
 	// configuration of suggestions and insertions by scope
 	"scopes": [
