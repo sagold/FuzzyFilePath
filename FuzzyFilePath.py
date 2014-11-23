@@ -33,7 +33,12 @@ def update_settings():
 
     scope_cache.clear()
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    project_settings = sublime.active_window().active_view().settings().get('FuzzyFilePath', False)
+
+    # st2 - has to check window
+    project_settings = False
+    current_window = sublime.active_window()
+    if current_window:
+        project_settings = current_window.active_view().settings().get('FuzzyFilePath', False)
 
     # sync settings to config
     for key in config:
@@ -96,6 +101,8 @@ class Completion:
 
     @staticmethod
     def get_final_path(path, post_remove):
+        log("cleanup filepate: '{0}'".format(path))
+
         # string to replace on post_insert_completion
         post_remove = re.escape(post_remove)
         path = re.sub("^" + post_remove, "", path)
@@ -108,6 +115,7 @@ class Completion:
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
 
+        log("final filepate: '{0}'".format(path))
         return path
 
 
@@ -230,12 +238,11 @@ class Query:
         Query.extensions = trigger.get("extensions", ["*"])
         Query.extensions = Query.get("extensions", Query.extensions)
         Query.needle = Query.build_needle_query(needle, current_folder)
-        # print("\nfilepath type\n--------")
-        # print("type:", filepath_type)
-        # print("base_path:", Query.base_path)
-        # print("needle:", Query.needle)
-        # print("current folder", current_folder)
-        # return bool(start search)
+        log("\nfilepath type\n--------")
+        log("type:", filepath_type)
+        log("base_path:", Query.base_path)
+        log("needle:", Query.needle)
+        log("current folder", current_folder)
         return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
 
     @staticmethod
@@ -250,6 +257,9 @@ class Query:
 
 
 def cleanup_completion(view, post_remove):
+
+    print("cleanup completion")
+
     expression = Context.get_context(view)
     # remove path query completely
     final_path = Completion.get_final_path(expression["needle"], post_remove)
@@ -423,6 +433,9 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
+
+        print("start tracking")
+
         self.track_insert["active"] = True
         self.track_insert["start_line"] = Selection.get_line(view)
         self.track_insert["end_line"] = None
@@ -437,10 +450,16 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         verbose("cleanup", "remove:", self.post_remove, "of", needle)
 
     def finish_tracking(self, view, command_name=None):
+
+        print("finish tracking")
+
         self.track_insert["active"] = False
         self.track_insert["end_line"] = Selection.get_line(view)
 
     def abort_tracking(self):
+
+        print("abort tracking")
+
         self.track_insert["active"] = False
 
     def on_text_command(self, view, command_name, args):
@@ -452,7 +471,10 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             self.abort_tracking()
 
     # check if a completion is inserted and trigger on_post_insert_completion
-    def on_post_text_command(self, view, command_name, args):
+    def on_text_command(self, view, command_name, args):
+
+        print("post text command")
+
         current_line = Selection.get_line(view)
         command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
         if command_trigger or command_name in config["INSERT_ACTION"]:
