@@ -4,8 +4,10 @@ IGNORE = []
 
 def log(*args):
 	if config["LOG"]:
-		print("FFP\t", *args)
+		for arg in args:
+			print(arg)
 
 def verbose(*args):
     if config["DEBUG"] is True and not args[0] in IGNORE:
-        print("FFP\t", *args)
+        for arg in args:
+			print(arg)
