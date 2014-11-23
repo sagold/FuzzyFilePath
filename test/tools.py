@@ -17,3 +17,6 @@ class TestCase:
 			if "should" in name:
 				tests.append(name)
 		return tests
+
+	def assert_equal(self, expect, value):
+		assert expect == value, "expected '{0}' to equal '{1}'".format(expect, value)
