@@ -5,8 +5,8 @@ from FuzzyFilePath.test.tools import TestCase
 from FuzzyFilePath.FuzzyFilePath import Query
 from FuzzyFilePath.common.config import config
 
-config["DEBUG"] = True
-config["LOG"] = True
+# config["DEBUG"] = True
+# config["LOG"] = True
 
 valid_trigger = False
 
