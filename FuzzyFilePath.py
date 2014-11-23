@@ -382,10 +382,16 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             verbose("disabled or not a project", self.is_project_file)
             return False
 
-    def on_post_insert_completion(self, view, command_name):
-        if Completion.is_active():
-            cleanup_completion(view, self.post_remove)
-            Completion.stop()
+    def on_modified(view):
+        print("view modified")
+
+    def on_selection_modified(view):
+        print("selection modified")
+
+    # def on_post_insert_completion(self, view, command_name):
+    #     if Completion.is_active():
+    #         cleanup_completion(view, self.post_remove)
+    #         Completion.stop()
 
 
     # update project by file
@@ -433,9 +439,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
-
-        print("start tracking")
-
         self.track_insert["active"] = True
         self.track_insert["start_line"] = Selection.get_line(view)
         self.track_insert["end_line"] = None
@@ -450,31 +453,22 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         verbose("cleanup", "remove:", self.post_remove, "of", needle)
 
     def finish_tracking(self, view, command_name=None):
-
-        print("finish tracking")
-
         self.track_insert["active"] = False
         self.track_insert["end_line"] = Selection.get_line(view)
 
     def abort_tracking(self):
-
-        print("abort tracking")
-
         self.track_insert["active"] = False
 
-    def on_text_command(self, view, command_name, args):
+    # def on_text_command(self, view, command_name, args):
+    #     # check if a completion may be inserted
+    #     if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
+    #         self.start_tracking(view, command_name)
+    #         print("on text command", command_name)
 
-        print("\t\ttext command: " + command_name)
-
-        # check if a completion may be inserted
-        if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
-            self.start_tracking(view, command_name)
-            print("on text command", command_name)
-
-        elif command_name == "hide_auto_complete":
-            Completion.stop()
-            self.abort_tracking()
-            print("on text command", command_name)
+    #     elif command_name == "hide_auto_complete":
+    #         Completion.stop()
+    #         self.abort_tracking()
+    #         print("on text command", command_name)
 
     # check if a completion is inserted and trigger on_post_insert_completion
     # def on_post_text_command(self, view, command_name, args):
