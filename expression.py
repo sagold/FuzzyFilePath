@@ -28,6 +28,9 @@ def get_context(view):
 	post = view.substr(post_region)
 
 	needle_region = view.word(position)
+	# st2: unmutable region
+	needle_start = needle_region.a
+	needle_end = needle_region.b
 
 	# grab everything in 'separators'
 	needle = ""
@@ -40,7 +43,7 @@ def get_context(view):
 		separator = pre_quotes.group(1)
 		pre_match = pre_quotes.group(2)
 
-		needle_region.a -= len(pre_quotes.group(2))
+		needle_start -= len(pre_quotes.group(2))
 
 	else:
 		# use whitespace as separator
@@ -50,24 +53,25 @@ def get_context(view):
 			separator = pre_quotes.group(1)
 			pre_match = pre_quotes.group(2)
 
-			needle_region.a -= len(pre_quotes.group(2))
+			needle_start -= len(pre_quotes.group(2))
 
 	if pre_quotes:
 		post_quotes = re.search("^(["+NEEDLE_SEPARATOR_AFTER+"]*)", post)
 		if post_quotes:
 			needle += post_quotes.group(1)
-			needle_region.b += len(post_quotes.group(1))
+			needle_end += len(post_quotes.group(1))
 		else:
 			print("no post quotes found => invalid")
 			valid = False
 
 	elif not re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
 		needle = pre + word
-		needle_region.a = pre_region.a
+		needle_start = pre_region.a
 
 	else:
 		needle = word
 
+	needle_region = sublime.Region(needle_start, needle_end)
 
 	# grab prefix
 	prefix_region = sublime.Region(line_region.a, pre_region.b - len(pre_match) - 1)
