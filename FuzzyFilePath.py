@@ -111,6 +111,9 @@ class Completion:
         if re.search("\/\.\/", path):
             path = re.sub("^(\.\.\/)*", "", path)
 
+        path = re.sub("^(\.\/)*", "./", path)
+        print("PATH", path)
+
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
