@@ -389,7 +389,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
 
     # update project by file
-    def on_post_save_async(self, view):
+    def on_post_save(self, view):
         if project_files is None:
             return False
 
@@ -463,20 +463,23 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         self.track_insert["active"] = False
 
     def on_text_command(self, view, command_name, args):
+
+        print("\t\ttext command: " + command_name)
+
         # check if a completion may be inserted
         if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
             self.start_tracking(view, command_name)
+            print("on text command", command_name)
+
         elif command_name == "hide_auto_complete":
             Completion.stop()
             self.abort_tracking()
+            print("on text command", command_name)
 
     # check if a completion is inserted and trigger on_post_insert_completion
-    def on_text_command(self, view, command_name, args):
-
-        print("post text command")
-
-        current_line = Selection.get_line(view)
-        command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
-        if command_trigger or command_name in config["INSERT_ACTION"]:
-            self.finish_tracking(view, command_name)
-            self.on_post_insert_completion(view, command_name)
+    # def on_post_text_command(self, view, command_name, args):
+    #     current_line = Selection.get_line(view)
+    #     command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
+    #     if command_trigger or command_name in config["INSERT_ACTION"]:
+    #         self.finish_tracking(view, command_name)
+    #         self.on_post_insert_completion(view, command_name)
