@@ -33,10 +33,7 @@ def update_settings():
 
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     project_settings = sublime.active_window().active_view().settings().get('FuzzyFilePath', False)
-    # update cache settings
-    exclude_folders = settings.get("exclude_folders", ["node_modules"])
-    project_files = ProjectFiles()
-    project_files.update_settings(settings.get("extensionsToSuggest", ["js"]), exclude_folders)
+
     # sync settings to config
     for key in config:
         config[key] = settings.get(key.lower(), config[key])
@@ -45,13 +42,28 @@ def update_settings():
 
     # merge project settings stored in "settings: { FuzzyFilePath: ..."
     if project_settings:
+        # mapping
+        config["TRIGGER"] = project_settings.get("scopes", config["TRIGGER"])
         for key in config:
             config[key] = project_settings.get(key.lower(), config[key])
+
+    # build extensions to suggest
+    extensionsToSuggest = []
+    for scope in config["TRIGGER"]:
+        ext = scope.get("extensions", [])
+        extensionsToSuggest += ext
+    # remove duplicates http://stackoverflow.com/questions/7961363/python-removing-duplicates-in-lists
+    extensionsToSuggest = list(set(extensionsToSuggest))
+
+    project_files = ProjectFiles()
+    project_files.update_settings(extensionsToSuggest, config["EXCLUDE_FOLDERS"])
+
 
     # validate base_directory
     if config["BASE_DIRECTORY"]:
         config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
 
+    print("FFP settings", len(config["TRIGGER"]), "triggers loaded")
     print("FFP base directory: '", config["BASE_DIRECTORY"], "'")
 
 
@@ -76,17 +88,27 @@ class Completion:
         return Completion.active
 
     def get_final_path(path, post_remove):
+
+        print("\ncleanup:", path)
+
         # string to replace on post_insert_completion
         post_remove = re.escape(post_remove)
         path = re.sub("^" + post_remove, "", path)
+
+        print("pre:", path)
+
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
             path = re.sub(replace[0], replace[1], path)
 
+        print("replace:", path)
+
         if Completion.base_directory and path.startswith("/"):
             path = re.sub("^\/" + Completion.base_directory, "", path)
             path = Path.sanitize(path)
+
+        print("base, final:", path)
 
         return path
 
@@ -118,7 +140,8 @@ class Query:
         needle_is_path = needle_is_absolute or needle_is_relative
 
         # abort if autocomplete is not available
-        if triggered is False and trigger["auto"] is False and needle_is_path is False:
+        if triggered is False and trigger.get("auto", False) is False and needle_is_path is False:
+            print("FFP no autocomplete")
             return False
 
         # test path to trigger auto-completion by needle
@@ -134,13 +157,41 @@ class Query:
         if base_directory and needle_is_absolute:
             Completion.base_directory = current_folder
 
-        # determines folder which is used as base to trace path
-        needle_folder = current_folder if needle_is_relative else False
-        needle_folder = trigger.get("relative", needle_folder)
-        # add evaluation to object
-        Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else trigger.get("replace_on_insert", [])
-        Query.base_path = Query.get_path_type(needle_folder, current_folder, force_type)
+        # needle    | trigger rel   | force     | RESULT
+        # ----------|---------------|-----------|---------
+        # absolute  | *             | False     | absolute
+        # relative  | *             | False     | relative
+        # ?         | relative      | False     | relative
+        # ?         | absolute      | False     | absolute
+        # *         | *             | relative  | relative
+        # *         | *             | absolute  | absolute
 
+        needle_type = "relative"
+
+        if force_type:
+            needle_type = force_type
+        elif needle_is_absolute:
+            needle_type = "absolute"
+        elif needle_is_relative:
+            needle_type = "relative"
+        elif trigger.get("relative") is True:
+            needle_type = "relative"
+        elif trigger.get("relative") is False:
+            needle_type = "absolute"
+
+
+        Query.base_path = False
+        if needle_type == "relative":
+            Query.base_path = current_folder
+
+        print("\ntype of completion\n--------")
+        print(needle_type)
+        # base_path = current_folder if needle_is_relative else False
+        # base_path = trigger.get("relative", base_path)
+        # Query.base_path = Query.get_path_type(base_path, current_folder, force_type)
+
+
+        Query.replace_on_insert = Query.replace_on_insert if Query.skip_update_replace else trigger.get("replace_on_insert", [])
         Query.needle = Query.build_needle_query(needle, current_folder)
         Query.extensions = trigger.get("extensions", ["js"])
         # return bool(start search)
@@ -217,13 +268,17 @@ def query_completions(view, project_folder, current_folder):
         # query is valid, but may not be triggered: not forced, no auto-options
         return False
 
-    print("QUERY", Query.needle, "project: '", project_folder, "' relative: '", Query.base_path, "'")
+    # print("QUERY", Query.needle, "project: '", project_folder, "' relative: '", Query.base_path, "'")
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
-    print("completions", completions)
+    # print("completions", completions)
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.replace_on_insert)
         view.run_command('_enter_insert_mode') # vintageous
+
+        print("\nquery:", Query.needle)
+        print("relative", Query.base_path)
+
     else:
         sublime.status_message("FFP no completions found for '" + Query.needle + "'")
         Completion.stop()
