@@ -90,11 +90,3 @@ class Test(TestCase):
 
 		self.assert_equal(Query.base_path, "current_folder")
 
-
-
-
-
-
-
-
-
