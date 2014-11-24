@@ -101,18 +101,25 @@ class Completion:
 
     @staticmethod
     def get_final_path(path, post_remove):
+        print("cleanup path", path)
 
         # st2 - disable post_remove: missing events
         # string to replace on post_insert_completion
         # post_remove = re.escape(post_remove)
         # path = re.sub("^" + post_remove, "", path)
 
+        # ('cleanup path', u'../../../bower_components/graffin/lib/application/standard/standard-app.scss')
+        # ('path sanitized', u'./../../../bower_components/graffin/lib/application/standard/standard-app.scss')
+        # ("final filepath: './../../../bower_components/graffin/lib/application/standard/standard-app'",)
+
         # st2 - sanitize
         if re.search("\/\.\/", path):
             path = re.sub("^(\.\.\/)*", "", path)
 
-        path = re.sub("^(\.\/)*", "./", path)
-        print("PATH", path)
+        path = re.sub("^(\.\/)+", "./", path)
+        path = re.sub("^(\/\/)+", "/", path)
+
+        print("path sanitized", path)
 
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
