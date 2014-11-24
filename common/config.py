@@ -8,7 +8,8 @@ config = {
 	"INSERT_ACTION": ["commit_completion", "insert_best_completion"],
 	"TRIGGER_STATEMENTS": ["prefix", "tagName", "style"],
 
-	"BASE_DIRECTORY": "",
+	"BASE_DIRECTORY": False,
+	"PROJECT_DIRECTORY": False,
 	"DISABLE_AUTOCOMPLETION": False,
 	"DISABLE_KEYMAP_ACTIONS": False,
 	"AUTO_TRIGGER": True,

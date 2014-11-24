@@ -1,9 +1,10 @@
 {
-	// logs scope evaluation to console to debug configuration
-	"log": false,
+	// set project_directory relative to sublime project directory
+	"project_directory": "",
 
-	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
-	"base_directory": "",
+	// base directory for paths relative to project_directory. Used if scope-trigger contains "base_directory": true
+	// watch out for side effects with project directory (if base_directory is not within project_directory)
+	"base_directory": false,
 
 	// disable automatic path completions
 	"disable_autocompletions": false,
@@ -13,6 +14,9 @@
 
 	// ignore folders that match following regular expressions
 	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
+
+	// logs scope evaluation to console to debug configuration
+	"log": false,
 
 	// LIST OF TRIGGERS FOR AUTO COMPLETION
 	// - setting "scopes" in user settings will override all other scopes.

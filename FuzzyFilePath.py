@@ -12,6 +12,7 @@
 import sublime
 import sublime_plugin
 import re
+import os
 
 from expression import Context
 from project.project_files import ProjectFiles
@@ -20,9 +21,6 @@ from common.verbose import log
 from common.config import config
 from common.selection import Selection
 from common.path import Path
-
-# from Cache.ProjectFiles import ProjectFiles
-# from Query import Query
 
 project_files = None
 scope_cache = {}
@@ -61,9 +59,11 @@ def update_settings():
 
     project_files = ProjectFiles()
     project_files.update_settings(extensionsToSuggest, config["EXCLUDE_FOLDERS"])
-    # validate base_directory
+    # validate directories
     if config["BASE_DIRECTORY"]:
         config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
+    if config["PROJECT_DIRECTORY"]:
+        config["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(config["PROJECT_DIRECTORY"])
 
     log("logging enabled")
     log("project base directory set to '{0}'".format(config["BASE_DIRECTORY"]))
@@ -409,6 +409,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # validate and update project folders
     def on_activated(self, view):
+        project_directory = ""
         self.is_project_file = False
         self.project_folder = None
 
@@ -422,18 +423,76 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if folders is None or file_name is None:
             return False
 
+        if config["PROJECT_DIRECTORY"]:
+            # sanitize project directory
+            project_directory = config["PROJECT_DIRECTORY"]
+            verbose("project", "project folder found {0}".format(project_directory))
+
+        # find and build current project directory (modified by settings:project_directory)
+        base_project_directory = False
+        final_project_directory = False
         for folder in folders:
-            if folder in file_name:
+            final_project_directory = os.path.join(folder, project_directory)
+            # does not require validation of folder since filename is always correct
+            if final_project_directory in file_name:
                 self.is_project_file = True
-                self.project_folder = folder
+                base_project_directory = folder
+                break
 
         # abort if file is not within a project
         if not self.is_project_file:
-            sublime.status_message("FFP abort. File is not within a project")
+            sublime.status_message("FFP abort. File is not within a project {0}".format(project_directory))
             return False
-        # default to False fails for relative resolution from base_directory
-        # but False is required for query of absolute path
+        elif config["LOG"]:
+            sublime.status_message("FFP enabled for file being in project {0}".format(final_project_directory))
+
+        # save final project folder
+        self.project_folder = final_project_directory
+
+        # validate base directory
+        path_to_base_directory = False
+        if config["BASE_DIRECTORY"]:
+            #
+            # base_project_directory    | /path/to/sublime/project
+            # project_folder            | /path/to/sublime/project/project_directory
+            #
+            # - path_to_base_directory  | /path/to/sublime/project/base_directory
+            # + path_to_base_directory  | /path/to/sublime/project/project_directory/base_directory
+            #
+            path_to_base_directory = os.path.join(final_project_directory, config["BASE_DIRECTORY"])
+            if not os.path.isdir(path_to_base_directory):
+
+                # BASE_DIRECTORY is NOT a valid folder releative to (possibly modified) project_directory
+                path_to_base_directory = os.path.join(base_project_directory, config["BASE_DIRECTORY"])
+
+                if not os.path.isdir(path_to_base_directory):
+                    print("FFP", "Error: setting's base_directory is not a valid directory in project")
+                    print("FFP", "=> changing base_directory {0} to ''".format(config["BASE_DIRECTORY"]))
+                    config["BASE_DIRECTORY"] = ""
+
+                elif path_to_base_directory in final_project_directory:
+                    # change BASE_DIRECTORY to be '' since its outside of project directory
+                    print("FFP", "Error: setting's base_directory is within project directory")
+                    print("FFP", "=> changing base_directory {0} to ''".format(config["BASE_DIRECTORY"]))
+                    config["BASE_DIRECTORY"] = ""
+
+                else:
+                    # change BASE_DIRECTORY to be relative to modified project directory
+                    path_to_base_directory = path_to_base_directory.replace(final_project_directory, "")
+                    print("FFP", "Error: setting's base_directory is not relative to project directory")
+                    print("FFP", "=> changing base_directory '{0}' to '{1}'".format(config["BASE_DIRECTORY"], path_to_base_directory))
+                    config["BASE_DIRECTORY"] = Path.sanitize_base_directory(path_to_base_directory)
+
+        # get file's current folder
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
+
+        if config["LOG"]:
+            log("\n~~~~~~~~~~~~~~~~")
+            log("PROJECT SETTINGS")
+            log("project folder", self.project_folder)
+            log("base directory", config["BASE_DIRECTORY"])
+            log("~~~~~~~~~~~~~~~~")
+
         if project_files:
             project_files.add(self.project_folder)
 
