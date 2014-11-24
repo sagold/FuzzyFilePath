@@ -86,6 +86,12 @@ Project specific settings may be set in _Project | Edit Settings_:
 
 ### <a name="configuration_settings">Settings</a>
 
+##### `project_directory`:String
+Set project directory for completions ot a sub folder in sublime project folder. This will deny any caching or
+completion of folders outside this folder.
+i.e. `"project_directory": "dev/src"`
+
+
 ##### `base_directory`:String
 Default base directory to use if set in [scope-rule](#configuration_settings_scopes).
 i.e. `"base_directory": "dev/src"` will be used for relative or absolute filepath completions if scope-property
