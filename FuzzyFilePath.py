@@ -86,7 +86,7 @@ class Completion:
 
     @staticmethod
     def start(post_replacements=[]):
-        print("Completion started\n")
+        # print("Completion started\n")
         Completion.replaceOnInsert = post_replacements
         Completion.active = True
 
@@ -95,7 +95,7 @@ class Completion:
         Completion.active = False
         # set by query....
         Completion.base_directory = False
-        print("Completion stopped\n")
+        # print("Completion stopped\n")
 
     @staticmethod
     def is_active():
@@ -103,19 +103,13 @@ class Completion:
 
     @staticmethod
     def get_final_path(path, path_needle):
-        print("cleanup path", path, "needle:", path_needle)
-
-        # st2 - disable post_remove: missing events
-        # string to replace on post_insert_completion
-        # post_remove = re.escape(post_remove)
-        # path = re.sub("^" + post_remove, "", path)
-
+        # print("cleanup path", path, "needle:", path_needle)
         #st2 - remove path_needle fragments
         #remove anything before last word separator?
         part_to_remove = re.escape(re.sub("[^\/]*$", "", path_needle))
-        print("remove:", part_to_remove)
+        # print("remove:", part_to_remove)
         path = re.sub("^" + part_to_remove, "", path)
-        print("cleanup #1", path)
+        # print("cleanup #1", path)
 
         # st2 - sanitize
         if re.search("\/\.\/", path):
@@ -348,14 +342,6 @@ def query_completions(view, project_folder, current_folder):
         log("abort valid query: auto trigger disabled")
         return False
 
-    # if (config["LOG"]):
-    #     log("")
-    #     log("query completions:")
-    #     log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    #     log("scope settings: {0}".format(trigger))
-    #     log("search needle: '{0}'".format(Query.needle))
-    #     log("in base path: '{0}'".format(str(Query.base_path)))
-
     if Query.base_path:
         Query.base_path = str(Query.base_path)
 
@@ -490,16 +476,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         # get file's current folder
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
 
-        # if config["LOG"]:
-        #     log("\n~~~~~~~~~~~~~~~~")
-        #     log("PROJECT SETTINGS")
-        #     log("project folder", self.project_folder)
-        #     log("base directory", config["BASE_DIRECTORY"])
-        #     log("~~~~~~~~~~~~~~~~")
-
         if project_files:
             project_files.add(self.project_folder)
-
 
 
     def on_modified(self, view):
@@ -517,7 +495,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         # keep tracking current needle
         elif command_name == "insert":
             self.post_remove = Context.get_context(view)["needle"]
-            print("tracking...")
+            # print("tracking...")
 
         elif not command_name or command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
             # on post text command
