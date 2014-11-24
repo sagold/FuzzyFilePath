@@ -86,6 +86,7 @@ class Completion:
 
     @staticmethod
     def start(post_replacements=[]):
+        print("Completion started\n")
         Completion.replaceOnInsert = post_replacements
         Completion.active = True
 
@@ -94,23 +95,27 @@ class Completion:
         Completion.active = False
         # set by query....
         Completion.base_directory = False
+        print("Completion stopped\n")
 
     @staticmethod
     def is_active():
         return Completion.active
 
     @staticmethod
-    def get_final_path(path, post_remove):
-        print("cleanup path", path)
+    def get_final_path(path, path_needle):
+        print("cleanup path", path, "needle:", path_needle)
 
         # st2 - disable post_remove: missing events
         # string to replace on post_insert_completion
         # post_remove = re.escape(post_remove)
         # path = re.sub("^" + post_remove, "", path)
 
-        # ('cleanup path', u'../../../bower_components/graffin/lib/application/standard/standard-app.scss')
-        # ('path sanitized', u'./../../../bower_components/graffin/lib/application/standard/standard-app.scss')
-        # ("final filepath: './../../../bower_components/graffin/lib/application/standard/standard-app'",)
+        #st2 - remove path_needle fragments
+        #remove anything before last word separator?
+        part_to_remove = re.escape(re.sub("[^\/]*$", "", path_needle))
+        print("remove:", part_to_remove)
+        path = re.sub("^" + part_to_remove, "", path)
+        print("cleanup #1", path)
 
         # st2 - sanitize
         if re.search("\/\.\/", path):
@@ -118,8 +123,6 @@ class Completion:
 
         path = re.sub("^(\.\/)+", "./", path)
         path = re.sub("^(\/\/)+", "/", path)
-
-        print("path sanitized", path)
 
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
@@ -345,13 +348,13 @@ def query_completions(view, project_folder, current_folder):
         log("abort valid query: auto trigger disabled")
         return False
 
-    if (config["LOG"]):
-        log("")
-        log("query completions:")
-        log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        log("scope settings: {0}".format(trigger))
-        log("search needle: '{0}'".format(Query.needle))
-        log("in base path: '{0}'".format(str(Query.base_path)))
+    # if (config["LOG"]):
+    #     log("")
+    #     log("query completions:")
+    #     log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    #     log("scope settings: {0}".format(trigger))
+    #     log("search needle: '{0}'".format(Query.needle))
+    #     log("in base path: '{0}'".format(str(Query.base_path)))
 
     if Query.base_path:
         Query.base_path = str(Query.base_path)
@@ -380,24 +383,18 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     project_folder = False,
     current_folder = False,
 
-    # tracks on_post_insert_completion
-    track_insert = {
-        "active": False,
-        "start_line": "",
-        "end_line": ""
-    }
-
     post_remove = "",
 
     def on_query_completions(self, view, prefix, locations):
         if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
             return False
 
-        if self.track_insert["active"] is False:
-            self.start_tracking(view)
-
         if self.is_project_file:
-            return query_completions(view, self.project_folder, self.current_folder)
+            completions = query_completions(view, self.project_folder, self.current_folder)
+            if completions:
+                # st2 - update current path
+                self.post_remove = Context.get_context(view)["needle"]
+            return completions
         else:
             verbose("disabled or not a project", self.is_project_file)
             return False
@@ -493,73 +490,37 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         # get file's current folder
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
 
-        if config["LOG"]:
-            log("\n~~~~~~~~~~~~~~~~")
-            log("PROJECT SETTINGS")
-            log("project folder", self.project_folder)
-            log("base directory", config["BASE_DIRECTORY"])
-            log("~~~~~~~~~~~~~~~~")
+        # if config["LOG"]:
+        #     log("\n~~~~~~~~~~~~~~~~")
+        #     log("PROJECT SETTINGS")
+        #     log("project folder", self.project_folder)
+        #     log("base directory", config["BASE_DIRECTORY"])
+        #     log("~~~~~~~~~~~~~~~~")
 
         if project_files:
             project_files.add(self.project_folder)
 
 
-    # track post insert insertion
-    def start_tracking(self, view, command_name=None):
-        if self.track_insert["active"]:
-            return
-        self.track_insert["active"] = True
-        self.track_insert["start_line"] = Selection.get_line(view)
-        self.track_insert["end_line"] = None
-        """
-            - sublime inserts completions by replacing the current word
-            - this results in wrong path insertions if the query contains word_separators like slashes
-            - thus the path until current word has to be removed after insertion
-        """
-        needle = Context.get_context(view).get("needle")
-        word = re.escape(Selection.get_word(view))
-        self.post_remove = re.sub(word + "$", "", needle)
-        verbose("cleanup", "remove:", self.post_remove, "of", needle)
-
-    def finish_tracking(self, view, command_name=None):
-        self.track_insert["active"] = False
-        self.track_insert["end_line"] = Selection.get_line(view)
-
-    def abort_tracking(self):
-        self.track_insert["active"] = False
 
     def on_modified(self, view):
+        if not Completion.is_active():
+            return False
+
+        # completions given and not yet inserted
         command = view.command_history(0)
         command_name = str(command[0])
-        command_arguments = command[1]
-        self.on_text_command(view, command_name, command_arguments)
 
-    def on_selection_modified(self, view):
-        command = view.command_history(0)
-        command_name = str(command[0])
-        command_arguments = command[1]
-        if command_name is "insert_completion":
-            self.on_post_insert_completion(view, command_name)
-        else:
-            self.on_post_text_command(view, command_name, command_arguments)
+        # stop completion
+        if command_name == "hide_auto_complete":
+            Completion.stop()
 
-    def on_post_insert_completion(self, view, command_name):
-        if Completion.is_active():
+        # keep tracking current needle
+        elif command_name == "insert":
+            self.post_remove = Context.get_context(view)["needle"]
+            print("tracking...")
+
+        elif not command_name or command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
+            # on post text command
+            # check if a completion is inserted and trigger on_post_insert_completion
             cleanup_completion(view, self.post_remove)
             Completion.stop()
-
-    def on_text_command(self, view, command_name, args):
-        # check if a completion may be inserted
-        if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
-            self.start_tracking(view, command_name)
-        elif command_name == "hide_auto_complete":
-            Completion.stop()
-            self.abort_tracking()
-
-    # check if a completion is inserted and trigger on_post_insert_completion
-    def on_post_text_command(self, view, command_name, args):
-        current_line = Selection.get_line(view)
-        command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
-        if command_trigger or command_name in config["INSERT_ACTION"]:
-            self.finish_tracking(view, command_name)
-            self.on_post_insert_completion(view, command_name)
