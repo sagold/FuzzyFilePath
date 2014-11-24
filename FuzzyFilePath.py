@@ -382,6 +382,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # validate and update project folders
     def on_activated(self, view):
+        project_directory = ""
         self.is_project_file = False
         self.project_folder = None
         file_name = view.file_name()
@@ -390,14 +391,33 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if folders is None or file_name is None:
             return False
 
+
+        if config["PROJECT_DIRECTORY"]:
+            # sanitize project directory
+            config["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(config["PROJECT_DIRECTORY"])
+            project_directory = config["PROJECT_DIRECTORY"]
+            verbose("project", "project folder found {0}".format(project_directory))
+
+            if config["BASE_DIRECTORY"]:
+                # validate base directory
+                # sanitize base directory
+                config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
+                if config["BASE_DIRECTORY"].startswith(config["PROJECT_DIRECTORY"]):
+                    config["BASE_DIRECTORY"] = config["BASE_DIRECTORY"].replace(config["PROJECT_DIRECTORY"], "")
+                    verbose("project", "base directory modified to {0}".format(config["BASE_DIRECTORY"]))
+
+
         for folder in folders:
-            if folder in file_name:
+            if os.path.join(folder, project_directory) in file_name:
                 self.is_project_file = True
-                self.project_folder = folder
+                self.project_folder = os.path.join(folder, project_directory)
+
         # abort if file is not within a project
         if not self.is_project_file:
-            sublime.status_message("FFP abort. File is not within a project")
+            sublime.status_message("FFP abort. File is not within a project {0}".format(project_directory))
             return False
+
+        sublime.status_message("FFP enabled for file being in project {0}".format(self.project_folder))
         # default to False fails for relative resolution from base_directory
         # but False is required for query of absolute path
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)

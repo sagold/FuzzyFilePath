@@ -1,8 +1,12 @@
 {
+	// set project_directory relative to sublime project directory
+	"project_directory": "test/mock",
+
 	// logs scope evaluation to console to debug configuration
 	"log": false,
 
-	// base directory for paths. Will be used if scope-trigger contains "base_directory": true
+	// base directory for paths relative to project_directory. Used if scope-trigger contains "base_directory": true
+	// watch out for side effects with project directory (if base_directory is not within project_directory)
 	"base_directory": false,
 
 	// disable automatic path completions
