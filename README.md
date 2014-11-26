@@ -5,6 +5,7 @@ __Sublime Text Plugin__
 Fuzzy search filenames inside your current project directory. Highly customizable.
 
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/develop/FuzzyFilePathDemo.gif" />
+<br />
 <em style="display: block; text-align: right;">Basic settings support Html, Css and Javascript, but may be adjusted for every language</em>
 
 ## Breaking changes in 0.1.0
@@ -28,20 +29,18 @@ After [Package Control installation](https://sublime.wbond.net/installation), re
 
 ### [github](https://github.com/sagold/FuzzyFilePath.git)
 
-in `<SublimeConfig>/Packages/` call: <br />
-`git clone https://github.com/sagold/FuzzyFilePath.git`
+in `<SublimeConfig>/Packages/` call: `git clone https://github.com/sagold/FuzzyFilePath.git`
 
 __Sublime Text 2__
 
-in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch with:<br />
-`git checkout st2`
+in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch with: `git checkout st2`
 
 
 
 ## <a name="usage">Usage</a>
 
-**Filepaths will be suggested if there is a matching [scope-rule](#configuration_settings_scopes) for the current context** and its property _auto_ is set
-to _true_. For a matching [scope-rule](#configuration_settings_scopes), filepath completions may be forced (ignoring _auto_ property) by the following
+**Filepaths will be suggested if there is a matching [trigger](#configuration_settings_scopes) for the current context** and its property _auto_ is set
+to _true_. For a matching [trigger](#configuration_settings_scopes), filepath completions may be forced (ignoring _auto_ property) by the following
 shorcuts:
 
 - __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
@@ -60,16 +59,56 @@ FuzzyFilePath is disabled for single files or files outside the opened folder.
 
 If your projects contains filenames with special characters, consider modifying Sublime Texts `word_separators`.
 
-i.e. in AngularJs filenames may start with `$`. In _Sublime Text | Preferences | Settings - User_ add:
+i.e. in AngularJs filenames may start with `$`. In _Sublime Text | Preferences | Settings - User_ redeclare word
+separators, removing `$`:
 ```js
 	"word_separators": "./\\()\"'-:,.;<>~!@#%^&*|+=[]{}`~?"
 ```
 
 
+## <a name="getting_started">Getting started</a>
+
+### completions are not suggested
+
+Assuming no errors are logged on console, add a minimum scope rule as first item in settings.scopes. Go to
+_Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_ and add
+
+```js
+"scopes": [
+	{
+		"scope": ".",
+		"auto": true,
+		// add your extensions here:
+		"extensions": ["css", "html", "js"]
+	}
+]
+```
+
+This will propose filepaths for the given extensions in all autocompletion requests. To adjust the trigger see
+[settings](configuration_settings). To log trigger evaluation, in settings set `"log": true"`.
+
+
+
+### absolute filepaths begin in wrong directory
+
+set your `project_directory` either in project settings or user settings to the correct folder. `project_directory`
+must be relative to your sublime project directory.
+
+
+### relative filepaths are not pointing to the correct file
+
+Relative filepaths point from the current file to the selected file. Folders are moved upwards until the target path
+is reachable. i.e. in case of css filepaths, the starting path may be relative from the html file importing the styles.
+
+Set `base_directory` in scope rules to point from project_directory to html file. This will always set the starting
+path of the trigger to `base_directory`. i.e.
+
+
+
 
 ## <a name="configuration">Configuration</a>
 
-The default options, as always, should be set in user-settings:<br />
+The default options - as always - should be set in user-settings:<br />
 _Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_
 
 Project specific settings may be set in _Project | Edit Settings_:
@@ -93,7 +132,7 @@ i.e. `"project_directory": "dev/src"`
 
 
 ##### `base_directory`:String
-Default base directory to use if set in [scope-rule](#configuration_settings_scopes).
+Default base directory to use if set in [trigger](#configuration_settings_scopes).
 i.e. `"base_directory": "dev/src"` will be used for relative or absolute filepath completions if scope-property
 `scope: { "base_directory": true}`.
 
@@ -115,17 +154,38 @@ Folders are checked via regex, thus you need to escape all regex characters.
 i.e. `"exclude_folders": ["node\\_modules]` will ignore all files and folders in _node\_modules_ (highly recommended).
 
 
-### <a name="configuration_settings_scopes">Settings `Scopes`:Array</a>
+#### `scopes`:Array
 
 Each object in `scopes` triggers a specific configuration for filepaths completions. Objects are iterated in the given
 order for the current `scope`-regex. If it matches the current scope, its configuration is used for filepath suggestions
-and insertions. Configuration properties are as follows:
+and insertions. i.e.
+```js
+	"scopes": [
+		{
+			// trigger
+		},
+		{
+			// next trigger
+		}
+	]
+```
+Trigger properties are as follows:
 
+
+#### <a name="configuration_settings_scopes">trigger</a>
 
 ##### `scope`:RegExp
 A regular expression to test the current scope. In order to escape a regex character two backslashes are required: `\\.`.
 To lookup a scope within your source code, press `alt+super+p`. The current scope will be displayed in Sublime Text's
 status bar.
+
+i.e. The following rule will apply for strings in javascript scope
+```js
+	// trigger
+	{
+		"scope": "string.*\\.js"
+	}
+```
 
 
 ##### `prefix`:Array, `style`:Array, `tagName`:Array
