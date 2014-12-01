@@ -135,12 +135,16 @@ class ProjectFiles:
 
     # rebuild folder cache
     def update(self, folder, file_name=None):
-        if file_name and self.file_is_cached(folder, file_name):
+        if file_name:
+            if (self.file_is_cached(folder, file_name)):
+                verbose(ID_CACHE, "abort update cache of file {0}. Already cached".format(file_name))
+                return False
+        elif self.folder_is_cached(folder):
+            verbose(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
             return False
 
-        if self.folder_is_cached(folder):
-            # del self.cache[folder]
-            return False
+        if self.cache.get("folder"):
+            del self.cache[folder]
 
         verbose(ID_CACHE, "UPDATE", folder)
         self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
