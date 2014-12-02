@@ -106,7 +106,7 @@ class ProjectFiles:
 
         self.update(parent_folder)
 
-    def file_is_cached(self, folder, file_name=None):
+    def file_is_cached(self, folder, file_name):
         """ returns False if the given file is not within cache
 
             Parameters
@@ -114,18 +114,16 @@ class ProjectFiles:
             folder : string -- of project
             file_name : string -- optional, file to test
         """
-        if file_name is None:
-            return self.folder_is_cached(folder)
-
         name, extension = os.path.splitext(file_name)
         extension = extension[1:]
         if not extension in self.valid_extensions:
-            verbose(ID_CACHE, "file to cache has no valid extension", extension)
+            print(ID_CACHE, "file to cache has no valid extension", extension)
             return True
 
         if self.folder_is_cached(folder):
             file_name = file_name.replace(folder + '/', "")
-            if (self.cache.get(folder).files.get(file_name)):
+            print(ID_CACHE, "check filename", file_name);
+            if self.cache.get(folder).files.get(file_name):
                 return True
 
         return False
@@ -137,16 +135,16 @@ class ProjectFiles:
     def update(self, folder, file_name=None):
         if file_name:
             if (self.file_is_cached(folder, file_name)):
-                verbose(ID_CACHE, "abort update cache of file {0}. Already cached".format(file_name))
+                print(ID_CACHE, "abort update cache of file {0}. Already cached".format(file_name))
                 return False
         elif self.folder_is_cached(folder):
-            verbose(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
+            print(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
             return False
 
         if self.cache.get("folder"):
             del self.cache[folder]
 
-        verbose(ID_CACHE, "UPDATE", folder)
+        print(ID_CACHE, "UPDATE", folder)
         self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
         return True

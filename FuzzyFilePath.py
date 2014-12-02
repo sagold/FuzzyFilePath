@@ -158,6 +158,9 @@ class Query:
         return bool(Query.get("filepath_type", False))
 
     def build(needle, trigger, current_folder, project_folder):
+
+        query = {}
+
         force_type = Query.get("filepath_type", False)
         triggered = Query.by_command()
         filepath_type = "relative"
@@ -216,20 +219,27 @@ class Query:
             filepath_type = "absolute"
 
         Query.base_path = current_folder if filepath_type == "relative" else False
+
         # replacements: override - trigger - None
         Query.replace_on_insert = trigger.get("replace_on_insert", [])
         Query.replace_on_insert = Query.get("replace_on_insert", Query.replace_on_insert)
         # extensions: override - trigger - "js"
-        Query.extensions = trigger.get("extensions", ["*"])
-        Query.extensions = Query.get("extensions", Query.extensions)
+        extensions = trigger.get("extensions", ["*"])
+        extensions = Query.get("extensions", extensions)
+        Query.extensions = extensions
         Query.needle = Query.build_needle_query(needle, current_folder)
-        # print("\nfilepath type\n--------")
-        # print("type:", filepath_type)
-        # print("base_path:", Query.base_path)
-        # print("needle:", Query.needle)
-        # print("current folder", current_folder)
-        # return bool(start search)
-        return triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
+        # --------------------------------------------------------------------
+        # tests throw error if results are set to class
+        # Require refactoring of static classes with dynamic properties?
+        # --------------------------------------------------------------------
+        query["extensions"] = extensions
+        query["base_path"] = current_folder if filepath_type == "relative" else False
+        query["needle"] = Query.build_needle_query(needle, current_folder)
+
+        if triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"])):
+            return query
+
+        return False
 
     def build_needle_query(needle, current_folder):
         current_folder = "" if not current_folder else current_folder
@@ -372,12 +382,18 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # update project by file
     def on_post_save_async(self, view):
+        if self.is_temp_file:
+            # but saved now:
+            print("FFP: temp file saved, reevaluate")
+            self.on_activated(view)
+
         if project_files is None:
             return False
 
         folders = sublime.active_window().folders()
         match = [folder for folder in folders if folder in view.file_name()]
         if len(match) > 0:
+            print("VIEW FILENAME: ", view.file_name())
             return project_files.update(match[0], view.file_name())
         else:
             return False
@@ -389,8 +405,11 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         self.project_folder = None
         file_name = view.file_name()
         folders = sublime.active_window().folders()
+        self.is_temp_file = file_name is None
 
         if folders is None or file_name is None:
+            self.is_temp_file = True
+            print("FFP: Abort, file is not saved")
             return False
 
         if config["PROJECT_DIRECTORY"]:
