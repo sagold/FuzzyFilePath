@@ -117,12 +117,12 @@ class ProjectFiles:
         name, extension = os.path.splitext(file_name)
         extension = extension[1:]
         if not extension in self.valid_extensions:
-            print(ID_CACHE, "file to cache has no valid extension", extension)
+            verbose(ID_CACHE, "file to cache has no valid extension", extension)
             return True
 
         if self.folder_is_cached(folder):
             file_name = file_name.replace(folder + '/', "")
-            print(ID_CACHE, "check filename", file_name);
+            verbose(ID_CACHE, "check filename", file_name);
             if self.cache.get(folder).files.get(file_name):
                 return True
 
@@ -135,16 +135,16 @@ class ProjectFiles:
     def update(self, folder, file_name=None):
         if file_name:
             if (self.file_is_cached(folder, file_name)):
-                print(ID_CACHE, "abort update cache of file {0}. Already cached".format(file_name))
+                verbose(ID_CACHE, "abort update cache of file {0}. Already cached".format(file_name))
                 return False
         elif self.folder_is_cached(folder):
-            print(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
+            verbose(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
             return False
 
         if self.cache.get("folder"):
             del self.cache[folder]
 
-        print(ID_CACHE, "UPDATE", folder)
+        verbose(ID_CACHE, "UPDATE", folder)
         self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
         self.cache.get(folder).start();
         return True

@@ -388,7 +388,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
     def on_post_save_async(self, view):
         if self.is_temp_file:
             # but saved now:
-            print("FFP: temp file saved, reevaluate")
+            verbose("temp file saved, reevaluate")
             self.on_activated(view)
 
         if project_files is None:
@@ -397,7 +397,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         folders = sublime.active_window().folders()
         match = [folder for folder in folders if folder in view.file_name()]
         if len(match) > 0:
-            print("VIEW FILENAME: ", view.file_name())
             return project_files.update(match[0], view.file_name())
         else:
             return False
@@ -413,7 +412,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         if folders is None or file_name is None:
             self.is_temp_file = True
-            print("FFP: Abort, file is not saved")
+            log("Abort, file is not saved")
             return False
 
         if config["PROJECT_DIRECTORY"]:
