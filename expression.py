@@ -7,10 +7,11 @@ NEEDLE_SEPARATOR = "\"\'\(\)"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\("
 NEEDLE_SEPARATOR_AFTER = "^\"\'\)"
 NEEDLE_CHARACTERS = "\.A-Za-z0-9\-\_$"
-NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>"
+NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>\n"
 DELIMITER = "\s\:\(\[\="
 
 def get_context(view):
+	error = False
 	valid = True
 	valid_needle = True
 	position = Selection.get_position(view)
@@ -26,6 +27,8 @@ def get_context(view):
 	word = view.substr(word_region)
 	pre = view.substr(pre_region)
 	post = view.substr(post_region)
+
+	error = re.search("[" + NEEDLE_INVALID_CHARACTERS + "]", word)
 
 	needle_region = view.word(position)
 
@@ -113,7 +116,9 @@ def get_context(view):
 		"prefix": prefix,
 		"tagName": tag,
 		"style": style,
-		"region": needle_region
+		"region": needle_region,
+		# really do not use any of this
+		"error": error
 	}
 
 class Context:
