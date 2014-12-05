@@ -20,7 +20,6 @@ class FileCache(threading.Thread):
         self.extensions = extensions
         self.folder = folder
         self.files = None
-        threading.Thread.__init__(self)
 
     def run(self):
         verbose(ID, "START adding files in", self.folder)
