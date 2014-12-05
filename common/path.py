@@ -30,6 +30,8 @@ class Path:
         return Path.sanitize(folder)
 
     # return {string} path from base to target
+    # !replace with `os.path.relpath(path[, start])`
+    # => https://docs.python.org/2/library/os.path.html
     def trace(from_folder, to_folder):
         if not from_folder:
             return Path.sanitize("./" + to_folder)
