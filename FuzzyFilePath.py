@@ -290,8 +290,13 @@ def query_completions(view, project_folder, current_folder):
 
     # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
+    if expression["error"] and not Query.by_command():
+        verbose("abort not a valid context")
+        return False
+
     # check if there is a trigger for the current expression
     trigger = Context.find_trigger(expression, current_scope, triggers)
+    # verbose("trigger", trigger)
 
     # expression | trigger  | force | ACTION            | CURRENT
     # -----------|----------|-------|-------------------|--------
@@ -322,9 +327,8 @@ def query_completions(view, project_folder, current_folder):
         return False
 
     if (config["LOG"]):
-        log("")
-        log("query completions:")
-        log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        log("query completions")
+        log("────────────────────────────────────────────────────────────────")
         log("scope settings: {0}".format(trigger))
         log("search needle: '{0}'".format(Query.needle))
         log("in base path: '{0}'".format(Query.base_path))
@@ -476,11 +480,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         self.current_folder = Path.get_relative_folder(file_name, self.project_folder)
 
         if config["LOG"]:
-            log("\n~~~~~~~~~~~~~~~~")
-            log("PROJECT SETTINGS")
-            log("project folder", self.project_folder)
-            log("base directory", config["BASE_DIRECTORY"])
-            log("~~~~~~~~~~~~~~~~")
+            log("FFP", "PROJECT SETTINGS", "project folder", self.project_folder, "base directory", config["BASE_DIRECTORY"])
 
         if project_files:
             project_files.add(self.project_folder)
@@ -496,7 +496,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             - this results in wrong path insertions if the query contains word_separators like slashes
             - thus the path until current word has to be removed after insertion
         """
-        needle = Context.get_context(view).get("needle")
+        context = Context.get_context(view)
+        needle = context.get("needle")
         word = re.escape(Selection.get_word(view))
         self.post_remove = re.sub(word + "$", "", needle)
         verbose("cleanup", "remove:", self.post_remove, "of", needle)
