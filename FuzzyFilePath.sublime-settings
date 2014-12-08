@@ -42,7 +42,7 @@
 	        "base_directory": true,				// insert absolute from the set base directory (above)
 	        "replace_on_insert": [
 	        	["\\.js$", ""],					// after insertion, remove .js from path
-	        	["\\/index$", ""]				// nodejs will load index.js by default => also remove index
+	        	["([^.])\\/index$", "\\1"]		// nodejs will load index.js by default => also remove index
 	        ]
 	    },
 	    {
