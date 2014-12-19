@@ -228,6 +228,8 @@ class Query:
         extensions = Query.get("extensions", extensions)
         Query.extensions = extensions
         Query.needle = Query.build_needle_query(needle, current_folder)
+        # strip any starting dots or slashes
+        Query.needle = re.sub("^[\.\/]*", "", Query.needle)
         # --------------------------------------------------------------------
         # tests throw error if results are set to class
         # Require refactoring of static classes with dynamic properties?
