@@ -5,7 +5,8 @@ class Path:
 
     def sanitize(path):
         # sanitize ././
-        path = re.sub("^(./)+", "./", path)
+        path = re.sub("^\/?(./)+", "./", path)
+        path = re.sub("^(\/)+", "./", path)
         # sanitize slashes (posix)
         path = path.replace("\\", "/")
         return path
