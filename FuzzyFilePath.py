@@ -5,6 +5,12 @@
         - check windows, update sublime text 2
         - add to command palette: settings, base_directory
         - add force update cached folder
+        - query file extensions
+
+    # bugs
+
+        - switching projects: file is not recognized as valid project file
+        - trailing file extensions are not sanitized
 
     @version 0.1.0-alpha
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -31,7 +37,6 @@ def plugin_loaded():
     settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     settings.add_on_change("scopes", update_settings)
     update_settings()
-
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
@@ -416,6 +421,8 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             self.is_temp_file = True
             log("Abort, file is not saved")
             return False
+
+        update_settings()
 
         if config["PROJECT_DIRECTORY"]:
             # sanitize project directory
