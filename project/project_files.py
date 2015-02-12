@@ -53,6 +53,8 @@ class ProjectFiles:
         needle = re.sub("^\/", "", needle)
         # cleanup
         needle = re.sub('["\'\(\)$]', '', needle)
+        # prepare for regex extension string
+        needle = re.escape(needle);
 
         # build search expression
         regex = ".*"
@@ -72,7 +74,6 @@ class ProjectFiles:
             """
             if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, filepath, re.IGNORECASE)):
                 completion = self.get_completion(filepath, properties[2], base_path)
-
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
@@ -89,10 +90,12 @@ class ProjectFiles:
     def get_completion(self, target_path, path_display, base_path=False):
         # absolute path
         if base_path is False:
-            return (path_display, "/" + target_path)
+            # return (path_display, "/" + target_path)
+            return (target_path, "/" + target_path)
         # create relative path
         else:
-            return (path_display, Path.trace(base_path, target_path))
+            # return (path_display, Path.trace(base_path, target_path))
+            return (target_path, Path.trace(base_path, target_path))
 
     def add(self, parent_folder):
         """ caches all files within the given folder
