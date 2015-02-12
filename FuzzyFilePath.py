@@ -9,6 +9,8 @@
 
     # bugs
 
+        - !plugin host crashes due to latest changes
+        - !performance problems due to latest changes (reload settings and project detection?)
         - switching projects: file is not recognized as valid project file
         - trailing file extensions are not sanitized
 
@@ -409,7 +411,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             return False
 
     # validate and update project folders
-    def on_activated(self, view):
+    def on_activated_async(self, view):
         project_directory = ""
         self.is_project_file = False
         self.project_folder = None
