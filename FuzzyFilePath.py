@@ -411,7 +411,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             return False
 
     # validate and update project folders
-    def on_activated_async(self, view):
+    def on_activated(self, view):
         project_directory = ""
         self.is_project_file = False
         self.project_folder = None
@@ -424,7 +424,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             log("Abort, file is not saved")
             return False
 
-        update_settings()
+        # update_settings()
 
         if config["PROJECT_DIRECTORY"]:
             # sanitize project directory
