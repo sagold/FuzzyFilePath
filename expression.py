@@ -100,6 +100,7 @@ def get_context(view):
 
 	if separator is False:
 		# print("context", "separator undefined => invalid", needle)
+		valid_needle = False
 		valid = False
 	elif re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
 		# print("context", "invalid characters in needle => invalid", needle)

@@ -67,13 +67,23 @@ class Test(TestCase):
 		self.assert_equal(result.get("style"), 'background')
 
 	#tagName
-	def should_retun_tagName(self, vh):
+	def should_return_tagName(self, vh):
 		vh.set_line('<div id')
 		vh.move_cursor(0, 10)
 
 		result = get_context(vh.view).get("tagName")
 
 		self.assert_equal(result, 'div')
+
+	# blacklist
+	def should_not_validate_after_closing_bracket(self, vh):
+		vh.set_line('require ("require("../package").subPackage');
+		vh.move_cursor(0, 35)
+
+		print(get_context(vh.view))
+		result = get_context(vh.view).get("valid_needle")
+
+		self.assert_equal(result, False)
 
 
 
