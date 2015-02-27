@@ -76,6 +76,7 @@ class Test(TestCase):
 		self.assert_equal(result, 'div')
 
 	# blacklist
+
 	def should_not_validate_after_closing_bracket(self, vh):
 		vh.set_line('require ("require("../package").subPackage');
 		vh.move_cursor(0, 35)
@@ -84,7 +85,3 @@ class Test(TestCase):
 		result = get_context(vh.view).get("valid_needle")
 
 		self.assert_equal(result, False)
-
-
-
-
