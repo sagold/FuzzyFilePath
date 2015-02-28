@@ -1,3 +1,5 @@
 /temp
 *.pyc
 *.psd
+FuzzyFilePath.sublime-workspace
+FuzzyFilePath.sublime-project
