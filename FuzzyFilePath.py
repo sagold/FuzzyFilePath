@@ -375,18 +375,16 @@ def query_completions(view, project_folder, current_folder):
 
 class FuzzyFilePath(sublime_plugin.EventListener):
 
-    is_project_file = False,
-    project_folder = False,
-    current_folder = False,
-
+    is_project_file = False
+    project_folder = False
+    current_folder = False
     # tracks on_post_insert_completion
     track_insert = {
         "active": False,
         "start_line": "",
         "end_line": ""
     }
-
-    post_remove = "",
+    post_remove = ""
 
     def on_query_completions(self, view, prefix, locations):
         if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
@@ -397,15 +395,14 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         if self.is_project_file:
             return query_completions(view, self.project_folder, self.current_folder)
-        else:
-            verbose("disabled or not a project", self.is_project_file)
-            return False
+
+        print("abort query completions", self.is_project_file)
+        return False
 
     def on_post_insert_completion(self, view, command_name):
         if Completion.is_active():
             cleanup_completion(view, self.post_remove)
             Completion.stop()
-
 
     # update project by file
     def on_post_save_async(self, view):
@@ -424,7 +421,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         else:
             return False
 
-
     # validate and update project folders
     def on_activated(self, view):
         # view has gained focus
@@ -435,7 +431,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             self.is_temp_file = not Validate.file_has_location(view)
             return False
 
-        self.project_file = True
+        self.is_project_file = True
         self.project_folder = directory["project"]
         self.is_temp_file = False
 
@@ -451,12 +447,12 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             - sublime inserts completions by replacing the current word
             - this results in wrong path insertions if the query contains word_separators like slashes
             - thus the path until current word has to be removed after insertion
+            - ... and possibly afterwards
         """
         context = Context.get_context(view)
         needle = context.get("needle")
         word = re.escape(Selection.get_word(view))
         self.post_remove = re.sub(word + "$", "", needle)
-        verbose("cleanup", "remove:", self.post_remove, "of", needle)
 
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
