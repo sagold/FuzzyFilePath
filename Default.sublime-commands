@@ -1,0 +1,4 @@
+[
+	{ "caption": "FFP: Rebuild cache", "command": "ffp_update_cache" },
+	{ "caption": "FFP: Show info", "command": "ffp_show_info" }
+]
