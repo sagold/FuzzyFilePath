@@ -13,7 +13,7 @@
         - switching projects: file is not recognized as valid project file
         - trailing file extensions are not sanitized
 
-    @version 0.1.0-alpha
+    @version 0.1.0
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
