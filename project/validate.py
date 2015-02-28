@@ -3,10 +3,11 @@ import os
 import sublime
 
 from FuzzyFilePath.common.path import Path
-
+from FuzzyFilePath.common.verbose import log
 
 """
-    Validates the current file`s folders based on opened project folders and its settings.
+    Validates the current file`s folders based on project folders and its settings.
+    Reminder: project = sublime window and opened folder (sidebar)
 
     Either returns False, if no completions are possible or a dictionary containing required paths and folders of the
     project, file and completion base directory. These folders are required to build the required path completions.
@@ -105,30 +106,29 @@ class Validate:
         base_directory = Validate.get_valid_path(base_directory)
         # base_project_directory    | /path/to/sublime/project
         # project_directory         | /path/to/sublime/project/project_directory
-        #
         # - path_to_base_directory  | /path/to/sublime/project/base_directory
         # + path_to_base_directory  | /path/to/sublime/project/project_directory/base_directory
         path_to_base_directory = os.path.join(project_directory, base_directory)
         if not os.path.isdir(path_to_base_directory):
-            # BASE_DIRECTORY is NOT a valid folder releative to (possibly modified) project_directory
+            # BASE_DIRECTORY is NOT a valid folder relative to (possibly modified) project_directory
             path_to_base_directory = os.path.join(base_project_directory, base_directory)
 
             if not os.path.isdir(path_to_base_directory):
-                print("FFP", "Error: setting's base_directory is not a valid directory in project")
-                print("FFP", "=> changing base_directory {0} to ''".format(base_directory))
+                log("Error: setting's base_directory is not a valid directory in project")
+                log("=> changing base_directory {0} to ''".format(base_directory))
                 return ""
 
             elif path_to_base_directory in project_directory:
                 # change BASE_DIRECTORY to be '' since its outside of project directory
-                print("FFP", "Error: setting's base_directory is within project directory")
-                print("FFP", "=> changing base_directory {0} to ''".format(base_directory))
+                log("Error: setting's base_directory is within project directory")
+                log("=> changing base_directory {0} to ''".format(base_directory))
                 return ""
 
             else:
                 # change BASE_DIRECTORY to be relative to modified project directory
                 path_to_base_directory = path_to_base_directory.replace(project_directory, "")
-                print("FFP", "Error: setting's base_directory is not relative to project directory")
-                print("FFP", "=> changing base_directory '{0}' to '{1}'".format(base_directory, path_to_base_directory))
+                log("Error: setting's base_directory is not relative to project directory")
+                log("=> changing base_directory '{0}' to '{1}'".format(base_directory, path_to_base_directory))
                 return Validate.get_valid_path(path_to_base_directory)
 
         return base_directory
@@ -138,4 +138,4 @@ def show_dialog(message, open=False):
     if open is True:
        header = "FuzzyFilePath\n\n"
        sublime.message_dialog(header + message)
-   return False
+    return False

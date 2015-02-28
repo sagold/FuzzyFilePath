@@ -2,10 +2,10 @@
 
     # tasks
 
-        - add to command palette: settings, base_directory
-        - query file extensions
         - improve caching strategy
         - improve testing
+        - add to command palette: settings, base_directory
+        - query file extensions
 
     # bugs
 
@@ -422,22 +422,23 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         else:
             return False
 
+
     # validate and update project folders
     def on_activated(self, view):
-        self.is_project_file = False
-        self.project_folder = None
-        self.is_temp_file = False
-
+        # view has gained focus
         directory = Validate.view(view, config, False)
         if directory is False:
+            self.is_project_file = False
+            self.project_folder = None
+            self.is_temp_file = not Validate.file_has_location(view)
             return False
 
         self.project_file = True
         self.project_folder = directory["project"]
+        self.is_temp_file = False
 
         if project_files:
             project_files.add(directory["project"])
-
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
