@@ -9,6 +9,7 @@
 
     # bugs
 
+        - fix mixed caching and treatment of multiple projects. Currently one instance is used for all projects
         - switching projects: file is not recognized as valid project file
         - trailing file extensions are not sanitized
 
@@ -31,6 +32,7 @@ from FuzzyFilePath.common.path import Path
 
 project_files = None
 scope_cache = {}
+
 
 
 """ ================================================================================================================ """
@@ -145,6 +147,26 @@ class InsertPathCommand(sublime_plugin.TextCommand):
             Query.force("extensions", extensions)
 
         self.view.run_command('auto_complete', "insert")
+
+
+class FFPCacheManager(sublime_plugin.EventListener):
+    """ Update projectfiles cache on activated window """
+
+    previous_view = None
+
+    # called when a view has been activated
+    def on_activated(self, view):
+        # simulate on window activated
+        if FFPCacheManager.previous_view is not view.id():
+            FFPCacheManager.previous_view = view.id()
+        else:
+            self.on_window_activated(view)
+
+    # called when a window gains focus
+    def on_window_activated(self, view):
+        # the window has gained focus again. possibly just a distraction, but maybe the project structure has changed.
+        # Thus reload cache
+        project_files.rebuild()
 
 
 class Query:
