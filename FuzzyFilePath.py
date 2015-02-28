@@ -9,6 +9,8 @@
     # bugs
 
         - fix mixed caching and treatment of multiple projects. Currently one instance is used for all projects
+            - cache session, projectcaches by window ids(?)
+            - rebuild only current folders
         - switching projects: file is not recognized as valid project file
         - trailing file extensions are not sanitized
 
@@ -148,7 +150,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete', "insert")
 
 
-class FFPCacheManager(sublime_plugin.EventListener):
+class CacheManager(sublime_plugin.EventListener):
     """ rebuilds cache on activated window """
 
     previous_view = None
@@ -156,8 +158,8 @@ class FFPCacheManager(sublime_plugin.EventListener):
     # called when a view has been activated
     def on_activated(self, view):
         # simulate on window activated
-        if FFPCacheManager.previous_view is not view.id():
-            FFPCacheManager.previous_view = view.id()
+        if CacheManager.previous_view is not view.id():
+            CacheManager.previous_view = view.id()
         else:
             self.on_window_activated(view)
 
@@ -166,6 +168,62 @@ class FFPCacheManager(sublime_plugin.EventListener):
         # the window has gained focus again. possibly just a distraction, but maybe the project structure has changed.
         # Thus reload cache
         project_files.rebuild()
+
+
+class CurrentFile(sublime_plugin.EventListener):
+    """ Evaluates and caches current file`s project status """
+
+    cache = {}
+    current = {
+        "is_temp": False,               # file does not exist in filesystem
+        "directory": False,             # directory relative to project
+        "project_directory": False      # project directory
+    }
+
+    def on_activated(self, view):
+        # view has gained focus
+        file_name = view.file_name()
+        current = self.cache.get(file_name)
+
+        if current is None or current.get("is_temp"):
+            # add current view to cache
+            current = CurrentFile.validate(view)
+            CurrentFile.cache[file_name] = current
+            # and update project files
+            if project_files and current["project_directory"]:
+                project_files.add(current["project_directory"])
+
+        CurrentFile.current = current
+
+    def is_valid():
+        return CurrentFile.current.get("project_directory") is not False
+
+    def get_project_directory():
+        return CurrentFile.current.get("project_directory")
+
+    def get_directory():
+        return CurrentFile.current.get("directory")
+
+    def is_temp():
+        return CurrentFile.current.get("is_temp")
+
+    def validate(view):
+        current = {
+            "is_temp": False,
+            "directory": False,
+            "project_directory": False
+        }
+
+        current["is_temp"] = not Validate.file_has_location(view)
+        if current["is_temp"]:
+            return current
+
+        directory = Validate.view(view, config, False)
+        if directory:
+            current["project_directory"] = directory["project"]
+            current["directory"] = directory["current"]
+
+        return current
 
 
 class Query:
@@ -396,9 +454,6 @@ def query_completions(view, project_folder, current_folder):
 
 class FuzzyFilePath(sublime_plugin.EventListener):
 
-    is_project_file = False
-    project_folder = False
-    current_folder = False
     # tracks on_post_insert_completion
     track_insert = {
         "active": False,
@@ -414,10 +469,11 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if self.track_insert["active"] is False:
             self.start_tracking(view)
 
-        if self.is_project_file:
-            return query_completions(view, self.project_folder, self.current_folder)
+        print(CurrentFile.is_valid(), CurrentFile.get_project_directory(), CurrentFile.get_directory())
 
-        print("abort query completions", self.is_project_file)
+        if CurrentFile.is_valid():
+            return query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
+
         return False
 
     def on_post_insert_completion(self, view, command_name):
@@ -427,7 +483,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     # update project by file
     def on_post_save_async(self, view):
-        if self.is_temp_file:
+        if CurrentFile.is_temp():
             # but saved now:
             verbose("temp file saved, reevaluate")
             self.on_activated(view)
@@ -441,23 +497,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             return project_files.update(match[0], view.file_name())
         else:
             return False
-
-    # validate and update project folders
-    def on_activated(self, view):
-        # view has gained focus
-        directory = Validate.view(view, config, False)
-        if directory is False:
-            self.is_project_file = False
-            self.project_folder = None
-            self.is_temp_file = not Validate.file_has_location(view)
-            return False
-
-        self.is_project_file = True
-        self.project_folder = directory["project"]
-        self.is_temp_file = False
-
-        if project_files:
-            project_files.add(directory["project"])
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
