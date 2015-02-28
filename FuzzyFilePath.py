@@ -2,7 +2,6 @@
 
     # tasks
 
-        - improve caching strategy
         - improve testing
         - add to command palette: settings, base_directory
         - query file extensions
@@ -150,7 +149,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
 
 
 class FFPCacheManager(sublime_plugin.EventListener):
-    """ Update projectfiles cache on activated window """
+    """ rebuilds cache on activated window """
 
     previous_view = None
 
