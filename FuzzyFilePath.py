@@ -150,24 +150,34 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete', "insert")
 
 
-class CacheManager(sublime_plugin.EventListener):
+class WindowManager(sublime_plugin.EventListener):
     """ rebuilds cache on activated window """
 
     previous_view = None
+    previous_window = None
 
     # called when a view has been activated
     def on_activated(self, view):
         # simulate on window activated
-        if CacheManager.previous_view is not view.id():
-            CacheManager.previous_view = view.id()
+        if WindowManager.previous_view is not view.id():
+            WindowManager.previous_view = view.id()
         else:
             self.on_window_activated(view)
+
+        if WindowManager.previous_window is not sublime.active_window().id():
+            WindowManager.previous_window = sublime.active_window().id()
+            self.on_window_changed(sublime.active_window())
+
 
     # called when a window gains focus
     def on_window_activated(self, view):
         # the window has gained focus again. possibly just a distraction, but maybe the project structure has changed.
         # Thus reload cache
         project_files.rebuild()
+
+    def on_window_changed(self, window):
+        # print("window has changed", window.id(), config["PROJECT_DIRECTORY"])
+        update_settings()
 
 
 class CurrentFile(sublime_plugin.EventListener):
