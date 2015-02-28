@@ -116,6 +116,11 @@ class Completion:
         return path
 
 
+class FfpUpdateCacheCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        project_files.rebuild()
+
+
 class InsertPathCommand(sublime_plugin.TextCommand):
     # trigger customized autocomplete
     def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):

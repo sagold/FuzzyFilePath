@@ -134,6 +134,13 @@ class ProjectFiles:
     def folder_is_cached(self, folder):
         return self.cache.get(folder) and self.cache.get(folder).files
 
+    def rebuild(self):
+        # completley rebuilds all cached foldes
+        for folder in self.cache:
+            self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
+            self.cache.get(folder).start();
+
+
     # rebuild folder cache
     def update(self, folder, file_name=None):
         if file_name:
