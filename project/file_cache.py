@@ -4,11 +4,18 @@ import re
 import threading
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
+"""
+    Scans, parses and stores all files in the given folder to the dictionary `files`
+
+    Each file entry is set by its relative `filepath` and holds an array like
+        0 : filename (modified)
+        1 : file extension
+        2 : sublime text auto completion string
+"""
+ID = "cache"
 
 def posix(path):
     return path.replace("\\", "/")
-
-ID = "cache"
 
 # stores all files and its fragments within property files
 class FileCache(threading.Thread):
@@ -47,12 +54,19 @@ class FileCache(threading.Thread):
                 relative_path = os.path.relpath(current_path, base)
                 filename, extension = os.path.splitext(relative_path)
                 extension = extension[1:]
+
                 # posix required for windows, else absolute paths are wrong: /asd\ads\
                 relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], posix(relative_path))
 
                 if extension in self.extensions:
-                    # $ hack, reversed in post_commit_completion
-                    folder_cache[relative_path] = [re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)), extension, posix(filename) + "\t" + extension]
+                    folder_cache[relative_path] = [
+                        # modified filepath. $ hack is reversed in post_commit_completion
+                        re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)),
+                        # extension of file
+                        extension,
+                        # sublime completion text
+                        posix(filename) + "\t" + extension
+                    ]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):
                 folder_cache.update(self.read(current_path, base))

@@ -33,11 +33,6 @@ project_files = None
 scope_cache = {}
 
 
-class FfpShowInfo(sublime_plugin.TextCommand):
-    def run(self, edit):
-       Validate.view(self.view, config, True)
-
-
 """ ================================================================================================================ """
 """ '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' """
 
@@ -124,12 +119,19 @@ class Completion:
 
 
 class FfpUpdateCacheCommand(sublime_plugin.TextCommand):
+    """ force update project-files cache """
     def run(self, edit):
         project_files.rebuild()
 
 
+class FfpShowInfoCommand(sublime_plugin.TextCommand):
+    """ shows a message dialog with project validation status of current file """
+    def run(self, edit):
+       Validate.view(self.view, config, True)
+
+
 class InsertPathCommand(sublime_plugin.TextCommand):
-    # trigger customized autocomplete
+    """ trigger customized autocomplete overriding auto settings """
     def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):
         if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
