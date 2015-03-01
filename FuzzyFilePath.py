@@ -175,9 +175,27 @@ class WindowManager(sublime_plugin.EventListener):
         # Thus reload cache
         project_files.rebuild()
 
+    # called when a different window gains focus
     def on_window_changed(self, window):
-        # print("window has changed", window.id(), config["PROJECT_DIRECTORY"])
         update_settings()
+
+        return
+        # project_data seems to be window contained storage
+        # has set_project_data, which persists if a project_file_name is available
+        # ! this is the project settings file. Should be used to persist settings only...
+        # May be used to differentiate projects over windows, but the same project is opened once most of the time
+        data = window.project_data()
+        if data.get("FFP"):
+            # print("window recognized by data", data.get("FFP").get("id"))
+            data.get("FFP").get("id")
+        else:
+            # id should be something like project directory...
+            data["FFP"] = { "id": window.id() }
+            window.set_project_data(data)
+        # What about sublime-workspace?
+        # (project only...)
+        # if None, its an opened file or folder
+        # print(window.project_file_name())
 
 
 class CurrentFile(sublime_plugin.EventListener):
