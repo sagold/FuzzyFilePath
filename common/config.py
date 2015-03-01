@@ -14,5 +14,7 @@ config = {
 	"DISABLE_KEYMAP_ACTIONS": False,
 	"AUTO_TRIGGER": True,
 	"TRIGGER": [],
-	"EXCLUDE_FOLDERS": ["node\\_modules", "bower\\_components/.*/bower\\_components"]
+	"EXCLUDE_FOLDERS": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
+
+	"POST_INSERT_MOVE_CHARACTERS": "^[\"\'\);]*"
 }

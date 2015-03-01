@@ -423,6 +423,7 @@ def get_diff(first, second):
 
 
 def cleanup_completion(view, post_remove):
+    start_expression = FuzzyFilePath.start_expression
     expression = Context.get_context(view)
 
     # feature test
@@ -430,34 +431,35 @@ def cleanup_completion(view, post_remove):
     # remove beginning and end matches aka left overs
     # current implementation only removes starting left overs
 
-    start_expression = FuzzyFilePath.start_expression
-
     # using start needle fails, last modified string instead succeeds?
     # diff = get_diff(start_expression["needle"], expression["needle"])
     diff = get_diff(post_remove, expression["needle"])
-
     # cleanup string
     final_path = re.sub("^" + diff["start"], "", expression["needle"])
     # do not replace current word
     if diff["end"] != start_expression["word"]:
         final_path = re.sub(diff["end"] + "$", "", final_path)
 
-    print("\n")
-    print("last expression", post_remove)
-    print("start expression", start_expression)
-    print("previous string", start_expression["needle"])
-    print("current string", expression["needle"])
-    print("start diff '", diff["start"], "'")
-    print("end diff '", diff["end"], "'")
-    print("diffed path '", final_path, "'")
+    # print("\n")
+    # print("last expression", post_remove)
+    # print("start expression", start_expression)
+    # print("previous string", start_expression["needle"])
+    # print("current string", expression["needle"])
+    # print("start diff '", diff["start"], "'")
+    # print("end diff '", diff["end"], "'")
+    # print("diffed path '", final_path, "'")
 
     # remove path query completely
     final_path = Completion.get_final_path(final_path, post_remove)
     log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
 
-
     # replace current query with final path
-    view.run_command("ffp_replace_region", { "a": expression["region"].a, "b": expression["region"].b, "string": final_path })
+    view.run_command("ffp_replace_region", {
+        "a": expression["region"].a,
+        "b": expression["region"].b,
+        "string": final_path,
+        "move_cursor": True
+    })
 
 
 def get_matching_autotriggers(scope, triggers):
