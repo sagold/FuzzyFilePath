@@ -20,6 +20,7 @@ class FfpSetProjectDirectoryCommand(sublime_plugin.TextCommand):
 
         directory = Validate.view(self.view, config)
         if directory is False:
+            # validates adjusted project directory which may become annoying since project is still valid
             return sublime.status_message("FuzzyFilePath: Abort. Current file is not within a project")
 
         project_base_directory = directory["base"]
