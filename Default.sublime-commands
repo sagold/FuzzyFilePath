@@ -1,4 +1,5 @@
 [
 	{ "caption": "FFP: Rebuild cache", "command": "ffp_update_cache" },
-	{ "caption": "FFP: Show info", "command": "ffp_show_info" }
+	{ "caption": "FFP: Show info", "command": "ffp_show_info" },
+	{ "caption": "FFP: Set project directory", "command": "ffp_set_project_directory" }
 ]
