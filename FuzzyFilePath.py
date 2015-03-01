@@ -107,8 +107,8 @@ class Completion:
 
     def get_final_path(path, post_remove):
         # string to replace on post_insert_completion
-        post_remove = re.escape(post_remove)
-        path = re.sub("^" + post_remove, "", path)
+        # post_remove = re.escape(post_remove)
+        # path = re.sub("^" + post_remove, "", path)
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
@@ -381,11 +381,81 @@ class Query:
         return needle
 
 
+def get_start_diff(first, second):
+    index = 0
+    result = ""
+    for c in first:
+        if c is second[index]:
+            index += 1
+            result += c
+        else:
+            break
+
+    return result
+
+def get_end_diff(first, second):
+    first = first[::-1]
+    second = second[::-1]
+    index = 0
+    result = ""
+    for c in first:
+        if c is second[index]:
+            index += 1
+            result = c + result
+        else:
+            break
+
+    return result
+
+def get_diff(first, second):
+    # get intersection at start
+    start = get_start_diff(first, second)
+
+    # remove intersection to prevent end diff duplicates
+    first = first[len(start):]
+    second = second[len(start):]
+    end = get_end_diff(first, second)
+
+    return {
+        "start": start,
+        "end": end
+    }
+
+
 def cleanup_completion(view, post_remove):
     expression = Context.get_context(view)
+
+    # feature test
+    # create a diff of initial and current needle
+    # remove beginning and end matches aka left overs
+    # current implementation only removes starting left overs
+
+    start_expression = FuzzyFilePath.start_expression
+
+    # using start needle fails, last modified string instead succeeds?
+    # diff = get_diff(start_expression["needle"], expression["needle"])
+    diff = get_diff(post_remove, expression["needle"])
+
+    # cleanup string
+    final_path = re.sub("^" + diff["start"], "", expression["needle"])
+    # do not replace current word
+    if diff["end"] != start_expression["word"]:
+        final_path = re.sub(diff["end"] + "$", "", final_path)
+
+    print("\n")
+    print("last expression", post_remove)
+    print("start expression", start_expression)
+    print("previous string", start_expression["needle"])
+    print("current string", expression["needle"])
+    print("start diff '", diff["start"], "'")
+    print("end diff '", diff["end"], "'")
+    print("diffed path '", final_path, "'")
+
     # remove path query completely
-    final_path = Completion.get_final_path(expression["needle"], post_remove)
+    final_path = Completion.get_final_path(final_path, post_remove)
     log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
+
+
     # replace current query with final path
     view.run_command("ffp_replace_region", { "a": expression["region"].a, "b": expression["region"].b, "string": final_path })
 
@@ -456,6 +526,11 @@ def query_completions(view, project_folder, current_folder):
         log("abort valid query: auto trigger disabled")
         return False
 
+    # bug aka wrong absolute path?
+    if isinstance(Query.base_path, str) and Query.needle.startswith(Query.base_path):
+        # remove base path from needle
+        Query.needle = Query.needle[len(Query.base_path):]
+
     if (config["LOG"]):
         log("query completions")
         log("────────────────────────────────────────────────────────────────")
@@ -463,6 +538,7 @@ def query_completions(view, project_folder, current_folder):
         log("search needle: '{0}'".format(Query.needle))
         log("in base path: '{0}'".format(Query.base_path))
 
+    FuzzyFilePath.start_expression = expression
     completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
 
     if completions and len(completions[0]) > 0:
@@ -489,6 +565,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         "end_line": ""
     }
     post_remove = ""
+    start_expression = None
 
     def on_query_completions(self, view, prefix, locations):
         if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
@@ -496,8 +573,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
         if self.track_insert["active"] is False:
             self.start_tracking(view)
-
-        print(CurrentFile.is_valid(), CurrentFile.get_project_directory(), CurrentFile.get_directory())
 
         if CurrentFile.is_valid():
             return query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())

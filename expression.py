@@ -118,6 +118,7 @@ def get_context(view):
 		"tagName": tag,
 		"style": style,
 		"region": needle_region,
+		"word": word,
 		# really do not use any of this
 		"error": error
 	}
