@@ -22,6 +22,7 @@ import sublime_plugin
 import re
 import os
 
+from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.expression import Context
 from FuzzyFilePath.project.project_files import ProjectFiles
 from FuzzyFilePath.project.validate import Validate
@@ -30,10 +31,9 @@ from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.common.path import Path
+from FuzzyFilePath.common.string import get_diff
 
-project_files = None
 scope_cache = {}
-
 
 
 """ ================================================================================================================ """
@@ -47,42 +47,24 @@ def plugin_loaded():
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
-    global project_files, scope_cache
-
     scope_cache.clear()
-    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    project_settings = sublime.active_window().active_view().settings().get('FuzzyFilePath', False)
 
+    ffp_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     # sync settings to config
     for key in config:
-        config[key] = settings.get(key.lower(), config[key])
+        config[key] = ffp_settings.get(key.lower(), config[key])
     # mapping
-    config["TRIGGER"] = settings.get("scopes", config["TRIGGER"])
-    # merge project settings stored in "settings: { FuzzyFilePath: ..."
-    if project_settings:
-        # mapping
-        config["TRIGGER"] = project_settings.get("scopes", config["TRIGGER"])
-        for key in config:
-            config[key] = project_settings.get(key.lower(), config[key])
-    # build extensions to suggest
-    extensionsToSuggest = []
-    for scope in config["TRIGGER"]:
-        ext = scope.get("extensions", [])
-        extensionsToSuggest += ext
-    # remove duplicates
-    extensionsToSuggest = list(set(extensionsToSuggest))
+    config["TRIGGER"] = ffp_settings.get("scopes", config["TRIGGER"])
 
-    project_files = ProjectFiles()
-    project_files.update_settings(extensionsToSuggest, config["EXCLUDE_FOLDERS"])
     # validate directories
+    # ATTENTION: project specific settings....
     if config["BASE_DIRECTORY"]:
         config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
+
     if config["PROJECT_DIRECTORY"]:
         config["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(config["PROJECT_DIRECTORY"])
 
-    log("logging enabled")
-    log("project base directory set to '{0}'".format(config["BASE_DIRECTORY"]))
-    log("{0} scope triggers loaded".format(len(config["TRIGGER"])))
+    ProjectManager.initialize(config)
 
 
 class Completion:
@@ -124,7 +106,7 @@ class Completion:
 class FfpUpdateCacheCommand(sublime_plugin.TextCommand):
     """ force update project-files cache """
     def run(self, edit):
-        project_files.rebuild()
+        ProjectManager.rebuild_filecache()
 
 
 class FfpShowInfoCommand(sublime_plugin.TextCommand):
@@ -150,54 +132,6 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete', "insert")
 
 
-class WindowManager(sublime_plugin.EventListener):
-    """ rebuilds cache on activated window """
-
-    previous_view = None
-    previous_window = None
-
-    # called when a view has been activated
-    def on_activated(self, view):
-        # simulate on window activated
-        if WindowManager.previous_view is not view.id():
-            WindowManager.previous_view = view.id()
-        else:
-            self.on_window_activated(view)
-
-        if WindowManager.previous_window is not sublime.active_window().id():
-            WindowManager.previous_window = sublime.active_window().id()
-            self.on_window_changed(sublime.active_window())
-
-
-    # called when a window gains focus
-    def on_window_activated(self, view):
-        # the window has gained focus again. possibly just a distraction, but maybe the project structure has changed.
-        # Thus reload cache
-        project_files.rebuild()
-
-    # called when a different window gains focus
-    def on_window_changed(self, window):
-        update_settings()
-
-        return
-        # project_data seems to be window contained storage
-        # has set_project_data, which persists if a project_file_name is available
-        # ! this is the project settings file. Should be used to persist settings only...
-        # May be used to differentiate projects over windows, but the same project is opened once most of the time
-        data = window.project_data()
-        if data.get("FFP"):
-            # print("window recognized by data", data.get("FFP").get("id"))
-            data.get("FFP").get("id")
-        else:
-            # id should be something like project directory...
-            data["FFP"] = { "id": window.id() }
-            window.set_project_data(data)
-        # What about sublime-workspace?
-        # (project only...)
-        # if None, its an opened file or folder
-        # print(window.project_file_name())
-
-
 class CurrentFile(sublime_plugin.EventListener):
     """ Evaluates and caches current file`s project status """
 
@@ -217,9 +151,14 @@ class CurrentFile(sublime_plugin.EventListener):
             # add current view to cache
             current = CurrentFile.validate(view)
             CurrentFile.cache[file_name] = current
+
+            print("current file", current["project_directory"])
+            if current["project_directory"]:
+                ProjectManager.cache_directory(current["project_directory"])
+
             # and update project files
-            if project_files and current["project_directory"]:
-                project_files.add(current["project_directory"])
+            # if project_files and current["project_directory"]:
+            #     project_files.add(current["project_directory"])
 
         CurrentFile.current = current
 
@@ -381,45 +320,7 @@ class Query:
         return needle
 
 
-def get_start_diff(first, second):
-    index = 0
-    result = ""
-    for c in first:
-        if c is second[index]:
-            index += 1
-            result += c
-        else:
-            break
 
-    return result
-
-def get_end_diff(first, second):
-    first = first[::-1]
-    second = second[::-1]
-    index = 0
-    result = ""
-    for c in first:
-        if c is second[index]:
-            index += 1
-            result = c + result
-        else:
-            break
-
-    return result
-
-def get_diff(first, second):
-    # get intersection at start
-    start = get_start_diff(first, second)
-
-    # remove intersection to prevent end diff duplicates
-    first = first[len(start):]
-    second = second[len(start):]
-    end = get_end_diff(first, second)
-
-    return {
-        "start": start,
-        "end": end
-    }
 
 
 def cleanup_completion(view, post_remove):
@@ -439,15 +340,6 @@ def cleanup_completion(view, post_remove):
     # do not replace current word
     if diff["end"] != start_expression["word"]:
         final_path = re.sub(diff["end"] + "$", "", final_path)
-
-    # print("\n")
-    # print("last expression", post_remove)
-    # print("start expression", start_expression)
-    # print("previous string", start_expression["needle"])
-    # print("current string", expression["needle"])
-    # print("start diff '", diff["start"], "'")
-    # print("end diff '", diff["end"], "'")
-    # print("diffed path '", final_path, "'")
 
     # remove path query completely
     final_path = Completion.get_final_path(final_path, post_remove)
@@ -541,7 +433,7 @@ def query_completions(view, project_folder, current_folder):
         log("in base path: '{0}'".format(Query.base_path))
 
     FuzzyFilePath.start_expression = expression
-    completions = project_files.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
+    completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.replace_on_insert)
@@ -591,15 +483,15 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if CurrentFile.is_temp():
             # but saved now:
             verbose("temp file saved, reevaluate")
-            self.on_activated(view)
+            WindowManager.on_activated(view)
 
-        if project_files is None:
+        if ProjectManager.has_current_project() is False:
             return False
 
         folders = sublime.active_window().folders()
         match = [folder for folder in folders if folder in view.file_name()]
         if len(match) > 0:
-            return project_files.update(match[0], view.file_name())
+            return ProjectManager.update_filecache(match[0], view.file_name())
         else:
             return False
 
