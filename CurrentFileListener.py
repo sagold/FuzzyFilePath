@@ -62,6 +62,9 @@ class CurrentFile(sublime_plugin.EventListener):
         if current["is_temp"]:
             return current
 
+        if not ProjectManager.has_current_project():
+            return
+
         settings = ProjectManager.get_current_project().get_settings()
         print("current file", settings.get("PROJECT_DIRECTORY"))
 
