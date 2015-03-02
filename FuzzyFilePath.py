@@ -87,10 +87,7 @@ class Completion:
     def is_active():
         return Completion.active
 
-    def get_final_path(path, post_remove):
-        # string to replace on post_insert_completion
-        # post_remove = re.escape(post_remove)
-        # path = re.sub("^" + post_remove, "", path)
+    def get_final_path(path):
         # hack reverse
         path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
         for replace in Completion.replaceOnInsert:
@@ -101,12 +98,6 @@ class Completion:
             path = Path.sanitize(path)
 
         return path
-
-
-class FfpUpdateCacheCommand(sublime_plugin.TextCommand):
-    """ force update project-files cache """
-    def run(self, edit):
-        ProjectManager.rebuild_filecache()
 
 
 class FfpShowInfoCommand(sublime_plugin.TextCommand):
@@ -321,8 +312,6 @@ class Query:
 
 
 
-
-
 def cleanup_completion(view, post_remove):
     start_expression = FuzzyFilePath.start_expression
     expression = Context.get_context(view)
@@ -342,7 +331,7 @@ def cleanup_completion(view, post_remove):
         final_path = re.sub(diff["end"] + "$", "", final_path)
 
     # remove path query completely
-    final_path = Completion.get_final_path(final_path, post_remove)
+    final_path = Completion.get_final_path(final_path)
     log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
 
     # replace current query with final path
