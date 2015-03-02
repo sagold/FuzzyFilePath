@@ -15,9 +15,22 @@ class Project():
 
 	def __init__(self, project_settings, ffp_settings):
 		self.filecache = ProjectFiles()
-		# setup project cache
+
+		self.settings = {}
+		for key in ffp_settings:
+			self.settings[key.upper()] = project_settings.get(key)
+
+		for key in project_settings:
+			print(key, key.upper())
+			self.settings[key.upper()] = project_settings.get(key)
+
 		valid_file_extensions = get_valid_extensions(project_settings, ffp_settings)
-		self.filecache.update_settings(valid_file_extensions, config["EXCLUDE_FOLDERS"])
+		folders_to_exclude = project_settings.get("EXCLUDE_FOLDERS", ffp_settings["EXCLUDE_FOLDERS"])
+		# setup project cache
+		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
+
+	def get_settings(self):
+		return self.settings
 
 	def cache_directory(self, directory):
 		return self.filecache.add(directory)
@@ -66,6 +79,9 @@ class ProjectManager(sublime_plugin.EventListener):
 		if ProjectManager.active:
 			ProjectManager.current_project = ProjectManager.get_project(window)
 
+	def get_current_project():
+		return ProjectManager.current_project
+
 	def has_current_project():
 		return ProjectManager.current_project is not False
 
@@ -108,12 +124,12 @@ def get_project_settings(window):
 	if not data:
 		return False
 	changed = False
-	settings = data.get("settings")
-	if not settings:
+	settings = data.get("settings", False)
+	if settings is False:
 		changed = True
 		settings = {}
 		data["settings"] = settings
-	ffp = data.get("FuzzyFilePath")
+	ffp = settings.get("FuzzyFilePath")
 	if not ffp:
 		changed = True
 		ffp = {}
