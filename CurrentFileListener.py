@@ -4,6 +4,7 @@ from FuzzyFilePath.common.config import config
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 
+
 class CurrentFile(sublime_plugin.EventListener):
     """ Evaluates and caches current file`s project status """
 
@@ -63,7 +64,7 @@ class CurrentFile(sublime_plugin.EventListener):
             return current
 
         if not ProjectManager.has_current_project():
-            return
+            return current
 
         settings = ProjectManager.get_current_project().get_settings()
         print("current file", settings.get("PROJECT_DIRECTORY"))
@@ -72,8 +73,5 @@ class CurrentFile(sublime_plugin.EventListener):
         if directory:
             current["project_directory"] = directory["project"]
             current["directory"] = directory["current"]
-            print(current)
-        else:
-            print("FAIL")
 
         return current
