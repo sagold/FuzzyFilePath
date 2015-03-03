@@ -4,15 +4,7 @@
 
         - improve testing
         - add to command palette: settings, base_directory
-        - query file extensions
-
-    # bugs
-
-        - fix mixed caching and treatment of multiple projects. Currently one instance is used for all projects
-            - cache session, projectcaches by window ids(?)
-            - rebuild only current folders
-        - switching projects: file is not recognized as valid project file
-        - trailing file extensions are not sanitized
+        - improve project storing its own path settings
 
     @version 0.1.0
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -23,8 +15,9 @@ import re
 import os
 
 from FuzzyFilePath.project.ProjectManager import ProjectManager
+from FuzzyFilePath.project.Project import Project
+from FuzzyFilePath.CurrentFileListener import CurrentFile
 from FuzzyFilePath.expression import Context
-from FuzzyFilePath.project.project_files import ProjectFiles
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
@@ -32,7 +25,6 @@ from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.common.path import Path
 from FuzzyFilePath.common.string import get_diff
-from FuzzyFilePath.CurrentFileListener import CurrentFile
 
 scope_cache = {}
 
@@ -65,7 +57,7 @@ def update_settings():
     if config["PROJECT_DIRECTORY"]:
         config["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(config["PROJECT_DIRECTORY"])
 
-    ProjectManager.initialize(config)
+    ProjectManager.initialize(Project, config)
 
 
 class Completion:
@@ -354,12 +346,10 @@ def query_completions(view, project_folder, current_folder):
         # remove base path from needle
         Query.needle = Query.needle[len(Query.base_path):]
 
-    if (config["LOG"]):
-        log("query completions")
-        log("────────────────────────────────────────────────────────────────")
-        log("scope settings: {0}".format(trigger))
-        log("search needle: '{0}'".format(Query.needle))
-        log("in base path: '{0}'".format(Query.base_path))
+    log(".───────────────────────────────────────────────────────────────")
+    log("| scope settings: {0}".format(trigger))
+    log("| search needle: '{0}'".format(Query.needle))
+    log("| in base path: '{0}'".format(Query.base_path))
 
     FuzzyFilePath.start_expression = expression
     completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
@@ -367,11 +357,11 @@ def query_completions(view, project_folder, current_folder):
     if completions and len(completions[0]) > 0:
         Completion.start(Query.replace_on_insert)
         view.run_command('_enter_insert_mode') # vintageous
-        log("=> {0} completions found".format(len(completions)))
+        log("| => {0} completions found".format(len(completions)))
     else:
         sublime.status_message("FFP no filepaths found for '" + Query.needle + "'")
         Completion.stop()
-        log("=> no valid files found for needle: {0}".format(Query.needle))
+        log("| => no valid files found for needle: {0}".format(Query.needle))
 
     log("")
 
