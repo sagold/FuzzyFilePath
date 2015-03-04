@@ -1,3 +1,5 @@
+import re
+import copy
 import sublime_plugin
 
 from FuzzyFilePath.common.config import config
@@ -9,7 +11,8 @@ class CurrentFile(sublime_plugin.EventListener):
     """ Evaluates and caches current file`s project status """
 
     cache = {}
-    current = {
+    current = False
+    default = {
         "is_temp": False,               # file does not exist in filesystem
         "directory": False,             # directory relative to project
         "project_directory": False      # project directory
@@ -22,21 +25,37 @@ class CurrentFile(sublime_plugin.EventListener):
 
     def on_activated(self, view):
         # view has gained focus
+
+        cache = self.cache.get(view.id())
+        if cache:
+            return cache
+
+        project = ProjectManager.get_current_project()
+        if not project:
+            # not a project
+            CurrentFile.current = CurrentFile.default
+            return
+
         file_name = view.file_name()
-        current = self.cache.get(file_name)
+        if not file_name:
+            # not saved on disk
+            CurrentFile.current = get_default()
+            CurrentFile.current["is_temp"] = True
+            CurrentFile.cache[view.id()] = CurrentFile.current
+            return
 
-        if current is None or current.get("is_temp"):
-            # add current view to cache
-            current = CurrentFile.validate(view)
-            CurrentFile.cache[file_name] = current
+        project_directory = project.get_directory()
+        if project_directory not in file_name:
+            # not within project
+            CurrentFile.current = CurrentFile.default
+            return
 
-            if current["project_directory"]:
-                ProjectManager.cache_directory(current["project_directory"])
-            # and update project files
-            # if project_files and current["project_directory"]:
-            #     project_files.add(current["project_directory"])
+        # add current view to cache
+        CurrentFile.current = get_default()
+        CurrentFile.current["project_directory"] = project_directory
+        CurrentFile.current["directory"] = re.sub(project_directory, "", file_name)
+        CurrentFile.cache[view.id()] = CurrentFile.current
 
-        CurrentFile.current = current
 
     def is_valid():
         return CurrentFile.current.get("project_directory") is not False
@@ -50,26 +69,5 @@ class CurrentFile(sublime_plugin.EventListener):
     def is_temp():
         return CurrentFile.current.get("is_temp")
 
-    def validate(view):
-        current = {
-            "is_temp": False,
-            "directory": False,
-            "project_directory": False
-        }
-
-        current["is_temp"] = not Validate.file_has_location(view)
-        if current["is_temp"]:
-            return current
-
-        if not ProjectManager.has_current_project():
-            return current
-
-        settings = ProjectManager.get_current_project().get_settings()
-
-        # refactor move to projectmanager
-        directory = Validate.view(view, settings, False)
-        if directory:
-            current["project_directory"] = directory["project"]
-            current["directory"] = directory["current"]
-
-        return current
+def get_default():
+    return copy.copy(CurrentFile.default)
