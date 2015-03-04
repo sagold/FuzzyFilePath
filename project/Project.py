@@ -1,5 +1,9 @@
+import os
 from FuzzyFilePath.project.project_files import ProjectFiles
+from FuzzyFilePath.common.verbose import warn
+from FuzzyFilePath.common.verbose import verbose
 
+ID = "PROJECT"
 
 class Project():
 
@@ -27,17 +31,40 @@ class Project():
 		for key in project_settings:
 			self.settings[key.upper()] = project_settings.get(key)
 
-		# setup project cache
-		valid_file_extensions = get_valid_extensions(project_settings, ffp_settings)
-		folders_to_exclude = project_settings.get("EXCLUDE_FOLDERS", ffp_settings["EXCLUDE_FOLDERS"])
-		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
+
 		# pay attention to multiple project folders
 		# multiple folders and cached files?
 		# - each folder is cached separately, which may result in folders being cached multiple times
-		print("project created", window.folders())
+		self.init()
 
-	def get_setting(self, key):
-		return self.settings.get(key)
+	def init(self):
+		# validate final project directory (by settings)
+		project_directory = os.path.join(self.directory, self.get_setting("PROJECT_DIRECTORY"))
+		if os.path.exists(project_directory):
+			self.project_directory = project_directory
+		else:
+			self.project_directory = self.directory
+			warn(ID, "project directory in settings in not a valid folder")
+
+		# setup project cache
+		triggers = self.settings.get("scopes", self.get_setting("TRIGGER"))
+		valid_file_extensions = get_valid_extensions(triggers)
+		folders_to_exclude = self.get_setting("EXCLUDE_FOLDERS")
+		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
+
+		print("folder", folders_to_exclude)
+		print("extensions", valid_file_extensions)
+		print(ID, "Project directory set to", self.project_directory)
+
+		# and start caching
+		self.filecache.add(self.project_directory)
+
+
+	def get_directory(self):
+		return self.project_directory
+
+	def get_setting(self, key, default=None):
+		return self.settings.get(key, default)
 
 	def get_settings(self):
 		return self.settings
@@ -51,7 +78,8 @@ class Project():
 		self.settings[key] = value
 
 	def cache_directory(self, directory):
-		return self.filecache.add(directory)
+		return
+		# return self.filecache.add(directory)
 
 	def rebuild_filecache(self):
 		return self.filecache.rebuild()
@@ -63,11 +91,10 @@ class Project():
 		return self.filecache.search_completions(needle, project_folder, valid_extensions, base_path)
 
 
-def get_valid_extensions(project_settings, ffp_settings):
+def get_valid_extensions(triggers):
 	""" return all found extensions in scope triggers """
 	extensionsToSuggest = []
 	# build extensions to suggest
-	triggers = project_settings.get("scopes", ffp_settings["TRIGGER"])
 	for scope in triggers:
 	    ext = scope.get("extensions", [])
 	    extensionsToSuggest += ext
