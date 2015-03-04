@@ -1,6 +1,6 @@
 from FuzzyFilePath.common.config import config
 
-IGNORE = ["cache"]
+IGNORE = ["cache", "FuzzyFilePath"]
 
 def log(*args):
 	if config["LOG"]:

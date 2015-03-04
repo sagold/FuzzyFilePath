@@ -28,6 +28,8 @@ from FuzzyFilePath.common.string import get_diff
 
 scope_cache = {}
 
+ID = "FuzzyFilePath"
+
 
 """ ================================================================================================================ """
 """ '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' """
@@ -340,10 +342,10 @@ def query_completions(view, project_folder, current_folder):
         # remove base path from needle
         Query.needle = Query.needle[len(Query.base_path):]
 
-    log(".───────────────────────────────────────────────────────────────")
-    log("| scope settings: {0}".format(trigger))
-    log("| search needle: '{0}'".format(Query.needle))
-    log("| in base path: '{0}'".format(Query.base_path))
+    verbose(ID, ".───────────────────────────────────────────────────────────────")
+    verbose(ID, "| scope settings: {0}".format(trigger))
+    verbose(ID, "| search needle: '{0}'".format(Query.needle))
+    verbose(ID, "| in base path: '{0}'".format(Query.base_path))
 
     FuzzyFilePath.start_expression = expression
     completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
