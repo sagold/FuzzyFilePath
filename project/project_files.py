@@ -1,5 +1,6 @@
 import sublime
 import os
+import gc
 import re
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.path import Path
