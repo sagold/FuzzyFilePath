@@ -22,6 +22,11 @@ class Project():
 		# setup project cache
 		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
 
+		# pay attention to multiple project folders
+		# multiple folders and cached files?
+		# - each folder is cached separately, which may result in folders being cached multiple times
+		print("project created", window.folders())
+
 	def get_setting(self, key):
 		return self.settings.get(key)
 

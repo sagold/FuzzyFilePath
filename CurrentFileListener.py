@@ -67,7 +67,6 @@ class CurrentFile(sublime_plugin.EventListener):
             return current
 
         settings = ProjectManager.get_current_project().get_settings()
-        print("current file", settings.get("PROJECT_DIRECTORY"))
 
         directory = Validate.view(view, settings, False)
         if directory:
