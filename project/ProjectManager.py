@@ -26,6 +26,10 @@ class ProjectManager(sublime_plugin.EventListener):
 		ProjectManager.config = config
 		ProjectManager.extensions = extensionsToSuggest
 
+	def add_file(file_name):
+		if ProjectManager.current_project:
+			ProjectManager.current_project.add_file(file_name)
+
 	def update_project(window):
 		if ProjectManager.active:
 			return ProjectManager.rebuild_filecache()

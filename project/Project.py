@@ -92,6 +92,10 @@ class Project():
 		return
 		# return self.filecache.add(directory)
 
+	def add_file(self, file_name):
+		print("add file", self.project_directory, file_name)
+		return self.filecache.update(self.project_directory, file_name)
+
 	def rebuild_filecache(self):
 		return self.filecache.rebuild()
 
