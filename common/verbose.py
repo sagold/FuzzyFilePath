@@ -9,3 +9,6 @@ def log(*args):
 def verbose(*args):
     if config["DEBUG"] is True and not args[0] in IGNORE:
         print("FFP\t", *args)
+
+def warn(*args):
+	print("FFP -WARNING-\t", *args)
