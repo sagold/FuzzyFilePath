@@ -23,7 +23,7 @@ class ProjectFiles:
         if self.valid_extensions != file_extensions or self.exclude_folders != exclude_folders:
             #rebuild cache
             for folder in self.cache:
-                gc.collect(self.cache[folder])
+                # gc.collect(self.cache.get(folder))
                 self.cache[folder] = FileCache(exclude_folders, file_extensions, folder)
                 self.cache.get(folder).start();
         # store settings
