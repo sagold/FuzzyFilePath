@@ -21,8 +21,10 @@ class CurrentFile(sublime_plugin.EventListener):
 
     def on_post_save_async(self, view):
         if CurrentFile.is_temp():
-            verbose("temp file saved, reevaluate")
-            ProjectManager.update_project(self.window())
+            print("temp file saved, reevaluate")
+            ProjectManager.add_file(view.file_name())
+            self.cache[view.id()] = None
+            self.on_activated(view)
 
     def on_activated(self, view):
         # view has gained focus
