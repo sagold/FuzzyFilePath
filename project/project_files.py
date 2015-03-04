@@ -137,6 +137,7 @@ class ProjectFiles:
     def rebuild(self):
         # completley rebuilds all cached foldes
         for folder in self.cache:
+            gc.collect(self.cache[folder])
             self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
             self.cache.get(folder).start();
 
@@ -152,6 +153,7 @@ class ProjectFiles:
             return False
 
         if self.cache.get("folder"):
+            gc.collect(self.cache[folder])
             del self.cache[folder]
 
         verbose(ID_CACHE, "UPDATE", folder)
