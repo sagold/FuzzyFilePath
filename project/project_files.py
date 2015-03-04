@@ -139,7 +139,9 @@ class ProjectFiles:
     def rebuild(self):
         # completley rebuilds all cached foldes
         for folder in self.cache:
-            gc.collect(self.cache[folder])
+            # throws: TypeError: an integer is required
+            # print(self.cache, self.cache.get(folder), folder)
+            # gc.collect(self.cache.get(folder))
             self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
             self.cache.get(folder).start();
 
@@ -154,8 +156,8 @@ class ProjectFiles:
             verbose(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
             return False
 
-        if self.cache.get("folder"):
-            gc.collect(self.cache[folder])
+        if self.cache.get(folder):
+            gc.collect(self.cache.get(folder))
             del self.cache[folder]
 
         verbose(ID_CACHE, "UPDATE", folder)
