@@ -45,13 +45,13 @@ class ProjectManager(sublime_plugin.EventListener):
 		if project_settings is False:
 			return False
 
-		project = ProjectCache.get(window.id())
+		project_folder = get_project_folder(window)
+		project = ProjectCache.get(project_folder)
 		if project is None:
-			project = ProjectManager.ProjectConstructor(window, project_settings, ProjectManager.ffp_settings)
-			ProjectCache[window.id()] = project
+			project = ProjectManager.ProjectConstructor(window, project_folder, project_settings, ProjectManager.ffp_settings)
+			ProjectCache[project_folder] = project
 
 		return project
-
 
 	# delegate
 
@@ -74,7 +74,39 @@ class ProjectManager(sublime_plugin.EventListener):
 			return ProjectManager.current_project.search_completions(needle, project_folder, valid_extensions, base_path)
 
 
+def get_project_folder(window):
+	"""
+		returns project directory
+
+		if multiple independent folders are detected, the first folder is returned and a warning is printed
+		-> multiple independent folders are not yet supported, which results in ignored folders
+		-> ignored folders are not cached nor proposed
+	"""
+	folders = window.folders()
+	if len(folders) == 1:
+		return folders[0]
+
+	project_folder = False
+	for folder in folders:
+		if project_folder is False:
+			project_folder = folder
+		elif folder in project_folder:
+			# set the lowest folder as project folder
+			project_folder = folder
+		# elif project_folder in folder:
+		# 	# ignore, lowest folder as project folder
+		elif project_folder not in folder:
+			print("Warning. Multiple independent folders found:")
+			print("current project folder", project_folder)
+			print("secondary project folder", folder)
+
+	return project_folder
+
+
 def get_project_settings(window):
+	"""
+		returns project settings. If not already set, creates them
+	"""
 	data = window.project_data()
 	if not data:
 		return False

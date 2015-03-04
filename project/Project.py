@@ -5,7 +5,7 @@ class Project():
 
 	filecache = None
 
-	def __init__(self, window, project_settings, ffp_settings):
+	def __init__(self, window, directory, project_settings, ffp_settings):
 		"""
 			Cache project files and manage project settings
 
@@ -16,6 +16,7 @@ class Project():
 			ffp_settings : Dictionary		- config merge with base settings, specified by sublime-settings
 		"""
 		self.window = window
+		self.directory = directory
 		self.filecache = ProjectFiles()
 
 		# create final settings object, by merging project specific settings with base settings
@@ -30,7 +31,6 @@ class Project():
 		valid_file_extensions = get_valid_extensions(project_settings, ffp_settings)
 		folders_to_exclude = project_settings.get("EXCLUDE_FOLDERS", ffp_settings["EXCLUDE_FOLDERS"])
 		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
-
 		# pay attention to multiple project folders
 		# multiple folders and cached files?
 		# - each folder is cached separately, which may result in folders being cached multiple times
@@ -64,6 +64,7 @@ class Project():
 
 
 def get_valid_extensions(project_settings, ffp_settings):
+	""" return all found extensions in scope triggers """
 	extensionsToSuggest = []
 	# build extensions to suggest
 	triggers = project_settings.get("scopes", ffp_settings["TRIGGER"])
