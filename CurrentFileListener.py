@@ -30,8 +30,6 @@ class CurrentFile(sublime_plugin.EventListener):
             current = CurrentFile.validate(view)
             CurrentFile.cache[file_name] = current
 
-            print("file activated in project directory", current["project_directory"])
-
             if current["project_directory"]:
                 ProjectManager.cache_directory(current["project_directory"])
             # and update project files
@@ -68,6 +66,7 @@ class CurrentFile(sublime_plugin.EventListener):
 
         settings = ProjectManager.get_current_project().get_settings()
 
+        # refactor move to projectmanager
         directory = Validate.view(view, settings, False)
         if directory:
             current["project_directory"] = directory["project"]
