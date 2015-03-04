@@ -4,6 +4,7 @@ import sublime_plugin
 
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.project.validate import Validate
+from FuzzyFilePath.project.ProjectManager import ProjectManager
 
 """
     DO:
@@ -49,10 +50,11 @@ def get_ffp_project_settings():
     return ffpSettings
 
 def changeDirectoryDone(text):
-    project = sublime.active_window().project_data();
-    ffp_settings = project.get("settings").get("FuzzyFilePath")
-    ffp_settings["project_directory"] = text
-    sublime.active_window().set_project_data(project)
+    project = ProjectManager.get_current_project()
+    if project:
+        project.set_setting("project_directory", text)
+    else:
+        print("abort. current project was not found")
 
 def changeDirectoryChange(directory):
     global project_base_directory
