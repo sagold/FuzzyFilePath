@@ -93,12 +93,6 @@ class Completion:
         return path
 
 
-class FfpShowInfoCommand(sublime_plugin.TextCommand):
-    """ shows a message dialog with project validation status of current file """
-    def run(self, edit):
-       Validate.view(self.view, config, True)
-
-
 class InsertPathCommand(sublime_plugin.TextCommand):
     """ trigger customized autocomplete overriding auto settings """
     def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):
