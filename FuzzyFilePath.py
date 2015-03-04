@@ -397,18 +397,6 @@ class FuzzyFilePath(sublime_plugin.EventListener):
             cleanup_completion(view, self.post_remove)
             Completion.stop()
 
-    # update project by file
-    def on_post_save_async(self, view):
-        if ProjectManager.has_current_project() is False:
-            return False
-
-        folders = sublime.active_window().folders()
-        match = [folder for folder in folders if folder in view.file_name()]
-        if len(match) > 0:
-            return ProjectManager.update_filecache(match[0], view.file_name())
-        else:
-            return False
-
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
         self.track_insert["active"] = True
