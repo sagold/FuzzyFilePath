@@ -1,5 +1,6 @@
 import os
 from FuzzyFilePath.project.project_files import ProjectFiles
+from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.common.verbose import warn
 from FuzzyFilePath.common.verbose import verbose
 
@@ -31,7 +32,6 @@ class Project():
 		for key in project_settings:
 			self.settings[key.upper()] = project_settings.get(key)
 
-
 		# pay attention to multiple project folders
 		# multiple folders and cached files?
 		# - each folder is cached separately, which may result in folders being cached multiple times
@@ -52,16 +52,27 @@ class Project():
 		folders_to_exclude = self.get_setting("EXCLUDE_FOLDERS")
 		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
 
+		# and start caching
+		self.filecache.add(self.project_directory)
+
+		# evaluate base directory
+		self.base_directory = Validate.sanitize_base_directory(
+			self.settings.get("BASE_DIRECTORY", ""),
+			self.project_directory,
+			self.directory
+		)
+
 		print("folder", folders_to_exclude)
 		print("extensions", valid_file_extensions)
 		print(ID, "Project directory set to", self.project_directory)
-
-		# and start caching
-		self.filecache.add(self.project_directory)
+		print(ID, "Base directory at", self.base_directory)
 
 
 	def get_directory(self):
 		return self.project_directory
+
+	def get_base_directory(self):
+		return self.base_directory
 
 	def get_setting(self, key, default=None):
 		return self.settings.get(key, default)
