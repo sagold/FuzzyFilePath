@@ -4,10 +4,12 @@ import sublime_plugin
 
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.project.project_files import ProjectFiles
-
+from FuzzyFilePath.project.CurrentFile import CurrentFile
 
 ProjectCache = {}
 
+
+ID = "ProjectManager"
 
 class ProjectManager(sublime_plugin.EventListener):
 
@@ -37,6 +39,10 @@ class ProjectManager(sublime_plugin.EventListener):
 	def activate_project(window):
 		if ProjectManager.active:
 			ProjectManager.current_project = ProjectManager.get_project(window)
+			CurrentFile.evaluate_current(window.active_view(), ProjectManager.current_project)
+			print(ID, "activate project", ProjectManager.current_project.get_directory())
+		else:
+			print(ID, "this is not a project")
 
 	def get_current_project():
 		return ProjectManager.current_project
