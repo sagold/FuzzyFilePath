@@ -16,8 +16,9 @@ class ProjectListener(sublime_plugin.EventListener):
     def on_activated(self, view):
         project_folder = get_project_folder(view.window())
 
-        if self.previous_project is not project_folder:
+        if self.previous_project != project_folder:
             if self.previous_project is not None:
+                # print("changed project from", self.previous_project, project_folder)
                 self.on_project_activated(view)
             self.previous_project = project_folder
 
@@ -27,12 +28,12 @@ class ProjectListener(sublime_plugin.EventListener):
 
     # project has been refocused
     def on_window_activated(self, view):
-        print(ID, "window activated -> update current project")
+        print(ID, "window activated -> update current project", view.window().id())
         ProjectManager.update_project(view.window())
 
     # another (possible) project has been opened/focused
     def on_project_activated(self, view):
-        print(ID, "project activated -> activate project")
+        print(ID, "project activated -> activate project", view.window().id())
         ProjectManager.activate_project(view.window())
 
     # after file has been saved
