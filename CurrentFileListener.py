@@ -17,7 +17,7 @@ class CurrentFileListener(sublime_plugin.EventListener):
         if CurrentFile.is_temp():
             print(ID, "temp file saved, reevaluate")
             ProjectManager.add_file(view.file_name())
-            self.cache[view.id()] = None
+            CurrentFile.cache[view.id()] = None
             self.on_activated(view)
 
     def on_activated(self, view):
