@@ -7,6 +7,7 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 
+ID = "CurrentFile"
 
 class CurrentFile(sublime_plugin.EventListener):
     """ Evaluates and caches current file`s project status """
@@ -21,7 +22,7 @@ class CurrentFile(sublime_plugin.EventListener):
 
     def on_post_save_async(self, view):
         if CurrentFile.is_temp():
-            print("temp file saved, reevaluate")
+            print(ID, "temp file saved, reevaluate")
             ProjectManager.add_file(view.file_name())
             self.cache[view.id()] = None
             self.on_activated(view)
@@ -31,11 +32,14 @@ class CurrentFile(sublime_plugin.EventListener):
 
         cache = self.cache.get(view.id())
         if cache:
+            print(ID, "file cached", cache)
+            CurrentFile.current = cache
             return cache
 
         project = ProjectManager.get_current_project()
         if not project:
             # not a project
+            print(ID, "no project set")
             CurrentFile.current = CurrentFile.default
             return
 
@@ -45,18 +49,21 @@ class CurrentFile(sublime_plugin.EventListener):
             CurrentFile.current = get_default()
             CurrentFile.current["is_temp"] = True
             CurrentFile.cache[view.id()] = CurrentFile.current
+            print(ID, "file not saved")
             return
 
         project_directory = project.get_directory()
         if project_directory not in file_name:
             # not within project
             CurrentFile.current = CurrentFile.default
+            print(ID, "file not within a project")
             return
 
         # add current view to cache
         CurrentFile.current = get_default()
         CurrentFile.current["project_directory"] = project_directory
         CurrentFile.current["directory"] = re.sub(project_directory, "", file_name)
+        print(ID, "File cached", file_name)
         CurrentFile.cache[view.id()] = CurrentFile.current
 
 
