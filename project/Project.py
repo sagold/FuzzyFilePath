@@ -62,10 +62,10 @@ class Project():
 			self.directory
 		)
 
-		print("folder", folders_to_exclude)
-		print("extensions", valid_file_extensions)
-		print(ID, "Project directory set to", self.project_directory)
-		print(ID, "Base directory at", self.base_directory)
+		# print("folder", folders_to_exclude)
+		# print("extensions", valid_file_extensions)
+		verbose(ID, "new project created", self.project_directory)
+		verbose(ID, "Base directory at", "'" + self.base_directory + "'")
 
 
 	def get_directory(self):
@@ -88,15 +88,12 @@ class Project():
 		# and update current settings
 		self.settings[key] = value
 
-	def cache_directory(self, directory):
-		return
-		# return self.filecache.add(directory)
-
 	def add_file(self, file_name):
-		print("add file", self.project_directory, file_name)
+		verbose(ID, "add file", self.project_directory, file_name)
 		return self.filecache.update(self.project_directory, file_name)
 
 	def rebuild_filecache(self):
+		verbose(ID, "rebuild filecache of ", self.project_directory)
 		return self.filecache.rebuild()
 
 	def update_filecache(self, folder, filename):
