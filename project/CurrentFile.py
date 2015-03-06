@@ -21,13 +21,13 @@ class CurrentFile:
     def evaluate_current(view, project):
         cache = CurrentFile.cache.get(view.id())
         if cache:
-            print(ID, "file cached", cache)
+            verbose(ID, "file cached", cache)
             CurrentFile.current = cache
             return cache
 
         if not project:
             # not a project
-            print(ID, "no project set")
+            verbose(ID, "no project set")
             CurrentFile.current = CurrentFile.default
             return
 
@@ -37,21 +37,21 @@ class CurrentFile:
             CurrentFile.current = get_default()
             CurrentFile.current["is_temp"] = True
             CurrentFile.cache[view.id()] = CurrentFile.current
-            print(ID, "file not saved")
+            verbose(ID, "file not saved")
             return
 
         project_directory = project.get_directory()
         if project_directory not in file_name:
             # not within project
             CurrentFile.current = CurrentFile.default
-            print(ID, "file not within a project")
+            verbose(ID, "file not within a project")
             return
 
         # add current view to cache
         CurrentFile.current = get_default()
         CurrentFile.current["project_directory"] = project_directory
         CurrentFile.current["directory"] = re.sub(project_directory, "", file_name)
-        print(ID, "File cached", file_name)
+        verbose(ID, "File cached", file_name)
         CurrentFile.cache[view.id()] = CurrentFile.current
 
 
