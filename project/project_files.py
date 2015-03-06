@@ -15,15 +15,16 @@ class ProjectFiles:
         `add(<path_to_parent_folder>)`
     """
 
-    cache = {}
-    valid_extensions = None
-    exclude_folders = None
+    def __init__(self):
+        self.cache = {}
+        self.valid_extensions = None
+        self.exclude_folders = None
+
 
     def update_settings(self, file_extensions, exclude_folders):
         if self.valid_extensions != file_extensions or self.exclude_folders != exclude_folders:
             #rebuild cache
             for folder in self.cache:
-                # gc.collect(self.cache.get(folder))
                 self.cache[folder] = FileCache(exclude_folders, file_extensions, folder)
                 self.cache.get(folder).start();
         # store settings
