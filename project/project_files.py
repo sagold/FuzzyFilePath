@@ -81,6 +81,17 @@ class ProjectFiles:
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
 
+    def find_file(self, file_name, project_folder):
+        project_files = self.get_files(project_folder)
+        if (project_files is None):
+            return False
+
+        result = []
+        file_name_query = ".*" + re.escape(file_name) + ".*"
+        for filepath in project_files:
+            if re.match(file_name_query, filepath, re.IGNORECASE):
+                result.append(filepath)
+        return result
 
     def get_files(self, folder):
         thread = self.cache.get(folder)

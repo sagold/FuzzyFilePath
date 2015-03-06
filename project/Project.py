@@ -102,6 +102,9 @@ class Project():
 	def search_completions(self, needle, project_folder, valid_extensions, base_path=False):
 		return self.filecache.search_completions(needle, project_folder, valid_extensions, base_path)
 
+	def find_file(self, file_name):
+		return self.filecache.find_file(file_name, self.project_directory)
+
 
 def get_valid_extensions(triggers):
 	""" return all found extensions in scope triggers """
