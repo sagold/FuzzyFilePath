@@ -239,38 +239,6 @@ class Query:
         return needle
 
 
-
-def cleanup_completion(view, post_remove):
-    start_expression = FuzzyFilePath.start_expression
-    expression = Context.get_context(view)
-
-    # feature test
-    # create a diff of initial and current needle
-    # remove beginning and end matches aka left overs
-    # current implementation only removes starting left overs
-
-    # using start needle fails, last modified string instead succeeds?
-    # diff = get_diff(start_expression["needle"], expression["needle"])
-    diff = get_diff(post_remove, expression["needle"])
-    # cleanup string
-    final_path = re.sub("^" + diff["start"], "", expression["needle"])
-    # do not replace current word
-    if diff["end"] != start_expression["word"]:
-        final_path = re.sub(diff["end"] + "$", "", final_path)
-
-    # remove path query completely
-    final_path = Completion.get_final_path(final_path)
-    log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
-
-    # replace current query with final path
-    view.run_command("ffp_replace_region", {
-        "a": expression["region"].a,
-        "b": expression["region"].b,
-        "string": final_path,
-        "move_cursor": True
-    })
-
-
 def get_matching_autotriggers(scope, triggers):
     global scope_cache
     # get cached evaluation
@@ -285,152 +253,107 @@ def get_matching_autotriggers(scope, triggers):
     return result
 
 
-def query_completions(view, project_folder, current_folder):
-    global Context, Selection
+class FuzzyFilePath():
 
-    current_scope = Selection.get_scope(view)
+    def on_query_completions(view, project_folder, current_folder):
+        global Context, Selection
 
-    if not Query.by_command():
-        triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
-    else:
-        triggers = config["TRIGGER"]
+        current_scope = Selection.get_scope(view)
 
-    if not bool(triggers):
-        verbose(ID, "abort query, no valid scope-regex for current context")
-        return False
+        if not Query.by_command():
+            triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
+        else:
+            triggers = config["TRIGGER"]
 
-    # parse current context, may contain 'is_valid: False'
-    expression = Context.get_context(view)
-    if expression["error"] and not Query.by_command():
-        verbose(ID, "abort not a valid context")
-        return False
-
-    # check if there is a trigger for the current expression
-    trigger = Context.find_trigger(expression, current_scope, triggers)
-    # verbose("trigger", trigger)
-
-    # expression | trigger  | force | ACTION            | CURRENT
-    # -----------|----------|-------|-------------------|--------
-    # invalid    | False    | False | abort             | abort
-    # invalid    | False    | True  | query needle      | abort
-    # invalid    | True     | False | query             |
-    # invalid    | True     | True  | query +override   |
-    # valid      | False    | False | abort             | abort
-    # valid      | False    | True  | query needle      | abort
-    # valid      | True     | False | query             |
-    # valid      | True     | True  | query +override   |
-
-    # currently trigger is required in Query.build
-    if trigger is False:
-        verbose(ID, "abort completion, no trigger found")
-        return False
-
-    if not expression["valid_needle"]:
-        word = Selection.get_word(view)
-        expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
-        verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
-    else:
-        verbose(ID, "context evaluation {0}".format(expression))
-
-    if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
-        # query is valid, but may not be triggered: not forced, no auto-options
-        verbose(ID, "abort valid query: auto trigger disabled")
-        return False
-
-    # bug aka wrong absolute path?
-    if isinstance(Query.base_path, str) and Query.needle.startswith(Query.base_path):
-        # remove base path from needle
-        Query.needle = Query.needle[len(Query.base_path):]
-
-    verbose(ID, ".───────────────────────────────────────────────────────────────")
-    verbose(ID, "| scope settings: {0}".format(trigger))
-    verbose(ID, "| search needle: '{0}'".format(Query.needle))
-    verbose(ID, "| in base path: '{0}'".format(Query.base_path))
-
-    FuzzyFilePath.start_expression = expression
-    completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
-
-    if completions and len(completions[0]) > 0:
-        Completion.start(Query.replace_on_insert)
-        view.run_command('_enter_insert_mode') # vintageous
-        log("| => {0} completions found".format(len(completions)))
-    else:
-        sublime.status_message("FFP no filepaths found for '" + Query.needle + "'")
-        Completion.stop()
-        log("| => no valid files found for needle: {0}".format(Query.needle))
-
-    log("")
-
-    Query.reset()
-    return completions
-
-
-class FuzzyFilePath(sublime_plugin.EventListener):
-
-    # tracks on_post_insert_completion
-    track_insert = {
-        "active": False,
-        "start_line": "",
-        "end_line": ""
-    }
-    post_remove = ""
-    start_expression = None
-
-    def on_query_completions(self, view, prefix, locations):
-        if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
-            verbose(ID, "abort query, disabled or not by command")
+        if not bool(triggers):
+            verbose(ID, "abort query, no valid scope-regex for current context")
             return False
 
-        if self.track_insert["active"] is False:
-            self.start_tracking(view)
+        # parse current context, may contain 'is_valid: False'
+        expression = Context.get_context(view)
+        if expression["error"] and not Query.by_command():
+            verbose(ID, "abort not a valid context")
+            return False
 
-        if CurrentFile.is_valid():
-            return query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
+        # check if there is a trigger for the current expression
+        trigger = Context.find_trigger(expression, current_scope, triggers)
+        # verbose("trigger", trigger)
+
+        # expression | trigger  | force | ACTION            | CURRENT
+        # -----------|----------|-------|-------------------|--------
+        # invalid    | False    | False | abort             | abort
+        # invalid    | False    | True  | query needle      | abort
+        # invalid    | True     | False | query             |
+        # invalid    | True     | True  | query +override   |
+        # valid      | False    | False | abort             | abort
+        # valid      | False    | True  | query needle      | abort
+        # valid      | True     | False | query             |
+        # valid      | True     | True  | query +override   |
+
+        # currently trigger is required in Query.build
+        if trigger is False:
+            verbose(ID, "abort completion, no trigger found")
+            return False
+
+        if not expression["valid_needle"]:
+            word = Selection.get_word(view)
+            expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
+            verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
         else:
-            verbose(ID, "CurrentFile invalid - abort")
+            verbose(ID, "context evaluation {0}".format(expression))
 
-        return False
+        if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
+            # query is valid, but may not be triggered: not forced, no auto-options
+            verbose(ID, "abort valid query: auto trigger disabled")
+            return False
 
-    def on_post_insert_completion(self, view, command_name):
-        if Completion.is_active():
-            cleanup_completion(view, self.post_remove)
+        # bug aka wrong absolute path?
+        if isinstance(Query.base_path, str) and Query.needle.startswith(Query.base_path):
+            # remove base path from needle
+            Query.needle = Query.needle[len(Query.base_path):]
+
+        verbose(ID, ".───────────────────────────────────────────────────────────────")
+        verbose(ID, "| scope settings: {0}".format(trigger))
+        verbose(ID, "| search needle: '{0}'".format(Query.needle))
+        verbose(ID, "| in base path: '{0}'".format(Query.base_path))
+
+        FuzzyFilePath.start_expression = expression
+        completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
+
+        if completions and len(completions[0]) > 0:
+            Completion.start(Query.replace_on_insert)
+            view.run_command('_enter_insert_mode') # vintageous
+            log("| => {0} completions found".format(len(completions)))
+        else:
+            sublime.status_message("FFP no filepaths found for '" + Query.needle + "'")
             Completion.stop()
+            log("| => no valid files found for needle: {0}".format(Query.needle))
 
-    # track post insert insertion
-    def start_tracking(self, view, command_name=None):
-        self.track_insert["active"] = True
-        self.track_insert["start_line"] = Selection.get_line(view)
-        self.track_insert["end_line"] = None
-        """
-            - sublime inserts completions by replacing the current word
-            - this results in wrong path insertions if the query contains word_separators like slashes
-            - thus the path until current word has to be removed after insertion
-            - ... and possibly afterwards
-        """
-        context = Context.get_context(view)
-        needle = context.get("needle")
-        word = re.escape(Selection.get_word(view))
-        self.post_remove = re.sub(word + "$", "", needle)
+        log("")
 
-    def finish_tracking(self, view, command_name=None):
-        self.track_insert["active"] = False
-        self.track_insert["end_line"] = Selection.get_line(view)
+        Query.reset()
+        return completions
 
-    def abort_tracking(self):
-        self.track_insert["active"] = False
+    def on_post_insert_completion(view, post_remove):
+        start_expression = FuzzyFilePath.start_expression
+        expression = Context.get_context(view)
 
-    def on_text_command(self, view, command_name, args):
-        # check if a completion may be inserted
-        if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
-            self.start_tracking(view, command_name)
-        elif command_name == "hide_auto_complete":
-            Completion.stop()
-            self.abort_tracking()
+        # diff of previous needle and inserted needle
+        diff = get_diff(post_remove, expression["needle"])
+        # cleanup string
+        final_path = re.sub("^" + diff["start"], "", expression["needle"])
+        # do not replace current word
+        if diff["end"] != start_expression["word"]:
+            final_path = re.sub(diff["end"] + "$", "", final_path)
 
-    # check if a completion is inserted and trigger on_post_insert_completion
-    def on_post_text_command(self, view, command_name, args):
-        current_line = Selection.get_line(view)
-        command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
-        if command_trigger or command_name in config["INSERT_ACTION"]:
-            self.finish_tracking(view, command_name)
-            self.on_post_insert_completion(view, command_name)
+        # remove path query completely
+        final_path = Completion.get_final_path(final_path)
+        log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
+
+        # replace current query with final path
+        view.run_command("ffp_replace_region", {
+            "a": expression["region"].a,
+            "b": expression["region"].b,
+            "string": final_path,
+            "move_cursor": True
+        })
