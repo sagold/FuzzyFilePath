@@ -156,7 +156,7 @@ class Query:
         needle_is_path = needle_is_absolute or needle_is_relative
         # abort if autocomplete is not available
         if not triggered and trigger.get("auto", False) is False and needle_is_path is False:
-            # print("FFP no autocomplete")
+            # verbose("FFP no autocomplete")
             return False
         # test path to trigger auto-completion by needle
         if not triggered and trigger["auto"] is False and config["AUTO_TRIGGER"] and needle_is_absolute:
@@ -296,18 +296,18 @@ def query_completions(view, project_folder, current_folder):
         triggers = config["TRIGGER"]
 
     if not bool(triggers):
-        print(ID, "abort query, no valid scope-regex for current context")
+        verbose(ID, "abort query, no valid scope-regex for current context")
         return False
 
     # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
     if expression["error"] and not Query.by_command():
-        print(ID, "abort not a valid context")
+        verbose(ID, "abort not a valid context")
         return False
 
     # check if there is a trigger for the current expression
     trigger = Context.find_trigger(expression, current_scope, triggers)
-    # print("trigger", trigger)
+    # verbose("trigger", trigger)
 
     # expression | trigger  | force | ACTION            | CURRENT
     # -----------|----------|-------|-------------------|--------
@@ -322,19 +322,19 @@ def query_completions(view, project_folder, current_folder):
 
     # currently trigger is required in Query.build
     if trigger is False:
-        print(ID, "abort completion, no trigger found")
+        verbose(ID, "abort completion, no trigger found")
         return False
 
     if not expression["valid_needle"]:
         word = Selection.get_word(view)
         expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
-        print(ID, "changed invalid needle to {0}".format(expression["needle"]))
+        verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
     else:
-        print(ID, "context evaluation {0}".format(expression))
+        verbose(ID, "context evaluation {0}".format(expression))
 
     if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
-        print(ID, "abort valid query: auto trigger disabled")
+        verbose(ID, "abort valid query: auto trigger disabled")
         return False
 
     # bug aka wrong absolute path?
@@ -342,10 +342,10 @@ def query_completions(view, project_folder, current_folder):
         # remove base path from needle
         Query.needle = Query.needle[len(Query.base_path):]
 
-    print(ID, ".───────────────────────────────────────────────────────────────")
-    print(ID, "| scope settings: {0}".format(trigger))
-    print(ID, "| search needle: '{0}'".format(Query.needle))
-    print(ID, "| in base path: '{0}'".format(Query.base_path))
+    verbose(ID, ".───────────────────────────────────────────────────────────────")
+    verbose(ID, "| scope settings: {0}".format(trigger))
+    verbose(ID, "| search needle: '{0}'".format(Query.needle))
+    verbose(ID, "| in base path: '{0}'".format(Query.base_path))
 
     FuzzyFilePath.start_expression = expression
     completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
@@ -378,7 +378,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
 
     def on_query_completions(self, view, prefix, locations):
         if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
-            print(ID, "abort query, disabled or not by command")
+            verbose(ID, "abort query, disabled or not by command")
             return False
 
         if self.track_insert["active"] is False:
@@ -387,7 +387,7 @@ class FuzzyFilePath(sublime_plugin.EventListener):
         if CurrentFile.is_valid():
             return query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
         else:
-            print(ID, "CurrentFile invalid - abort")
+            verbose(ID, "CurrentFile invalid - abort")
 
         return False
 

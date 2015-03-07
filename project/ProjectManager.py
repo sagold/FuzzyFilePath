@@ -2,6 +2,7 @@ import copy
 import sublime
 import sublime_plugin
 
+from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 
@@ -39,9 +40,9 @@ class ProjectManager(sublime_plugin.EventListener):
 		if ProjectManager.active:
 			ProjectManager.current_project = ProjectManager.get_project(window)
 			CurrentFile.evaluate_current(window.active_view(), ProjectManager.current_project)
-			print(ID, "activate project", ProjectManager.current_project.get_directory())
+			verbose(ID, "activate project", ProjectManager.current_project.get_directory())
 		else:
-			print(ID, "this is not a project")
+			verbose(ID, "this is not a project")
 
 	def get_current_project():
 		return ProjectManager.current_project
