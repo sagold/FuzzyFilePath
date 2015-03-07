@@ -9,7 +9,7 @@ from FuzzyFilePath.project.FileCacheWorker import FileCacheWorker
 ID = "search"
 ID_CACHE = "cache"
 
-class ProjectFiles:
+class FileCache:
     """
         Manages path suggestions by loading, caching and filtering project files. Add folders by
         `add(<path_to_parent_folder>)`

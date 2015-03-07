@@ -1,5 +1,5 @@
 import os
-from FuzzyFilePath.project.project_files import ProjectFiles
+from FuzzyFilePath.project.FileCache import FileCache
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.common.verbose import warn
 from FuzzyFilePath.common.verbose import verbose
@@ -22,7 +22,6 @@ class Project():
 		"""
 		self.window = window
 		self.directory = directory
-		self.filecache = ProjectFiles()
 
 		# create final settings object, by merging project specific settings with base settings
 		self.settings = {}
@@ -50,10 +49,8 @@ class Project():
 		triggers = self.settings.get("scopes", self.get_setting("TRIGGER"))
 		valid_file_extensions = get_valid_extensions(triggers)
 		folders_to_exclude = self.get_setting("EXCLUDE_FOLDERS")
-		self.filecache.update_settings(valid_file_extensions, folders_to_exclude)
 
-		# and start caching
-		self.filecache.add(self.project_directory)
+		self.filecache = FileCache(valid_file_extensions, folders_to_exclude, self.project_directory)
 
 		# evaluate base directory
 		self.base_directory = Validate.sanitize_base_directory(
@@ -103,7 +100,7 @@ class Project():
 		return self.filecache.search_completions(needle, project_folder, valid_extensions, base_path)
 
 	def find_file(self, file_name):
-		return self.filecache.find_file(file_name, self.project_directory)
+		return self.filecache.find_file(file_name)
 
 
 def get_valid_extensions(triggers):
