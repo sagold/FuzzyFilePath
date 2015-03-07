@@ -18,7 +18,7 @@ def posix(path):
     return path.replace("\\", "/")
 
 # stores all files and its fragments within property files
-class FileCache(threading.Thread):
+class FileCacheWorker(threading.Thread):
 
     def __init__(self, exclude_folders, extensions, folder):
         threading.Thread.__init__(self)
