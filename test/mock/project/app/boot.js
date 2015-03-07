@@ -1,3 +1,3 @@
 require("./styles/partials/media.scss")
-require("/app/src")
+require("./src/common")
 require("../bower_components/angular")
