@@ -65,19 +65,12 @@ class ProjectManager(sublime_plugin.EventListener):
 
 	# delegate
 
-	def cache_directory(directory):
-		if ProjectManager.current_project:
-			ProjectManager.current_project.cache_directory(directory)
-
 	def rebuild_filecache():
 		if ProjectManager.current_project:
 			ProjectManager.current_project.rebuild_filecache()
-		return
 
 	def update_filecache(folder, filename):
-		if ProjectManager.current_project:
-			ProjectManager.current_project.update_filecache(folder, filename)
-		return
+		self.rebuild_filecache()
 
 	def search_completions(needle, project_folder, valid_extensions, base_path=False):
 		if ProjectManager.current_project:
