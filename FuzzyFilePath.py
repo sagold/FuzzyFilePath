@@ -4,7 +4,6 @@
 
         - improve testing
         - add to command palette: settings, base_directory
-        - improve project storing its own path settings
 
     @version 0.1.0
     @author Sascha Goldhofer <post@saschagoldhofer.de>
@@ -29,7 +28,6 @@ from FuzzyFilePath.common.string import get_diff
 scope_cache = {}
 
 ID = "FuzzyFilePath"
-
 
 """ ================================================================================================================ """
 """ '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' """

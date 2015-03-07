@@ -4,10 +4,12 @@ import sublime_plugin
 from FuzzyFilePath.common.selection import Selection
 from FuzzyFilePath.expression import Context
 from FuzzyFilePath.common.config import config
+from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
 from FuzzyFilePath.FuzzyFilePath import Completion
 
+ID = "QueryCompletionListener"
 
 class QueryCompletionListener(sublime_plugin.EventListener):
 
@@ -26,7 +28,7 @@ class QueryCompletionListener(sublime_plugin.EventListener):
             self.start_tracking(view)
 
         if CurrentFile.is_valid():
-            print("start query completions")
+            verbose(ID, "-> query completions")
             completions = FuzzyFilePath.on_query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
             if completions is not False:
                 return completions
@@ -35,10 +37,8 @@ class QueryCompletionListener(sublime_plugin.EventListener):
         return False
 
     def on_post_insert_completion(self, view, command_name):
-        print("on post insert completion")
-
         if Completion.is_active():
-            print("on post insert completion")
+            verbose(ID, "-> post insert completion")
             FuzzyFilePath.on_post_insert_completion(view, self.post_remove)
             Completion.stop()
 
@@ -56,15 +56,15 @@ class QueryCompletionListener(sublime_plugin.EventListener):
         needle = context.get("needle")
         word = re.escape(Selection.get_word(view))
         self.post_remove = re.sub(word + "$", "", needle)
-        print("start tracking")
+        verbose(ID, "start tracking", self.post_remove)
 
     def finish_tracking(self, view, command_name=None):
         self.track_insert["active"] = False
-        print("finish tracking")
+        verbose(ID, "finish tracking")
 
     def abort_tracking(self):
         self.track_insert["active"] = False
-        print("tracking abort")
+        verbose(ID, "abort tracking")
 
     def on_text_command(self, view, command_name, args):
         # check if a completion may be inserted
