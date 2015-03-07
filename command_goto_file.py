@@ -35,10 +35,13 @@ class FfpGotoFileCommand(sublime_plugin.TextCommand):
                 self.open_file(project.get_directory(), files[0])
             else:
                 self.files = files
+                self.project_folder = project.get_directory()
                 self.view.show_popup_menu(files, self.select_file)
 
     def select_file(self, index):
-        sublime.active_window().open_file(self.files[index])
+        self.open_file(self.project_folder, self.files[index])
+        self.files = None
+        self.project_folder = None
 
     def open_file(self, project_folder, filepath):
         path = os.path.join(project_folder, filepath)
