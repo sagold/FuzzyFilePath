@@ -1,4 +1,5 @@
 import re
+import os
 import copy
 
 from FuzzyFilePath.common.config import config
@@ -51,6 +52,9 @@ class CurrentFile:
         CurrentFile.current = get_default()
         CurrentFile.current["project_directory"] = project_directory
         CurrentFile.current["directory"] = re.sub(project_directory, "", file_name)
+        CurrentFile.current["directory"] = re.sub("^[\\\\/\.]*", "", CurrentFile.current["directory"])
+        CurrentFile.current["directory"] = os.path.dirname(CurrentFile.current["directory"])
+
         verbose(ID, "File cached", file_name)
         CurrentFile.cache[view.id()] = CurrentFile.current
 
