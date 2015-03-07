@@ -19,9 +19,17 @@ class Path:
 
     def sanitize_base_directory(path):
         path = Path.sanitize(path)
+        path = os.path.dirname(path)
         # no leading nor trailing slash
         path = re.sub("^\/*", "", path)
         path = re.sub("\/*$", "", path)
+        return path
+
+    def get_absolute_path(base_path, relative_path):
+        # return absolute target of join(base_path, relative_path)
+        # http://stackoverflow.com/questions/17295086/python-joining-current-directory-and-parent-directory-with-os-path-join?rq=1
+        path = os.path.join(base_path, relative_path)
+        path = os.path.abspath(path)
         return path
 
     def get_relative_folder(file_name, base_directory):
