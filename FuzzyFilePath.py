@@ -29,8 +29,6 @@ scope_cache = {}
 
 ID = "FuzzyFilePath"
 
-""" ================================================================================================================ """
-""" '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' """
 
 def plugin_loaded():
     """ load settings """
@@ -252,6 +250,12 @@ def get_matching_autotriggers(scope, triggers):
 
 
 class FuzzyFilePath():
+
+    def completion_active():
+        return Completion.is_active()
+
+    def completion_stop():
+        Completion.stop()
 
     def on_query_completions(view, project_folder, current_folder):
         global Context, Selection

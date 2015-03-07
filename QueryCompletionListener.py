@@ -7,7 +7,7 @@ from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
-from FuzzyFilePath.FuzzyFilePath import Completion
+
 
 ID = "QueryCompletionListener"
 
@@ -37,10 +37,10 @@ class QueryCompletionListener(sublime_plugin.EventListener):
         return False
 
     def on_post_insert_completion(self, view, command_name):
-        if Completion.is_active():
+        if FuzzyFilePath.completion_active():
             verbose(ID, "-> post insert completion")
             FuzzyFilePath.on_post_insert_completion(view, self.post_remove)
-            Completion.stop()
+            FuzzyFilePath.completion_stop()
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
@@ -71,7 +71,7 @@ class QueryCompletionListener(sublime_plugin.EventListener):
         if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
             self.start_tracking(view, command_name)
         elif command_name == "hide_auto_complete":
-            Completion.stop()
+            FuzzyFilePath.completion_stop()
             self.abort_tracking()
 
     # check if a completion is inserted and trigger on_post_insert_completion
