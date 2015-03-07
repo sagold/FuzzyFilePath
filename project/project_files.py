@@ -4,7 +4,7 @@ import gc
 import re
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.path import Path
-from FuzzyFilePath.project.file_cache import FileCache
+from FuzzyFilePath.project.FileCacheWorker import FileCacheWorker
 
 ID = "search"
 ID_CACHE = "cache"
@@ -15,21 +15,20 @@ class ProjectFiles:
         `add(<path_to_parent_folder>)`
     """
 
-    def __init__(self):
-        self.cache = {}
-        self.valid_extensions = None
-        self.exclude_folders = None
-
-
-    def update_settings(self, file_extensions, exclude_folders):
-        if self.valid_extensions != file_extensions or self.exclude_folders != exclude_folders:
-            #rebuild cache
-            for folder in self.cache:
-                self.cache[folder] = FileCache(exclude_folders, file_extensions, folder)
-                self.cache.get(folder).start();
-        # store settings
+    def __init__(self, file_extensions, exclude_folders, directory):
+        self.directory = directory
         self.valid_extensions = file_extensions
         self.exclude_folders = exclude_folders
+        self.cache = None
+
+        self.rebuild()
+
+    def update_settings(self, file_extensions, exclude_folders):
+        settings_have_changed = self.valid_extensions != file_extensions or self.exclude_folders != exclude_folders
+        self.valid_extensions = file_extensions
+        self.exclude_folders = exclude_folders
+        if settings_have_changed:
+            self.rebuild()
 
     def search_completions(self, needle, project_folder, valid_extensions, base_path=False):
         """
@@ -45,7 +44,7 @@ class ProjectFiles:
 
             return : List -- containing sublime completions
         """
-        project_files = self.get_files(project_folder)
+        project_files = self.cache.files
         if (project_files is None):
             return False
 
@@ -81,8 +80,8 @@ class ProjectFiles:
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
 
-    def find_file(self, file_name, project_folder):
-        project_files = self.get_files(project_folder)
+    def find_file(self, file_name):
+        project_files = self.cache.files
         if (project_files is None):
             return False
 
@@ -93,43 +92,17 @@ class ProjectFiles:
                 result.append(filepath)
         return result
 
-    def get_files(self, folder):
-        thread = self.cache.get(folder)
-        if (thread is None):
-            return None
-
-        return thread.files
-
-    # @return {list} completion
     def get_completion(self, target_path, path_display, base_path=False):
-        # absolute path
         if base_path is False:
-            # return (path_display, "/" + target_path)
+            # absolute path
             return (target_path, "/" + target_path)
-        # create relative path
         else:
-            # return (path_display, Path.trace(base_path, target_path))
+            # create relative path
             return (target_path, Path.trace(base_path, target_path))
 
-    def add(self, parent_folder):
-        """ caches all files within the given folder
-
-            Parameters
-            ----------
-            parent_folder : string -- of files to cache
-        """
-        if self.valid_extensions is None:
-            return False
-
-        self.update(parent_folder)
-
-    def file_is_cached(self, folder, file_name):
+    def file_is_cached(self, file_name):
         """ returns False if the given file is not within cache
-
-            Parameters
-            ----------
-            folder : string -- of project
-            file_name : string -- optional, file to test
+            tests files with full path or relative from project directory
         """
         name, extension = os.path.splitext(file_name)
         extension = extension[1:]
@@ -137,41 +110,10 @@ class ProjectFiles:
             verbose(ID_CACHE, "file to cache has no valid extension", extension)
             return True
 
-        if self.folder_is_cached(folder):
-            file_name = file_name.replace(folder + '/', "")
-            verbose(ID_CACHE, "check filename", file_name);
-            if self.cache.get(folder).files.get(file_name):
-                return True
+        file_name = re.sub(self.directory, "", file_name)
+        return self.cache.get(file_name, False) is not False
 
-        return False
-
-    def folder_is_cached(self, folder):
-        return self.cache.get(folder) and self.cache.get(folder).files
 
     def rebuild(self):
-        # completley rebuilds all cached foldes
-        for folder in self.cache:
-            # throws: TypeError: an integer is required
-            # print(self.cache, self.cache.get(folder), folder)
-            # gc.collect(self.cache.get(folder))
-            self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
-            self.cache.get(folder).start();
-
-    # rebuild folder cache
-    def update(self, folder, file_name=None):
-        if file_name:
-            if (self.file_is_cached(folder, file_name)):
-                verbose(ID_CACHE, "abort update cache of file {0}. Already cached".format(file_name))
-                return False
-        elif self.folder_is_cached(folder):
-            verbose(ID_CACHE, "abort update cache of folder {0}. Already cached".format(folder))
-            return False
-
-        if self.cache.get(folder):
-            # gc.collect(self.cache.get(folder))
-            del self.cache[folder]
-
-        verbose(ID_CACHE, "UPDATE", folder)
-        self.cache[folder] = FileCache(self.exclude_folders, self.valid_extensions, folder)
-        self.cache.get(folder).start();
-        return True
+        self.cache = FileCacheWorker(self.exclude_folders, self.valid_extensions, self.directory)
+        self.cache.start();
