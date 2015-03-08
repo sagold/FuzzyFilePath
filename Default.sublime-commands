@@ -1,5 +1,5 @@
 [
-	{ "caption": "FFP: Rebuild cache", "command": "ffp_update_cache" },
-	{ "caption": "FFP: Show info", "command": "ffp_show_info" },
-	{ "caption": "FFP: Set project directory", "command": "ffp_set_project_directory" }
+	{ "caption": "FuzzyFilePath: Rebuild cache", "command": "ffp_update_cache" },
+	{ "caption": "FuzzyFilePath: Show info", "command": "ffp_show_info" },
+	{ "caption": "FuzzyFilePath: Set project directory", "command": "ffp_set_project_directory" }
 ]
