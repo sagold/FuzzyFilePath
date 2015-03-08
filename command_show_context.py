@@ -20,7 +20,7 @@ class FfpShowContextCommand(sublime_plugin.TextCommand):
     	self.content += "<br>"
     	self.add("path", context.get("needle"))
     	self.add("prefix", context.get("prefix"))
-    	self.add("style", context.get("style"))
+    	self.add("property", context.get("style"))
     	self.add("tag", context.get("tagName"))
     	self.add("word", context.get("word"))
     	self.content += "<br>"

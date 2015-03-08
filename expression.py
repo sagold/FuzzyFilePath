@@ -93,9 +93,9 @@ def get_context(view):
 		tag = tag.group(1)
 		# print("tag:", tag)
 
-	style = re.search("[\s\"\'']*(["+NEEDLE_CHARACTERS+"]*)[\s\"\']*\:[^\:]*$", prefix_line)
-	if style:
-		style = style.group(1)
+	propertyName = re.search("[\s\"\'']*(["+NEEDLE_CHARACTERS+"]*)[\s\"\']*\:[^\:]*$", prefix_line)
+	if propertyName:
+		propertyName = propertyName.group(1)
 		# print("style:", style)
 
 	if separator is False:
@@ -116,7 +116,7 @@ def get_context(view):
 		"needle": needle,
 		"prefix": prefix,
 		"tagName": tag,
-		"style": style,
+		"style": propertyName,
 		"region": needle_region,
 		"word": word,
 		# really do not use any of this
