@@ -95,10 +95,12 @@ class FileCache:
     def get_completion(self, target_path, path_display, base_path=False):
         if base_path is False:
             # absolute path
-            return (target_path, "/" + target_path)
+            # return (target_path, "/" + target_path)
+            return (path_display, "/" + target_path)
         else:
             # create relative path
-            return (target_path, Path.trace(base_path, target_path))
+            # return (target_path, Path.trace(base_path, target_path))
+            return (path_display, Path.trace(base_path, target_path))
 
     def file_is_cached(self, file_name):
         """ returns False if the given file is not within cache
