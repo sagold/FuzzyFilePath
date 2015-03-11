@@ -8,16 +8,6 @@ Fuzzy search filenames inside your current project directory. Highly customizabl
 <br />
 <em style="display: block; text-align: right;">Basic settings support Html, Css and Javascript, but may be adjusted for every language</em>
 
-## Breaking changes in 0.1.0
-
-- **change** `exclude_folders` items to be matched as regex
-- **remove** `extensionsToSuggest`, now being retrieved from scope settings
-- **remove** shortcut `super+ctrl+space`
-- **remove** option `auto_trigger`
-- **remove** option `insertExtension`. Should now be done by `replace_on_insert`
-- **change** and extend default scope rules
-- **change** absolute paths to start with "/name"
-- **change** path prefix (./, ../, /) now overwrites scope settings
 
 ## <a name="installation">Installation</a>
 
@@ -54,6 +44,11 @@ The current string may modify the suggested filepaths by the following rules:
 - `/folder` suggests all matching files and insert selection absolute
 
 FuzzyFilePath is disabled for single files or files outside the opened folder.
+
+### open file
+
+Use __`alt+enter`__ to open the file under the cursor
+
 
 #### Special Characters
 
@@ -104,8 +99,6 @@ Set `base_directory` in scope rules to point from project_directory to html file
 path of the trigger to `base_directory`. i.e.
 
 
-
-
 ## <a name="configuration">Configuration</a>
 
 The default options - as always - should be set in user-settings:<br />
@@ -120,82 +113,6 @@ Project specific settings may be set in _Project | Edit Settings_:
 		}
 	}
 }
-```
-
-
-### <a name="configuration_keybindings">Keybindings</a>
-
-In addition to automatic filepath suggestions, keybindings may be set to trigger filepath completions, independent of
-the current scope. While scope rules will be applied
-
-- the **type** of the requested path (_relative_, _absolute_) may be set explicitly
-- the replacements in **replace\_on\_insert** may be overriden
-- the base directory for path resolution may be adjusted by **base\_directory** and
-- extensions are adjusted by **extensions**
-
-In _Sublime Text | Preferences | KeyBinding - User_ or <br />
-_Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_ add an object like
-
-```js
-{
-	"keys": ["ctrl+alt+i"],
-	"command": "insert_path"
-}
-```
-
-This will trigger filepath suggestions on `ctrl+alt+i`, with the current scope rules defined in settings. To override
-the _type_ of the path add an arguments object like:
-
-```js
-{
-	"keys": ["ctrl+alt+i"],
-	"command": "insert_path",
-	"args": {
-	    "type": "relative"
-	}
-}
-```
-
-To override replacements set
-
-```js
-{
-    "keys": ["ctrl+shift+space"],
-    "command": "insert_path",
-    "args": {
-        "replace_on_insert": [
-        	["^[\\.\\./]*/bower_components/", ""]
-        ]
-    }
-}
-```
-
-
-#### Examples
-See _Sublime Text | Preferences | Package Settings | FuzzyFilePath | KeyBinding - Default_ for an up to date version
-
-```js
-[
-    {
-        "keys": ["ctrl+alt+space"],
-        "command": "insert_path",
-        "args": {
-            "type": "relative",
-            "base_directory": "dev/src",
-            "extensions": ["css", "sass", "less", "png", "gif", "jpg", "svg"]
-        }
-    },
-    {
-        "keys": ["ctrl+shift+space"],
-        "command": "insert_path",
-        "args": {
-            "type": "absolute",
-            "replace_on_insert": [
-            	["^[\\.\\./]*/bower_components/", ""]
-            ]
-        }
-    }
-]
 ```
 
 

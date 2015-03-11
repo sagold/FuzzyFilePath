@@ -5,7 +5,7 @@
 FEATURES
 
 - open path under cursor
-- show popup containing context evaluation information, required to setup triggers
+- show popup containing context evaluation information, required to setup triggers (requires Sublime Text build 3073)
 - set project specifiv project_directory via command palette
 - after completion insertion, move to beginning of next word
 - support multiple opened projects (in separate windows)
