@@ -5,6 +5,9 @@
         - improve testing
         - add to command palette: settings, base_directory
 
+    # FixMe
+        - project specific settings are not merged to config
+
     @version 0.1.0
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
