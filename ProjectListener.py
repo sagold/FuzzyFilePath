@@ -14,7 +14,11 @@ class ProjectListener(sublime_plugin.EventListener):
     previous_window = None
 
     def on_activated(self, view):
-        project_folder = get_project_folder(view.window())
+        window = view.window()
+        if not window:
+            return False
+
+        project_folder = get_project_folder(window)
 
         if self.previous_project != project_folder:
             if self.previous_project is not None:
