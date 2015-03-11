@@ -19,6 +19,7 @@ CHANGES
 	- add command to rebiuld cache manually
 	- update cache if a new file is saved
 - improve replacement of current path fragments
+- display of file path suggestions will not separate file extension. this allows querying filetype
 
 
 14/11/23
