@@ -63,60 +63,10 @@ separators, removing `$`:
 ```
 
 
-## <a name="getting_started">Getting started</a>
+## Customization
 
-### completions are not suggested
-
-Assuming no errors are logged on console, add a minimum scope rule as first item in settings.scopes. Go to
-_Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_ and add
-
-```js
-"scopes": [
-	{
-		"scope": ".",
-		"auto": true,
-		// add your extensions here:
-		"extensions": ["css", "html", "js"]
-	}
-]
-```
-
-This will propose filepaths for the given extensions in all autocompletion requests. To adjust the trigger see
-[settings](configuration_settings). To log trigger evaluation, in settings set `"log": true"`.
-
-
-### absolute filepaths begin in wrong directory
-
-set your `project_directory` either in project settings or user settings to the correct folder. `project_directory`
-must be relative to your sublime project directory.
-
-
-### relative filepaths are not pointing to the correct file
-
-Relative filepaths point from the current file to the selected file. Folders are moved upwards until the target path
-is reachable. i.e. in case of css filepaths, the starting path may be relative from the html file importing the styles.
-
-Set `base_directory` in scope rules to point from project_directory to html file. This will always set the starting
-path of the trigger to `base_directory`. i.e.
-
-
-## <a name="configuration">Configuration</a>
-
-The default options - as always - should be set in user-settings:<br />
-_Sublime Text | Preferences | Package Settings | FuzzyFilePath | Settings - User_
-
-Project specific settings may be set in _Project | Edit Settings_:
-```js
-{
-	"settings": {
-		"FuzzyFilepath": {
-			// adjusted settings
-		}
-	}
-}
-```
-
-[For details refer to the wiki](https://github.com/sagold/FuzzyFilePath/wiki/Settings)
+For further details about troubleshooting, customization, settings and keybindings please refer to the
+[Wiki](https://github.com/sagold/FuzzyFilePath/issues)
 
 
 #### Related Plugins

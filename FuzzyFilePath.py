@@ -4,6 +4,7 @@
 
         - improve testing
         - add to command palette: settings, base_directory
+        - test: reload settings on change
 
 
     @version 0.2.0
@@ -29,6 +30,7 @@ from FuzzyFilePath.common.string import get_diff
 scope_cache = {}
 
 ID = "FuzzyFilePath"
+
 
 
 def plugin_loaded():
