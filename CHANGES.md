@@ -17,6 +17,7 @@ CHANGES
 	- update cache on project change
 	- update cache window focus
 	- add command to rebiuld cache manually
+	- update cache if a new file is saved
 - improve replacement of current path fragments
 
 
@@ -41,7 +42,7 @@ CHANGES
 - analyse context of cursor to retrieve tagName, style and prefix
 - improve retrieval of query in view
 - fix path replacement for files being in root
-- staility improvements
+- stability improvements
 - refactorings
 
 14/11/02

@@ -116,7 +116,7 @@ Project specific settings may be set in _Project | Edit Settings_:
 }
 ```
 
-[See details refer to the wiki](https://github.com/sagold/FuzzyFilePath/wiki/Settings)
+[For details refer to the wiki](https://github.com/sagold/FuzzyFilePath/wiki/Settings)
 
 
 #### Related Plugins
