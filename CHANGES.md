@@ -1,3 +1,25 @@
+15/03
+
+- major refactoring and bugfixes
+
+FEATURES
+
+- open path under cursor
+- show popup containing context evaluation information, required to setup triggers
+- set project specifiv project_directory via command palette
+- after completion insertion, move to beginning of next word
+- support multiple opened projects (in separate windows)
+
+
+CHANGES
+
+- improve update of caching
+	- update cache on project change
+	- update cache window focus
+	- add command to rebiuld cache manually
+- improve replacement of current path fragments
+
+
 14/11/23
 
 BREAKING CHANGES
