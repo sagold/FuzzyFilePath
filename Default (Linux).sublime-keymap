@@ -13,5 +13,10 @@
         "args": {
             "type": "absolute"
         }
+    },
+
+    {
+        "keys": ["alt+enter"],
+        "command": "ffp_goto_file"
     }
 ]
