@@ -31,9 +31,10 @@ Attention: Sublime Text 2 will no longer be supported.
 
 ## <a name="usage">Usage</a>
 
-**Filepaths will be suggested if there is a matching [trigger](#configuration_settings_scopes) for the current context** and its property _auto_ is set
-to _true_. For a matching [trigger](#configuration_settings_scopes), filepath completions may be forced (ignoring _auto_ property) by the following
-shorcuts:
+**Filepaths will be suggested if there is a matching
+[trigger](https://github.com/sagold/FuzzyFilePath/wiki/Settings#trigger) for the current context** and its property
+_auto_ is set to _true_. For a matching [trigger](https://github.com/sagold/FuzzyFilePath/wiki/Settings#trigger),
+filepath completions may be forced (ignoring _auto_ property) by the following shorcuts:
 
 - __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
 - __`ctrl+shift+space`__ inserts filepaths absolute, overriding possible settings
@@ -65,8 +66,8 @@ separators, removing `$`:
 
 ## Customization
 
-For further details about troubleshooting, customization, settings and keybindings please refer to the
-[Wiki](https://github.com/sagold/FuzzyFilePath/issues)
+For further details about troubleshooting, customization, settings and keybindings please
+[refer to the Wiki](https://github.com/sagold/FuzzyFilePath/issues)
 
 
 #### Related Plugins
