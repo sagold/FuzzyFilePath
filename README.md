@@ -2,7 +2,7 @@
 
 __Sublime Text Plugin__
 
-Fuzzy search filenames inside your current project directory. Highly customizable.
+Fuzzy search and insert filenames inside your current project directory. Highly customizable.
 
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/develop/FuzzyFilePathDemo.gif" />
 <br />
@@ -24,6 +24,8 @@ in `<SublimeConfig>/Packages/` call: `git clone https://github.com/sagold/FuzzyF
 __Sublime Text 2__
 
 in `<SublimeConfig>/Packages/FuzzyFilePath/` switch to Sublime Text 2 Branch with: `git checkout st2`
+
+Attention: Sublime Text 2 will no longer be supported.
 
 
 
@@ -47,7 +49,7 @@ FuzzyFilePath is disabled for single files or files outside the opened folder.
 
 ### open file
 
-Use __`alt+enter`__ to open the file under the cursor
+Use __`alt+enter`__ to open the file under cursor
 
 
 #### Special Characters
@@ -83,7 +85,6 @@ This will propose filepaths for the given extensions in all autocompletion reque
 [settings](configuration_settings). To log trigger evaluation, in settings set `"log": true"`.
 
 
-
 ### absolute filepaths begin in wrong directory
 
 set your `project_directory` either in project settings or user settings to the correct folder. `project_directory`
@@ -114,6 +115,8 @@ Project specific settings may be set in _Project | Edit Settings_:
 	}
 }
 ```
+
+[See details refer to the wiki](https://github.com/sagold/FuzzyFilePath/wiki/Settings)
 
 
 #### Related Plugins
