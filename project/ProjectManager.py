@@ -40,7 +40,8 @@ class ProjectManager(sublime_plugin.EventListener):
 		if ProjectManager.active:
 			ProjectManager.current_project = ProjectManager.get_project(window)
 			CurrentFile.evaluate_current(window.active_view(), ProjectManager.current_project)
-			verbose(ID, "activate project", ProjectManager.current_project.get_directory())
+			if ProjectManager.current_project:
+				verbose(ID, "activate project", ProjectManager.current_project.get_directory())
 		else:
 			verbose(ID, "this is not a project")
 
