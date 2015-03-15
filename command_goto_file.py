@@ -7,6 +7,7 @@ from FuzzyFilePath.expression import Context
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.common.path import Path
 from FuzzyFilePath.common.verbose import log
+from FuzzyFilePath.common.selection import Selection
 
 ID = "goto file"
 
@@ -39,6 +40,13 @@ class FfpGotoFileCommand(sublime_plugin.TextCommand):
         if len(files) == 1:
             self.open_file(project.get_directory(), files[0])
         else:
+            # if javascript, search for index.js
+            current_scope = self.view.scope_name(Selection.get_position(self.view))
+            if re.search("\.js ", current_scope):
+                for file in files:
+                    if "index.js" in file:
+                        return self.open_file(project.get_directory(), file)
+
             self.files = files
             self.project_folder = project.get_directory()
             self.view.show_popup_menu(files, self.select_file)
