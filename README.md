@@ -67,7 +67,10 @@ separators, removing `$`:
 ## Customization
 
 For further details about troubleshooting, customization, settings and keybindings please
-[refer to the Wiki](https://github.com/sagold/FuzzyFilePath/issues)
+[refer to the Wiki](https://github.com/sagold/FuzzyFilePath/wiki)
+
+Trying to integrate other languages? See the
+[auto complete Python package tutorial](https://github.com/sagold/FuzzyFilePath/wiki/Tutorial:-Add-support-for-python-packages)
 
 
 #### Related Plugins
