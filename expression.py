@@ -3,12 +3,12 @@ import sublime
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
 
-NEEDLE_SEPARATOR = "\"\'\(\)"
-NEEDLE_SEPARATOR_BEFORE = "\"\'\("
-NEEDLE_SEPARATOR_AFTER = "^\"\'\)"
+NEEDLE_SEPARATOR = "\"\'\(\)\{\}"
+NEEDLE_SEPARATOR_BEFORE = "\"\'\(\{"
+NEEDLE_SEPARATOR_AFTER = "^\"\'\)\}"
 NEEDLE_CHARACTERS = "\.A-Za-z0-9\-\_$"
-NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>\n"
-DELIMITER = "\s\:\(\[\="
+NEEDLE_INVALID_CHARACTERS = "\"\'\)=\:\(<>\n\{\}"
+DELIMITER = "\s\:\(\[\=\{"
 
 def get_context(view):
 	error = False
