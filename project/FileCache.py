@@ -3,7 +3,7 @@ import os
 import gc
 import re
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.path import Path
+import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.project.FileCacheWorker import FileCacheWorker
 
 ID = "search"

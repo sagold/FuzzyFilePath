@@ -24,7 +24,7 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.selection import Selection
-from FuzzyFilePath.common.path import Path
+import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.string import get_diff
 
 scope_cache = {}

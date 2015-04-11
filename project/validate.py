@@ -2,7 +2,7 @@ import re
 import os
 import sublime
 
-from FuzzyFilePath.common.path import Path
+import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
 
 """
