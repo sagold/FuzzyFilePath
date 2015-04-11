@@ -1,7 +1,7 @@
 import re
 import sublime
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.common.selection import Selection
+import FuzzyFilePath.common.selection as Selection
 
 NEEDLE_SEPARATOR = "\"\'\(\)\{\}"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\(\{"

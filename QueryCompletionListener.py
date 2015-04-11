@@ -1,7 +1,7 @@
 import re
 import sublime_plugin
 
-from FuzzyFilePath.common.selection import Selection
+import FuzzyFilePath.common.selection as Selection
 from FuzzyFilePath.expression import Context
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose

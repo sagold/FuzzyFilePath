@@ -7,7 +7,7 @@ from FuzzyFilePath.expression import Context
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
-from FuzzyFilePath.common.selection import Selection
+import FuzzyFilePath.common.selection as Selection
 
 ID = "goto file"
 

@@ -1,7 +1,7 @@
 import sublime_plugin
 
 from FuzzyFilePath.expression import Context
-from FuzzyFilePath.common.selection import Selection
+import FuzzyFilePath.common.selection as Selection
 
 
 class FfpShowContextCommand(sublime_plugin.TextCommand):

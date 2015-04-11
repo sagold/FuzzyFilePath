@@ -23,7 +23,7 @@ from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.common.selection import Selection
+import FuzzyFilePath.common.selection as Selection
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.string import get_diff
 
