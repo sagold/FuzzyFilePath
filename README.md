@@ -14,7 +14,7 @@ Fuzzy search and insert filenames inside your current project directory. Highly 
 
 ### [Package Control](https://sublime.wbond.net/)
 
-After [Package Control installation](https://sublime.wbond.net/installation), restart Sublime Text. Use the Command Palette `cmd+shift+p` (OS X) or `ctrl+shift+p` (Linux/Windows) and search for *Package Control: Install Package*. Wait until Package Control downloaded the latest package list and search for *FuzzyFilePath*.
+After [Package Control installation](https://sublime.wbond.net/installation), restart Sublime Text. Use the Command Palette <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> (OS X) or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> (Linux/Windows) and search for *Package Control: Install Package*. Wait until Package Control downloaded the latest package list and search for *FuzzyFilePath*.
 
 
 ### [github](https://github.com/sagold/FuzzyFilePath.git)
@@ -36,8 +36,8 @@ Attention: Sublime Text 2 will no longer be supported.
 _auto_ is set to _true_. For a matching [trigger](https://github.com/sagold/FuzzyFilePath/wiki/Settings#trigger),
 filepath completions may be forced (ignoring _auto_ property) by the following shorcuts:
 
-- __`ctrl+alt+space`__ inserts filepaths relative, overriding possible settings
-- __`ctrl+shift+space`__ inserts filepaths absolute, overriding possible settings
+- <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> inserts filepaths relative, overriding possible settings
+- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd> inserts filepaths absolute, overriding possible settings
 
 The current string may modify the suggested filepaths by the following rules:
 
@@ -50,7 +50,7 @@ FuzzyFilePath is disabled for single files or files outside the opened folder.
 
 ### open file
 
-Use __`alt+enter`__ to open the file under cursor
+Use<kbd>Alt</kbd>+<kbd>Enter</kbd> to open the file under cursor
 
 
 #### Special Characters
