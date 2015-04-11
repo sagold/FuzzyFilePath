@@ -41,7 +41,8 @@ def plugin_loaded():
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
-    scope_cache.clear()
+    global scope_cache
+    scope_cache = {}
 
     ffp_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
     # sync settings to config
