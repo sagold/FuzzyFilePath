@@ -123,43 +123,38 @@ def get_context(view):
 		"error": error
 	}
 
-class Context:
+def check_trigger(trigger, expression):
+	# returns True if the expression statements match the trigger
+	for statement in set(config["TRIGGER_STATEMENTS"]).intersection(trigger):
+		values = trigger.get(statement)
+		# statement values may be None (or any other value...)
+		if type(values) is list and not expression.get(statement) in values:
+			return False
+		# validate other value by comparison
+		# elif not values == expression.get(statement):
+		# 	return False
 
-	def get_context(view):
-		return get_context(view)
+	return True
 
-	def check_trigger(trigger, expression):
-		# returns True if the expression statements match the trigger
-		for statement in set(config["TRIGGER_STATEMENTS"]).intersection(trigger):
-			values = trigger.get(statement)
-			# statement values may be None (or any other value...)
-			if type(values) is list and not expression.get(statement) in values:
-				return False
-			# validate other value by comparison
-			# elif not values == expression.get(statement):
-			# 	return False
+def find_trigger(expression, scope, triggers):
+	for trigger in triggers:
+		# if the trigger is defined for the current scope
+		# REQUIRED? scope = properties.get("scope").replace("//", "")
+		if re.search(trigger["scope"], scope):
+			# validate its statements on the current context
+			if check_trigger(trigger, expression):
+				return trigger
 
-		return True
+	return False
 
-	def find_trigger(expression, scope, triggers):
-		for trigger in triggers:
-			# if the trigger is defined for the current scope
-			# REQUIRED? scope = properties.get("scope").replace("//", "")
-			if re.search(trigger["scope"], scope):
-				# validate its statements on the current context
-				if Context.check_trigger(trigger, expression):
-					return trigger
+def get_rule(view):
 
-		return False
+	selection = view.sel()[0]
+	position = selection.begin()
+	word_region = view.word(position)
 
-	def get_rule(view):
+	current_scope = view.scope_name(word_region.a)
+	context = get_context(view)
+	rule = find_rule(context, current_scope)
 
-		selection = view.sel()[0]
-		position = selection.begin()
-		word_region = view.word(position)
-
-		current_scope = view.scope_name(word_region.a)
-		context = get_context(view)
-		rule = Context.find_rule(context, current_scope)
-
-		return [rule, context] if rule else False
+	return [rule, context] if rule else False

@@ -18,7 +18,7 @@ import os
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.project.Project import Project
 from FuzzyFilePath.project.CurrentFile import CurrentFile
-from FuzzyFilePath.expression import Context
+import FuzzyFilePath.expression as Context
 from FuzzyFilePath.project.validate import Validate
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log

@@ -2,7 +2,7 @@ import re
 import sublime_plugin
 
 import FuzzyFilePath.common.selection as Selection
-from FuzzyFilePath.expression import Context
+import FuzzyFilePath.expression as Context
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.project.CurrentFile import CurrentFile

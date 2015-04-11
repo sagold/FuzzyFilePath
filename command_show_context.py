@@ -1,6 +1,6 @@
 import sublime_plugin
 
-from FuzzyFilePath.expression import Context
+import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.selection as Selection
 
 
