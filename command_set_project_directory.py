@@ -3,7 +3,7 @@ import sublime
 import sublime_plugin
 
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.project.validate import Validate
+import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 
 """

@@ -19,7 +19,7 @@ from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.project.Project import Project
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 import FuzzyFilePath.expression as Context
-from FuzzyFilePath.project.validate import Validate
+import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config

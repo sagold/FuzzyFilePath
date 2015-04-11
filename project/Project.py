@@ -1,6 +1,6 @@
 import os
 from FuzzyFilePath.project.FileCache import FileCache
-from FuzzyFilePath.project.validate import Validate
+import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.common.verbose import warn
 from FuzzyFilePath.common.verbose import verbose
 

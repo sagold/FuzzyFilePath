@@ -4,7 +4,7 @@ import copy
 
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.project.validate import Validate
+import FuzzyFilePath.project.validate as Validate
 
 ID = "CurrentFile"
 

@@ -3,7 +3,7 @@ import sublime
 import sublime_plugin
 
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.project.validate import Validate
+import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 
 ProjectCache = {}

@@ -1,7 +1,7 @@
 import sublime_plugin
 
 from FuzzyFilePath.project.ProjectManager import ProjectManager
-from FuzzyFilePath.project.validate import Validate
+import FuzzyFilePath.project.validate as Validate
 
 
 class FfpShowInfoCommand(sublime_plugin.TextCommand):
