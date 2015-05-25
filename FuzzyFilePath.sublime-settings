@@ -38,8 +38,8 @@
 	        // if 1 & 2 are true:
 	        "auto": true,						// auto suggest filepaths, else only by shorctut
 	        "extensions": ["js"],				// show only .js files
-	        "relative": false,					// insert absolute
-	        "base_directory": true,				// insert absolute from the set base directory (above)
+	        "relative": true,					// insert absolute
+	        "base_directory": false,			// insert absolute from the set base directory (above)
 	        "replace_on_insert": [
 	        	["\\.js$", ""],					// after insertion, remove .js from path
 	        	["([^.])\\/index$", "\\1"]		// nodejs will load index.js by default => also remove index
