@@ -1,6 +1,7 @@
 import os
 from FuzzyFilePath.project.FileCache import FileCache
 import FuzzyFilePath.project.validate as Validate
+import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import warn
 from FuzzyFilePath.common.verbose import verbose
 
@@ -40,9 +41,9 @@ class Project():
 		# validate final project directory (by settings)
 		project_directory = os.path.join(self.directory, self.get_setting("PROJECT_DIRECTORY"))
 		if os.path.exists(project_directory):
-			self.project_directory = project_directory
+			self.project_directory = Path.posix(project_directory)
 		else:
-			self.project_directory = self.directory
+			self.project_directory = Path.posix(self.directory)
 			warn(ID, "project directory in settings in not a valid folder")
 
 		# setup project cache

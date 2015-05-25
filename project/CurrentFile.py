@@ -5,6 +5,7 @@ import copy
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose
 import FuzzyFilePath.project.validate as Validate
+import FuzzyFilePath.common.path as Path
 
 ID = "CurrentFile"
 
@@ -32,7 +33,7 @@ class CurrentFile:
             CurrentFile.current = CurrentFile.default
             return
 
-        file_name = view.file_name()
+        file_name = Path.posix(view.file_name())
         if not file_name:
             # not saved on disk
             CurrentFile.current = get_default()

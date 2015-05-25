@@ -6,7 +6,12 @@ def sanitize(path):
     path = re.sub("^\/?(./)+", "./", path)
     path = re.sub("^(\/)+", "./", path)
     # sanitize slashes (posix)
-    path = path.replace("\\", "/")
+    path = posix(path)
+    return path
+
+def posix(path):
+    if path is not None:
+        path = path.replace("\\", "/")
     return path
 
 def is_relative(string):
