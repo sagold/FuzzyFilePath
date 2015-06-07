@@ -25,6 +25,7 @@ from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 import FuzzyFilePath.common.selection as Selection
 import FuzzyFilePath.common.path as Path
+import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.string import get_diff
 
 scope_cache = {}
@@ -32,34 +33,26 @@ scope_cache = {}
 ID = "FuzzyFilePath"
 
 
-
 def plugin_loaded():
     """ load settings """
-    settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    settings.add_on_change("scopes", update_settings)
     update_settings()
+    global_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    global_settings.add_on_change("scopes", update_settings)
+    global_settings.add_on_change("exclude_folders", update_settings)
+    global_settings.add_on_change("base_directory", update_settings)
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
+
+    # invalidate cache
     global scope_cache
     scope_cache = {}
 
-    ffp_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    # sync settings to config
-    for key in config:
-        config[key] = ffp_settings.get(key.lower(), config[key])
-    # mapping
-    config["TRIGGER"] = ffp_settings.get("scopes", config["TRIGGER"])
+    # update settings
+    global_settings = Settings.update()
 
-    # validate directories
-    # ATTENTION: project specific settings....
-    if config["BASE_DIRECTORY"]:
-        config["BASE_DIRECTORY"] = Path.sanitize_base_directory(config["BASE_DIRECTORY"])
-
-    if config["PROJECT_DIRECTORY"]:
-        config["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(config["PROJECT_DIRECTORY"])
-
-    ProjectManager.initialize(Project, config)
+    # update project settings
+    ProjectManager.initialize(Project, global_settings)
 
 
 class Completion:
