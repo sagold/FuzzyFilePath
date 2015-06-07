@@ -32,7 +32,6 @@ class Project():
 		settings = copy.deepcopy(global_settings)
 		Settings.merge(settings, project_settings)
 		self.settings = settings
-		print("UPDATE PROJECT SETTINGS")
 		# sanitize settings
 		self.evaluate_settings()
 

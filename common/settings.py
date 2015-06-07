@@ -17,7 +17,6 @@ def update():
 	if global_settings["PROJECT_DIRECTORY"]:
 	    global_settings["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(global_settings["PROJECT_DIRECTORY"])
 
-	print("UPDATE SETTINGS")
 	return global_settings
 
 def merge(settings, overwrite):
