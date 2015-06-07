@@ -37,9 +37,8 @@ def plugin_loaded():
     """ load settings """
     update_settings()
     global_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    global_settings.add_on_change("scopes", update_settings)
-    global_settings.add_on_change("exclude_folders", update_settings)
-    global_settings.add_on_change("base_directory", update_settings)
+    global_settings.add_on_change("update", update_settings)
+
 
 def update_settings():
     """ restart projectFiles with new plugin and project settings """
@@ -47,10 +46,8 @@ def update_settings():
     # invalidate cache
     global scope_cache
     scope_cache = {}
-
     # update settings
     global_settings = Settings.update()
-
     # update project settings
     ProjectManager.initialize(Project, global_settings)
 
