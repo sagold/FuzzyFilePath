@@ -1,7 +1,9 @@
 import os
+import copy
 from FuzzyFilePath.project.FileCache import FileCache
 import FuzzyFilePath.project.validate as Validate
 import FuzzyFilePath.common.path as Path
+import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.verbose import warn
 from FuzzyFilePath.common.verbose import verbose
 
@@ -23,21 +25,18 @@ class Project():
 		"""
 		self.window = window
 		self.directory = directory
+		self.update_settings(ffp_settings, project_settings)
 
+	def update_settings(self, global_settings, project_settings):
 		# create final settings object, by merging project specific settings with base settings
-		self.settings = {}
-		for key in ffp_settings:
-			self.settings[key.upper()] = ffp_settings.get(key)
+		settings = copy.deepcopy(global_settings)
+		Settings.merge(settings, project_settings)
+		self.settings = settings
+		print("UPDATE PROJECT SETTINGS")
+		# sanitize settings
+		self.evaluate_settings()
 
-		for key in project_settings:
-			self.settings[key.upper()] = project_settings.get(key)
-
-		# pay attention to multiple project folders
-		# multiple folders and cached files?
-		# - each folder is cached separately, which may result in folders being cached multiple times
-		self.init()
-
-	def init(self):
+	def evaluate_settings(self):
 		# validate final project directory (by settings)
 		project_directory = os.path.join(self.directory, self.get_setting("PROJECT_DIRECTORY"))
 		if os.path.exists(project_directory):
@@ -60,11 +59,8 @@ class Project():
 			self.directory
 		)
 
-		# print("folder", folders_to_exclude)
-		# print("extensions", valid_file_extensions)
 		verbose(ID, "new project created", self.project_directory)
 		verbose(ID, "Base directory at", "'" + self.base_directory + "'")
-
 
 	def get_directory(self):
 		return self.project_directory

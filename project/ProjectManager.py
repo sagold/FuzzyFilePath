@@ -12,6 +12,7 @@ ProjectCache = {}
 ID = "ProjectManager"
 
 class ProjectManager(sublime_plugin.EventListener):
+	""" registers projects and keeps track of current project (in conjuction with ProjectListener) """
 
 	active = False
 	current_project = False
@@ -35,9 +36,11 @@ class ProjectManager(sublime_plugin.EventListener):
 	def activate_project(window):
 		if ProjectManager.active:
 			ProjectManager.current_project = ProjectManager.get_project(window)
-			CurrentFile.evaluate_current(window.active_view(), ProjectManager.current_project)
-			if ProjectManager.current_project:
-				verbose(ID, "activate project", ProjectManager.current_project.get_directory())
+			CurrentFile.evaluate_current(window.active_view(), ProjectManager.get_current_project())
+			if ProjectManager.has_current_project():
+				project_settings = get_project_settings(window)
+				ProjectManager.get_current_project().update_settings(ProjectManager.ffp_settings, project_settings)
+				verbose(ID, "activate project", ProjectManager.get_current_project().get_directory())
 		else:
 			verbose(ID, "this is not a project")
 
@@ -110,12 +113,14 @@ def get_project_settings(window):
 	data = window.project_data()
 	if not data:
 		return False
+
 	changed = False
 	settings = data.get("settings", False)
 	if settings is False:
 		changed = True
 		settings = {}
 		data["settings"] = settings
+
 	ffp = settings.get("FuzzyFilePath")
 	if not ffp:
 		changed = True
@@ -123,4 +128,5 @@ def get_project_settings(window):
 		settings["FuzzyFilePath"] = ffp
 	if changed:
 		window.set_project_data(data)
+
 	return ffp
