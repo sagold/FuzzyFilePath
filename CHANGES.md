@@ -1,3 +1,10 @@
+15/06/07
+
+- fixed project settings to be added on top of default settings
+- fixed update settings for modified user settings
+- fixed an issue on windows where paths were not inserted relative
+
+
 15/03
 
 - major refactoring and bugfixes
