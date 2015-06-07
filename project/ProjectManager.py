@@ -5,6 +5,7 @@ import sublime_plugin
 from FuzzyFilePath.common.verbose import verbose
 import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.project.CurrentFile import CurrentFile
+import FuzzyFilePath.common.settings as Settings
 
 ProjectCache = {}
 
@@ -35,10 +36,13 @@ class ProjectManager(sublime_plugin.EventListener):
 
 	def activate_project(window):
 		if ProjectManager.active:
+			# fetch project
 			ProjectManager.current_project = ProjectManager.get_project(window)
 			CurrentFile.evaluate_current(window.active_view(), ProjectManager.get_current_project())
+
 			if ProjectManager.has_current_project():
-				project_settings = get_project_settings(window)
+				# update project settings
+				project_settings = Settings.project(window)
 				ProjectManager.get_current_project().update_settings(ProjectManager.ffp_settings, project_settings)
 				verbose(ID, "activate project", ProjectManager.get_current_project().get_directory())
 		else:
@@ -51,7 +55,7 @@ class ProjectManager(sublime_plugin.EventListener):
 		return ProjectManager.current_project is not False
 
 	def get_project(window):
-		project_settings = get_project_settings(window)
+		project_settings = Settings.project(window)
 		if project_settings is False:
 			return False
 
@@ -104,29 +108,3 @@ def get_project_folder(window):
 			print("secondary project folder", folder)
 
 	return project_folder
-
-
-def get_project_settings(window):
-	"""
-		returns project settings. If not already set, creates them
-	"""
-	data = window.project_data()
-	if not data:
-		return False
-
-	changed = False
-	settings = data.get("settings", False)
-	if settings is False:
-		changed = True
-		settings = {}
-		data["settings"] = settings
-
-	ffp = settings.get("FuzzyFilePath")
-	if not ffp:
-		changed = True
-		ffp = {}
-		settings["FuzzyFilePath"] = ffp
-	if changed:
-		window.set_project_data(data)
-
-	return ffp
