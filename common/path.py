@@ -2,11 +2,11 @@ import re
 import os
 
 def sanitize(path):
+    # sanitize slashes (posix)
+    path = posix(path)
     # sanitize ././
     path = re.sub("^\/?(./)+", "./", path)
     path = re.sub("^(\/)+", "/", path)
-    # sanitize slashes (posix)
-    path = posix(path)
     return path
 
 def posix(path):
