@@ -4,7 +4,7 @@ import os
 def sanitize(path):
     # sanitize ././
     path = re.sub("^\/?(./)+", "./", path)
-    path = re.sub("^(\/)+", "./", path)
+    path = re.sub("^(\/)+", "/", path)
     # sanitize slashes (posix)
     path = posix(path)
     return path

@@ -220,12 +220,23 @@ class Query:
         return False
 
     def build_needle_query(needle, current_folder):
+        """
+            sanitizes requested path and replaces a starting ./ with the current (local) folder
+            returns final needle
+        """
         current_folder = "" if not current_folder else current_folder
         needle = re.sub("\.\./", "", needle)
         needle = re.sub("[\\n\\t]", "", needle)
+
+        # remove base path from needle
+        if isinstance(current_folder, str) and needle.startswith(current_folder):
+            needle = needle[len(Query.base_path):]
+
         needle = needle.strip()
+
         if needle.startswith("./"):
             needle = current_folder + re.sub("\.\/", "", needle)
+
         return needle
 
 
@@ -302,11 +313,6 @@ class FuzzyFilePath():
             # query is valid, but may not be triggered: not forced, no auto-options
             verbose(ID, "abort valid query: auto trigger disabled")
             return False
-
-        # bug aka wrong absolute path?
-        if isinstance(Query.base_path, str) and Query.needle.startswith(Query.base_path):
-            # remove base path from needle
-            Query.needle = Query.needle[len(Query.base_path):]
 
         verbose(ID, ".───────────────────────────────────────────────────────────────")
         verbose(ID, "| scope settings: {0}".format(trigger))
