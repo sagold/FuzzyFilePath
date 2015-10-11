@@ -1,4 +1,5 @@
 import sublime
+import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.config import config
 
 
