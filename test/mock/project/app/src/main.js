@@ -1,3 +1,3 @@
 // main
-var boot = require("../boot");
+var tools = require("./tools");
 var media = require("../styles/partials/media.scss");
