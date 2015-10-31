@@ -1,6 +1,13 @@
 """ FuzzyFilePath - autocomplete filepaths
 
+
+
     # tasks
+
+        - growing list of triggers is getting unmaintainable. Probably group by main-scope in object for faster
+            retrieval and namespacing
+        - add custom triggers without overriding the default scopes
+        - support of multiple project folders may be achieved by hooking into settings-folders-array
 
         - improve testing
         - add to command palette: settings, base_directory
