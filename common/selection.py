@@ -1,6 +1,7 @@
 
 def get_position(view):
-    return view.sel()[0].begin()
+	selection = view.sel()
+	return selection[0].begin() if selection else ""
 
 def get_line(view):
     position = get_position(view)
