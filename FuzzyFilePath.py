@@ -14,7 +14,7 @@
         - test: reload settings on change
 
 
-    @version 0.2.5
+    @version 0.2.7
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
