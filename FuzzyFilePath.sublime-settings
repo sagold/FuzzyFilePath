@@ -118,7 +118,7 @@
 			"extensions": ["css", "scss"],
 			"replace_on_insert": [
 				["\\.(css|scss)$", ""],
-				["\\/bower_components\\/", ""]
+				["^\\/bower_components\\/", ""]
 			]
 		},
 		{
@@ -131,7 +131,7 @@
 			"extensions": ["jpg", "png", "gif"],
 			"replace_on_insert": [
 				["\\.(css|scss)$", ""],
-				["\\/bower_components\\/", ""]
+				["^\\/bower_components\\/", ""]
 			]
 		},
 		{
@@ -144,7 +144,7 @@
 			"replace_on_insert": [
 				["\\.js$", ""],
 				["\\/index$", ""],
-				["\\/bower_components\\/", ""]
+				["^\\/bower_components\\/", ""]
 			]
 		},
 		{
