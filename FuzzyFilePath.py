@@ -236,7 +236,7 @@ class Query:
         needle = re.sub("[\\n\\t]", "", needle)
 
         # remove base path from needle
-        if isinstance(current_folder, str) and needle.startswith(current_folder):
+        if Query.base_path and isinstance(current_folder, str) and needle.startswith(current_folder):
             needle = needle[len(Query.base_path):]
 
         needle = needle.strip()
