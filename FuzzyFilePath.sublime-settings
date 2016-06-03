@@ -206,6 +206,17 @@
 		    	["\\.(scss|less)$", ""],
 		    ]
 		},
+		{
+			// glsl
+			"scope": "source\\.glsl",
+			"prefix": ["import"],
+			"auto": true,
+			"extensions": ["glsl"],
+			"relative": true,
+			"replace_on_insert": [
+				["\\.glsl$", ""]
+			]
+		},
 	    {
 			// python
 			"scope": "\\.python",
@@ -236,6 +247,6 @@
 		    "auto": false,
 		    "extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
 		    "relative": true
-		},
+		}
 	]
 }
