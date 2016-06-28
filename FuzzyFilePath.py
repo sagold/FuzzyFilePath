@@ -140,6 +140,15 @@ class Query:
     def by_command():
         return bool(Query.get("filepath_type", False))
 
+    def get_base_path():
+        return Query.base_path
+
+    def get_extensions():
+        return Query.extensions
+
+    def get_needle():
+        return Query.needle
+
     def build(needle, trigger, current_folder, project_folder):
 
         query = {}
@@ -323,20 +332,25 @@ class FuzzyFilePath():
 
         verbose(ID, ".───────────────────────────────────────────────────────────────")
         verbose(ID, "| scope settings: {0}".format(trigger))
-        verbose(ID, "| search needle: '{0}'".format(Query.needle))
-        verbose(ID, "| in base path: '{0}'".format(Query.base_path))
+        verbose(ID, "| search needle: '{0}'".format(Query.get_needle()))
+        verbose(ID, "| in base path: '{0}'".format(Query.get_base_path()))
 
         FuzzyFilePath.start_expression = expression
-        completions = ProjectManager.search_completions(Query.needle, project_folder, Query.extensions, Query.base_path)
+        completions = ProjectManager.search_completions(
+            Query.get_needle(),
+            project_folder,
+            Query.get_extensions(),
+            Query.get_base_path()
+        )
 
         if completions and len(completions[0]) > 0:
             Completion.start(Query.replace_on_insert)
             view.run_command('_enter_insert_mode') # vintageous
             log("| => {0} completions found".format(len(completions)))
         else:
-            sublime.status_message("FFP no filepaths found for '" + Query.needle + "'")
+            sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
             Completion.stop()
-            log("| => no valid files found for needle: {0}".format(Query.needle))
+            log("| => no valid files found for needle: {0}".format(Query.get_needle()))
 
         log("")
 

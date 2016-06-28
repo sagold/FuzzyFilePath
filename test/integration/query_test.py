@@ -44,7 +44,7 @@ class Test(TestCase):
 
 		Query.build("", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, "current_folder")
+		self.assert_equal(Query.get_base_path(), "current_folder")
 
 	def should_set_base_directory_for_relative_queries(self, vh):
 		valid_trigger["relative"] = True
@@ -53,14 +53,14 @@ class Test(TestCase):
 
 		Query.build("", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, "base_directory")
+		self.assert_equal(Query.get_base_path(), "base_directory")
 
 	def should_not_set_basepath_for_absolute_queries(self, vh):
 		valid_trigger["relative"] = False
 
 		Query.build("", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, False)
+		self.assert_equal(Query.get_base_path(), False)
 
 	#basepath override by needle
 	def should_prefer_needletype_over_relative_setting_01(self, vh):
@@ -68,14 +68,14 @@ class Test(TestCase):
 
 		Query.build("/absolute", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, False)
+		self.assert_equal(Query.get_base_path(), False)
 
 	def should_prefer_needletype_over_relative_setting_02(self, vh):
 		valid_trigger["relative"] = False
 
 		Query.build("../relative", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, "current_folder")
+		self.assert_equal(Query.get_base_path(), "current_folder")
 
 	#basepath override by command
 	def should_prefer_command_over_rel(self, vh):
@@ -84,7 +84,7 @@ class Test(TestCase):
 
 		Query.build("../relative", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, False)
+		self.assert_equal(Query.get_base_path(), False)
 
 	def should_prefer_command_over_abs(self, vh):
 		valid_trigger["relative"] = False
@@ -92,5 +92,5 @@ class Test(TestCase):
 
 		Query.build("/absolute", valid_trigger, "current_folder", "")
 
-		self.assert_equal(Query.base_path, "current_folder")
+		self.assert_equal(Query.get_base_path(), "current_folder")
 
