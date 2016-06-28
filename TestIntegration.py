@@ -44,11 +44,15 @@ class FfpIntegration(sublime_plugin.TextCommand):
 		window = sublime.active_window()
 		self.tools = ViewHelper(window, window.new_file(), edit)
 
-	def tearDown(self, failed_tests, total_tests):
+	def closeView(self): {
 		self.tools.view.close()
+	}
+
+	def tearDown(self, failed_tests, total_tests):
+		# self.tools.view.close()
 		print(LINE)
 		if failed_tests > 0:
-			notice = "{0} of {1} tests failed".format(total_tests, failed_tests)
+			notice = "{0} of {1} tests failed".format(failed_tests, total_tests)
 			print(notice)
 			sublime.status_message("FFP Intergration: " + notice)
 		else:
@@ -61,9 +65,8 @@ class FfpIntegration(sublime_plugin.TextCommand):
 		total_tests = 0
 		failed_tests = 0
 
-		self.setUp(edit)
-
 		for testCase in tests:
+			self.setUp(edit)
 			total_tests += testCase.length
 
 			for should in testCase.tests:
@@ -88,6 +91,8 @@ class FfpIntegration(sublime_plugin.TextCommand):
 
 				if not testCase.unit_test:
 					self.after()
+
+				self.closeView()
 
 		self.tearDown(failed_tests, total_tests)
 

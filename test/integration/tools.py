@@ -29,4 +29,4 @@ class ViewHelper:
 		self.view.sel().clear()
 		self.view.sel().add(sublime.Region(pt))
 		self.window.focus_view(self.view)
-		self.view.run_command('_enter_insert_mode') # vintageous
+		self.view.run_command('_enter_insert_mode', { "mode": "insert" }) # vintageous
