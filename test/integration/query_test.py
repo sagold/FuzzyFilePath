@@ -19,7 +19,6 @@ class Test(TestCase):
 
 		Query.reset()
 		valid_trigger = {
-
 			"auto": True
 		}
 
@@ -49,7 +48,8 @@ class Test(TestCase):
 
 	def should_set_base_directory_for_relative_queries(self, vh):
 		valid_trigger["relative"] = True
-		valid_trigger["base_directory"] = "base_directory"
+		# !Potential problem: path requires a trailing slash (os.path.dirname)
+		valid_trigger["base_directory"] = "base_directory/"
 
 		Query.build("", valid_trigger, "current_folder", "")
 
