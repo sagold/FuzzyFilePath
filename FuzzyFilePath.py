@@ -1,6 +1,16 @@
 """ FuzzyFilePath - autocomplete filepaths
 
+    # refactor query
 
+        > keep track of changes and insights through testing (probably needs improvement)
+
+        - make code readable again by improving naming and removing temp variables, duplicates
+        - reduce dependencies via properties and decrease messages
+        - circular dependencies for completion in ffp and query as module (requires completion)
+        - config misbehaviour (scopes: .js) if config is references in module query and module completion
+        => 1a. refactor config session object or
+        => 1b. resolve circular dependencies ffo controller object (@see refactor event flow)
+        => 2. create modules query and completion (temp) until further understanding of those modules (...simplfy)
 
     # tasks
 
