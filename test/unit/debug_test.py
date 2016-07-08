@@ -12,9 +12,7 @@ valid_trigger = False
 
 class Test(TestCase):
 
-	unit_test = True
-
-	def should_set_basepath_to_current_folder(self, vh):
+	def should_set_basepath_to_current_folder(self):
 		Query.reset()
 		query = Query.build("", {
 			"relative": True,
@@ -23,7 +21,7 @@ class Test(TestCase):
 
 		self.assert_equal(query["base_path"], "current_folder")
 
-	def should_not_set_basepath_for_absolute_queries(self, vh):
+	def should_not_set_basepath_for_absolute_queries(self):
 		Query.reset()
 		query = Query.build("", {
 			"relative": False,

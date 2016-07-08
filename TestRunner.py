@@ -1,9 +1,9 @@
 """
-	FuzzyFilePath Integration Testrunner
+	FuzzyFilePath unit and integration test runner
 
 	Usage:
 		Bind a shortcut like
-		{ "keys": ["super+y"], "command": "ffp_integration" }
+		{ "keys": ["super+y"], "command": "ffp_test_runner" }
 		to execute tests. Make sure a default view is selected (not console)
 
 """
@@ -11,13 +11,14 @@ import sublime
 import sublime_plugin
 import traceback
 
-from FuzzyFilePath.test.integration.tests import tests
+from FuzzyFilePath.test.unit.tests import tests as unitTests
+from FuzzyFilePath.test.integration.tests import tests as integrationTests
 from FuzzyFilePath.test.integration.tools import ViewHelper
 
 LINE = "----------------"
 
 
-class FfpIntegration(sublime_plugin.TextCommand):
+class FfpTestRunner(sublime_plugin.TextCommand):
 
 	tools = None,
 
@@ -65,7 +66,31 @@ class FfpIntegration(sublime_plugin.TextCommand):
 		total_tests = 0
 		failed_tests = 0
 
-		for testCase in tests:
+		# run unit tests
+		for testCase in unitTests:
+			total_tests += testCase.length
+			for should in testCase.tests:
+				test = getattr(testCase, should)
+
+				if "before_each" in dir(testCase):
+					testCase.before_each()
+
+				try:
+					test()
+				except:
+					failed_tests += 1
+					print("\n" + testCase.name + " " + should + ":")
+					print(LINE)
+					traceback.print_exc()
+					print(LINE)
+					print()
+					pass
+
+				if "after_each" in dir(testCase):
+					testCase.after_each()
+
+		# run integration tests
+		for testCase in integrationTests:
 			self.setUp(edit)
 			total_tests += testCase.length
 
