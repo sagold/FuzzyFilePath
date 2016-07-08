@@ -7,6 +7,7 @@ from FuzzyFilePath.expression import get_context
 
 class Test(TestCase):
 
+	#query
 	def should_return_line_as_needle(self, viewHelper):
 		viewHelper.set_line('../line/as/path')
 		viewHelper.move_cursor(0, 12)
@@ -76,7 +77,6 @@ class Test(TestCase):
 		self.assert_equal(result, 'div')
 
 	# blacklist
-
 	def should_not_validate_after_closing_bracket(self, vh):
 		vh.set_line('require ("require("../package").subPackage');
 		vh.move_cursor(0, 35)
