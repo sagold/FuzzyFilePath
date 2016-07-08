@@ -3,7 +3,7 @@ import sublime
 from FuzzyFilePath.common.config import config
 import FuzzyFilePath.common.selection as Selection
 
-NEEDLE_SEPARATOR = "\"\'\(\)\{\}"
+NEEDLE_SEPARATOR = ">\"\'\(\)\{\}"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\(\{"
 NEEDLE_SEPARATOR_AFTER = "^\"\'\)\}"
 NEEDLE_CHARACTERS = "\.A-Za-z0-9\-\_$"
@@ -99,15 +99,15 @@ def get_context(view):
 		# print("style:", style)
 
 	if separator is False:
-		# print("context", "separator undefined => invalid", needle)
+		print("context", "separator undefined => invalid", needle)
 		valid_needle = False
 		valid = False
 	elif re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
-		# print("context", "invalid characters in needle => invalid", needle)
+		print("context", "invalid characters in needle => invalid", needle)
 		valid_needle = False
 		valid = False
 	elif prefix is None and separator.strip() == "":
-		# print("context", "prefix undefined => invalid", needle)
+		print("context", "prefix undefined => invalid", needle)
 		valid = False
 
 	return {

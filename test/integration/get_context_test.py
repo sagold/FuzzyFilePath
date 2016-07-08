@@ -24,6 +24,15 @@ class Test(TestCase):
 
 		self.assert_equal(needle, 'path')
 
+	def should_identify_hbs_partials(self, viewHelper):
+		viewHelper.set_line('{{> src/to/folder/file.hbs}}')
+		viewHelper.move_cursor(0, 10)
+
+		context = get_context(viewHelper.view)
+
+		self.assert_equal(context.get("needle"), 'src/to/folder/file.hbs')
+		self.assert_equal(context.get("region").a, 4)
+
 	#prefix
 	def should_return_prefix_before_bracket(self, viewHelper):
 		viewHelper.set_line('prefix(file)')
