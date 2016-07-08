@@ -24,15 +24,14 @@ class Test(TestCase):
 	def should_abort_on_empty_values(self):
 		needle = ""
 		current_folder = ""
-		project_folder = ""
 		trigger = {}
 
-		valid = Query.build(needle, trigger, current_folder, project_folder)
+		valid = Query.build(needle, trigger, current_folder)
 
 		self.assert_equal(valid, False)
 
 	def should_be_valid_for_auto(self):
-		valid = bool(Query.build("", valid_trigger, "", ""))
+		valid = bool(Query.build("", valid_trigger, ""))
 
 		self.assert_equal(valid, True)
 
@@ -40,7 +39,7 @@ class Test(TestCase):
 	def should_set_basepath_to_current_folder(self):
 		valid_trigger["relative"] = True
 
-		Query.build("", valid_trigger, "current_folder", "")
+		Query.build("", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), "current_folder")
 
@@ -49,14 +48,14 @@ class Test(TestCase):
 		# !Potential problem: path requires a trailing slash (os.path.dirname)
 		valid_trigger["base_directory"] = "base_directory/"
 
-		Query.build("", valid_trigger, "current_folder", "")
+		Query.build("", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), "base_directory")
 
 	def should_not_set_basepath_for_absolute_queries(self):
 		valid_trigger["relative"] = False
 
-		Query.build("", valid_trigger, "current_folder", "")
+		Query.build("", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), False)
 
@@ -64,14 +63,14 @@ class Test(TestCase):
 	def should_prefer_needletype_over_relative_setting_01(self):
 		valid_trigger["relative"] = True
 
-		Query.build("/absolute", valid_trigger, "current_folder", "")
+		Query.build("/absolute", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), False)
 
 	def should_prefer_needletype_over_relative_setting_02(self):
 		valid_trigger["relative"] = False
 
-		Query.build("../relative", valid_trigger, "current_folder", "")
+		Query.build("../relative", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), "current_folder")
 
@@ -80,7 +79,7 @@ class Test(TestCase):
 		valid_trigger["relative"] = True
 		Query.force("filepath_type", "absolute")
 
-		Query.build("../relative", valid_trigger, "current_folder", "")
+		Query.build("../relative", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), False)
 
@@ -88,21 +87,21 @@ class Test(TestCase):
 		valid_trigger["relative"] = False
 		Query.force("filepath_type", "relative")
 
-		Query.build("/absolute", valid_trigger, "current_folder", "")
+		Query.build("/absolute", valid_trigger, "current_folder")
 
 		self.assert_equal(Query.get_base_path(), "current_folder")
 
 	#swap rel <-> abs
 	def should_transform_rel_to_abs_query(self):
 		Query.force("filepath_type", "absolute") # set query to be absolute
-		Query.build("../folder/sub", valid_trigger, "current_folder", "") # but insert relative path
+		Query.build("../folder/sub", valid_trigger, "current_folder") # but insert relative path
 
 		self.assert_equal(Query.get_needle(), "folder/sub")
 		self.assert_equal(Query.get_base_path(), False)
 
 	def should_transform_abs_to_rel_query(self):
 		Query.force("filepath_type", "relative") # set query to be relative
-		Query.build("/folder/sub", valid_trigger, "current_folder", "") # but insert absolute path
+		Query.build("/folder/sub", valid_trigger, "current_folder") # but insert absolute path
 
 		self.assert_equal(Query.get_needle(), "folder/sub")
 		self.assert_equal(Query.get_base_path(), "current_folder")

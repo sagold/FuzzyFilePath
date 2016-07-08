@@ -159,7 +159,7 @@ class Query:
     def get_needle():
         return Query.needle
 
-    def build(needle, trigger, current_folder, project_folder):
+    def build(needle, trigger, current_folder):
 
         query = {}
 
@@ -335,7 +335,7 @@ class FuzzyFilePath():
         else:
             verbose(ID, "context evaluation {0}".format(expression))
 
-        if Query.build(expression.get("needle"), trigger, current_folder, project_folder) is False:
+        if Query.build(expression.get("needle"), trigger, current_folder) is False:
             # query is valid, but may not be triggered: not forced, no auto-options
             verbose(ID, "abort valid query: auto trigger disabled")
             return False

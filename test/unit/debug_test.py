@@ -17,7 +17,7 @@ class Test(TestCase):
 		query = Query.build("", {
 			"relative": True,
 			"auto": True
-		}, "current_folder", "")
+		}, "current_folder")
 
 		self.assert_equal(query["base_path"], "current_folder")
 
@@ -26,6 +26,6 @@ class Test(TestCase):
 		query = Query.build("", {
 			"relative": False,
 			"auto": True
-		}, "current_folder", "")
+		}, "current_folder")
 
 		self.assert_equal(query["base_path"], False)
