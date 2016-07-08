@@ -35,4 +35,7 @@ class ProjectListener(sublime_plugin.EventListener):
 
     # another (possible) project has been opened/focused
     def on_project_activated(self, view):
+        window = view.window()
+        if not window:
+            return False
         ProjectManager.activate_project(view.window())
