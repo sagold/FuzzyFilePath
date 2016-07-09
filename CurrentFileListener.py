@@ -2,6 +2,7 @@ import re
 import copy
 import sublime_plugin
 
+import FuzzyFilePath.controller as controller
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose
 import FuzzyFilePath.project.validate as Validate
@@ -15,11 +16,13 @@ class CurrentFileListener(sublime_plugin.EventListener):
 
     def on_post_save_async(self, view):
         if CurrentFile.is_temp():
-            verbose(ID, "temp file saved, reevaluate")
             CurrentFile.cache[view.id()] = None
-            ProjectManager.rebuild_filecache()
+            self.on_file_created()
             self.on_activated(view)
 
     def on_activated(self, view):
         # view has gained focus
-        CurrentFile.evaluate_current(view, ProjectManager.get_current_project())
+        controller.on_file_focus(view)
+
+    def on_file_created(self):
+        controller.on_file_created()

@@ -18,6 +18,13 @@ def on_project_activate(window):
 	verbose(ID, "activate project")
 	ProjectManager.activate_project(window)
 
+def on_file_created(view):
+	"""a new file has been created"""
+	ProjectManager.rebuild_filecache()
+
+def on_file_focus(view):
+	CurrentFile.evaluate_current(view, ProjectManager.get_current_project())
+
 """
 def get_filepath_completions(view):
 	completions = False
@@ -35,11 +42,7 @@ def on_query_completion_inserted(view, post_remove):
 def on_query_completion_aborted():
 	FuzzyFilePath.completion_stop()
 
-def on_file_created(view):
-	ProjectManager.rebuild_filecache()
 
-def on_file_focus(view):
-	CurrentFile.evaluate_current(view, ProjectManager.get_current_project())
 
 def on_project_activate(window):
 	verbose(ID, "activate project")
