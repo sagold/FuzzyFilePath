@@ -34,53 +34,54 @@ def update_settings():
 
 #query
 def get_filepath_completions(view):
-	completions = False
+    if not CurrentFile.is_valid():
+        Query.reset()
+        return False
 
-	if CurrentFile.is_valid():
-	    verbose(ID, "get filepath completions")
-	    completions = Completion.get_filepaths(view, Query, CurrentFile)
+    verbose(ID, "get filepath completions")
+    completions = Completion.get_filepaths(view, Query, CurrentFile)
 
-	if completions and len(completions[0]) > 0:
-	    Completion.start(Query.get_replacements())
-	    view.run_command('_enter_insert_mode') # vintageous
-	    log("{0} completions found".format(len(completions)))
-	else:
-	    sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
-	    Completion.stop()
+    if completions and len(completions[0]) > 0:
+        Completion.start(Query.get_replacements())
+        view.run_command('_enter_insert_mode') # vintageous
+        log("{0} completions found".format(len(completions)))
+    else:
+        sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
+        Completion.stop()
 
-	Query.reset()
-	return completions
+    Query.reset()
+    return completions
 
 
 def on_query_completion_inserted(view, post_remove):
-	if Completion.is_active():
-	    verbose(ID, "query completion inserted")
-	    Completion.update_inserted_filepath(view, post_remove)
-	    Completion.stop()
+    if Completion.is_active():
+        verbose(ID, "query completion inserted")
+        Completion.update_inserted_filepath(view, post_remove)
+        Completion.stop()
 
 
 def on_query_completion_aborted():
-	Completion.stop()
+    Completion.stop()
 
 
 #project
 def on_project_focus(window):
-	"""a new window has received focus"""
-	verbose(ID, "focus project")
-	ProjectManager.update_project(window)
+    """a new window has received focus"""
+    verbose(ID, "focus project")
+    ProjectManager.update_project(window)
 
 
 def on_project_activated(window):
-	"""a new project has received focus"""
-	verbose(ID, "activate project")
-	ProjectManager.activate_project(window)
+    """a new project has received focus"""
+    verbose(ID, "activate project")
+    ProjectManager.activate_project(window)
 
 
 #file
 def on_file_created():
-	"""a new file has been created"""
-	ProjectManager.rebuild_filecache()
+    """a new file has been created"""
+    ProjectManager.rebuild_filecache()
 
 
 def on_file_focus(view):
-	CurrentFile.evaluate_current(view, ProjectManager.get_current_project())
+    CurrentFile.evaluate_current(view, ProjectManager.get_current_project())
