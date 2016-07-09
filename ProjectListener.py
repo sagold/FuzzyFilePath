@@ -8,7 +8,7 @@ from FuzzyFilePath.project.ProjectManager import get_project_folder
 ID = "ProjectListener"
 
 class ProjectListener(sublime_plugin.EventListener):
-    """ listens on window changes, delegating events to project manager """
+    """ listens on window changes, delegating events to controller """
 
     previous_project = None
     previous_window = None

@@ -3,11 +3,8 @@ import copy
 import sublime_plugin
 
 import FuzzyFilePath.controller as controller
-from FuzzyFilePath.common.config import config
-from FuzzyFilePath.common.verbose import verbose
-import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.project.CurrentFile import CurrentFile
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+
 
 ID = "CurrentFileListener"
 
