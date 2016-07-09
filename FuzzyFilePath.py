@@ -40,7 +40,6 @@ from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.common.string import get_diff
 
 
 ID = "FuzzyFilePath"
@@ -58,6 +57,12 @@ def get_matching_autotriggers(scope_cache, scope, triggers):
         result = scope_cache.get(scope)
 
     return result
+
+
+def get_start_expression():
+    print("START EXPR", start_expression)
+    return start_expression
+
 
 def get_filepath_completions(scope_cache, view, project_folder, current_folder):
     global Context, Selection, start_expression
@@ -137,27 +142,4 @@ def get_filepath_completions(scope_cache, view, project_folder, current_folder):
     Query.reset()
     return completions
 
-def update_inserted_filepath(view, post_remove):
-    global start_expression
 
-    expression = Context.get_context(view)
-
-    # diff of previous needle and inserted needle
-    diff = get_diff(post_remove, expression["needle"])
-    # cleanup string
-    final_path = re.sub("^" + diff["start"], "", expression["needle"])
-    # do not replace current word
-    if diff["end"] != start_expression["word"]:
-        final_path = re.sub(diff["end"] + "$", "", final_path)
-
-    # remove path query completely
-    final_path = Completion.get_final_path(final_path)
-    log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
-
-    # replace current query with final path
-    view.run_command("ffp_replace_region", {
-        "a": expression["region"].a,
-        "b": expression["region"].b,
-        "string": final_path,
-        "move_cursor": True
-    })

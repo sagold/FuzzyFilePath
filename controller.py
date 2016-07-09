@@ -45,7 +45,7 @@ def get_filepath_completions(view):
 def on_query_completion_inserted(view, post_remove):
 	if Completion.is_active():
 	    verbose(ID, "query completion inserted")
-	    FuzzyFilePath.update_inserted_filepath(view, post_remove)
+	    Completion.update_inserted_filepath(view, FuzzyFilePath.get_start_expression(), post_remove)
 	    Completion.stop()
 
 
