@@ -1,6 +1,6 @@
 import sublime_plugin
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.query import Query
+import FuzzyFilePath.query as Query
 
 class InsertPathCommand(sublime_plugin.TextCommand):
     """ trigger customized autocomplete overriding auto settings """

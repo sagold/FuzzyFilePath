@@ -33,14 +33,14 @@ import re
 import os
 
 import FuzzyFilePath.completion as Completion
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.query as Query
 import FuzzyFilePath.expression as Context
+import FuzzyFilePath.common.selection as Selection
+from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
-import FuzzyFilePath.common.selection as Selection
 from FuzzyFilePath.common.string import get_diff
-from FuzzyFilePath.query import Query
 
 
 ID = "FuzzyFilePath"
