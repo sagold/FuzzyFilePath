@@ -43,14 +43,14 @@ class Test(TestCase):
 
 		self.assert_equal(Query.get_base_path(), "current_folder")
 
-	def should_set_base_directory_for_relative_queries(self):
+	def should_set_base_path_for_relative_queries(self):
 		valid_trigger["relative"] = True
 		# !Potential problem: path requires a trailing slash (os.path.dirname)
-		valid_trigger["base_directory"] = "base_directory/"
+		valid_trigger["base_path"] = "base_path/"
 
 		Query.build("", valid_trigger, "current_folder")
 
-		self.assert_equal(Query.get_base_path(), "base_directory")
+		self.assert_equal(Query.get_base_path(), "base_path")
 
 	def should_not_set_basepath_for_absolute_queries(self):
 		valid_trigger["relative"] = False
