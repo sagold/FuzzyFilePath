@@ -41,7 +41,7 @@ def get_filepath_completions(view):
 
 	if CurrentFile.is_valid():
 	    verbose(ID, "get filepath completions")
-	    completions = FuzzyFilePath.get_filepath_completions(view, scope_cache, CurrentFile)
+	    completions = Completion.get_filepaths(view, Query, scope_cache, CurrentFile)
 
 	if completions and len(completions[0]) > 0:
 	    Completion.start(Query.get_replacements())
@@ -58,7 +58,7 @@ def get_filepath_completions(view):
 def on_query_completion_inserted(view, post_remove):
 	if Completion.is_active():
 	    verbose(ID, "query completion inserted")
-	    Completion.update_inserted_filepath(view, FuzzyFilePath.get_start_expression(), post_remove)
+	    Completion.update_inserted_filepath(view, post_remove)
 	    Completion.stop()
 
 

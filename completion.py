@@ -2,11 +2,19 @@
     Manage active state of completion and post cleanup
 """
 import re
+import sublime
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.string import get_diff
 import FuzzyFilePath.expression as Context
+import FuzzyFilePath.common.selection as Selection
+from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.common.verbose import log
+from FuzzyFilePath.common.verbose import verbose
+
+
+ID = "Completion"
+start_expression = False
 
 state = {
     "active": False,        # completion currently in progress (serve suggestions)
@@ -47,7 +55,73 @@ def get_final_path(path):
     return path
 
 
-def update_inserted_filepath(view, start_expression, post_remove):
+def get_filepaths(view, query, scope_cache, current_file):
+    global start_expression
+
+    # parse current context, may contain 'is_valid: False'
+    expression = Context.get_context(view)
+    if expression["error"] and not query.by_command():
+        verbose(ID, "abort - not a valid context")
+        return False
+
+    trigger = find_trigger(view, scope_cache, expression, query.by_command())
+
+    # currently trigger is required in Query.build
+    if trigger is False:
+        verbose(ID, "abort - no trigger found")
+        return False
+
+    if not expression["valid_needle"]:
+        word = Selection.get_word(view)
+        expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
+        verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
+    else:
+        verbose(ID, "context evaluation {0}".format(expression))
+
+    if query.build(expression.get("needle"), trigger, current_file.get_directory()) is False:
+        # query is valid, but may not be triggered: not forced, no auto-options
+        verbose(ID, "abort - no auto trigger found")
+        return False
+
+    start_expression = expression
+    return ProjectManager.search_completions(
+        query.get_needle(),
+        current_file.get_project_directory(),
+        query.get_extensions(),
+        query.get_base_path()
+    )
+
+
+def get_matching_autotriggers(scope_cache, scope, triggers):
+    # get cached evaluation
+    result = scope_cache.get(scope)
+    if result is None:
+        # evaluate triggers on current scope
+        result = [trigger for trigger in triggers if trigger.get("auto") and re.search(trigger.get("scope"), scope)]
+        # add to cache
+        scope_cache[scope] = result if len(result) > 0 else False
+        result = scope_cache.get(scope)
+
+    return result
+
+
+def find_trigger(view, scope_cache, expression, byCommand=False):
+    triggers = config["TRIGGER"]
+    current_scope = Selection.get_scope(view)
+
+    if not byCommand:
+        # get any triggers that match the requirements and may start automatically
+        triggers = get_matching_autotriggers(scope_cache, current_scope, config["TRIGGER"])
+
+    if not bool(triggers):
+        verbose(ID, "abort query, no valid scope-regex for current context")
+        return False
+
+    # check if one of the triggers match the current context (expression, scope)
+    return Context.find_trigger(expression, current_scope, triggers)
+
+
+def update_inserted_filepath(view, post_remove):
     """adjusts inserted filepath - post completion"""
     expression = Context.get_context(view)
 
