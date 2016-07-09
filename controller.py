@@ -8,25 +8,28 @@ from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
 ID = "Controller"
 
 
+#completions
 def get_filepath_completions(view):
 	completions = False
 	if CurrentFile.is_valid():
 	    verbose(ID, "get filepath completions")
-	    #completions = FuzzyFilePath.get_filepath_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
-	    completions = FuzzyFilePath.on_query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
+	    completions = FuzzyFilePath.get_filepath_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
+	    # completions = FuzzyFilePath.on_query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
 	return completions
 
 
 def on_query_completion_inserted(view, post_remove):
 	if FuzzyFilePath.completion_active():
 	    verbose(ID, "query completion inserted")
-	    #FuzzyFilePath.update_inserted_filepath(view, post_remove)
-	    FuzzyFilePath.on_post_insert_completion(view, post_remove)
+	    FuzzyFilePath.update_inserted_filepath(view, post_remove)
 	    FuzzyFilePath.completion_stop()
+
 
 def on_query_completion_aborted():
 	FuzzyFilePath.completion_stop()
 
+
+#project
 def on_project_focus(window):
 	"""a new window has received focus"""
 	verbose(ID, "focus project")
@@ -39,6 +42,7 @@ def on_project_activated(window):
 	ProjectManager.activate_project(window)
 
 
+#file
 def on_file_created(view):
 	"""a new file has been created"""
 	ProjectManager.rebuild_filecache()

@@ -288,7 +288,7 @@ class FuzzyFilePath():
     def completion_stop():
         Completion.stop()
 
-    def on_query_completions(view, project_folder, current_folder):
+    def get_filepath_completions(view, project_folder, current_folder):
         global Context, Selection
 
         current_scope = Selection.get_scope(view)
@@ -367,7 +367,7 @@ class FuzzyFilePath():
         Query.reset()
         return completions
 
-    def on_post_insert_completion(view, post_remove):
+    def update_inserted_filepath(view, post_remove):
         start_expression = FuzzyFilePath.start_expression
         expression = Context.get_context(view)
 
