@@ -1,12 +1,11 @@
 import re
 import sublime_plugin
 
+import FuzzyFilePath.controller as controller
 import FuzzyFilePath.common.selection as Selection
 import FuzzyFilePath.expression as Context
 from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.project.CurrentFile import CurrentFile
-from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
 
 
 ID = "QueryCompletionListener"
@@ -27,20 +26,20 @@ class QueryCompletionListener(sublime_plugin.EventListener):
         if self.track_insert["active"] is False:
             self.start_tracking(view)
 
-        if CurrentFile.is_valid():
-            verbose(ID, "-> query completions")
-            completions = FuzzyFilePath.on_query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
-            if completions is not False:
-                return completions
+        completions = controller.get_filepath_completions(view)
+        if completions is not False:
+            return completions
 
         self.finish_tracking(view)
         return False
 
+    #custom
     def on_post_insert_completion(self, view, command_name):
-        if FuzzyFilePath.completion_active():
-            verbose(ID, "-> post insert completion")
-            FuzzyFilePath.on_post_insert_completion(view, self.post_remove)
-            FuzzyFilePath.completion_stop()
+        controller.on_query_completion_inserted(view, self.post_remove)
+
+    #custom
+    def on_query_abort(self):
+        controller.on_query_completion_aborted()
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
@@ -71,7 +70,7 @@ class QueryCompletionListener(sublime_plugin.EventListener):
         if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
             self.start_tracking(view, command_name)
         elif command_name == "hide_auto_complete":
-            FuzzyFilePath.completion_stop()
+            self.on_query_abort()
             self.abort_tracking()
 
     # check if a completion is inserted and trigger on_post_insert_completion
