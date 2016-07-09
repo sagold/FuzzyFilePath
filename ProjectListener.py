@@ -1,7 +1,7 @@
 import sublime
 import sublime_plugin
 
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.controller as controller
 from FuzzyFilePath.project.ProjectManager import get_project_folder
 
 
@@ -31,11 +31,11 @@ class ProjectListener(sublime_plugin.EventListener):
 
     # project has been refocused
     def on_window_activated(self, view):
-        ProjectManager.update_project(view.window())
+        controller.on_project_focus(view.window())
 
     # another (possible) project has been opened/focused
     def on_project_activated(self, view):
         window = view.window()
         if not window:
             return False
-        ProjectManager.activate_project(view.window())
+        controller.on_project_activated(window)
