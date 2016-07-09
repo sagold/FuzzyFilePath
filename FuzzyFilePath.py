@@ -34,14 +34,11 @@ import os
 
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.project.Project import Project
-from FuzzyFilePath.project.CurrentFile import CurrentFile
 import FuzzyFilePath.expression as Context
-import FuzzyFilePath.project.validate as Validate
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 import FuzzyFilePath.common.selection as Selection
-import FuzzyFilePath.common.path as Path
 import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.string import get_diff
 from FuzzyFilePath.query import Query
