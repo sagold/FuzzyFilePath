@@ -64,19 +64,24 @@ def get_start_expression():
     return start_expression
 
 
-def get_filepath_completions(scope_cache, view, project_folder, current_folder):
-    global Context, Selection, start_expression
-
+def find_trigger(view, scope_cache, expression):
+    triggers = config["TRIGGER"]
     current_scope = Selection.get_scope(view)
 
     if not Query.by_command():
+        # get any triggers that match the requirements and may start automatically
         triggers = get_matching_autotriggers(scope_cache, current_scope, config["TRIGGER"])
-    else:
-        triggers = config["TRIGGER"]
 
     if not bool(triggers):
         verbose(ID, "abort query, no valid scope-regex for current context")
         return False
+
+    # check if one of the triggers match the current context (expression, scope)
+    return Context.find_trigger(expression, current_scope, triggers)
+
+
+def get_filepath_completions(scope_cache, view, project_folder, current_folder):
+    global Context, Selection, start_expression
 
     # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
@@ -84,19 +89,7 @@ def get_filepath_completions(scope_cache, view, project_folder, current_folder):
         verbose(ID, "abort not a valid context")
         return False
 
-    # check if there is a trigger for the current expression
-    trigger = Context.find_trigger(expression, current_scope, triggers)
-
-    # expression | trigger  | force | ACTION            | CURRENT
-    # -----------|----------|-------|-------------------|--------
-    # invalid    | False    | False | abort             | abort
-    # invalid    | False    | True  | query needle      | abort
-    # invalid    | True     | False | query             |
-    # invalid    | True     | True  | query +override   |
-    # valid      | False    | False | abort             | abort
-    # valid      | False    | True  | query needle      | abort
-    # valid      | True     | False | query             |
-    # valid      | True     | True  | query +override   |
+    trigger = find_trigger(view, scope_cache, expression)
 
     # currently trigger is required in Query.build
     if trigger is False:
