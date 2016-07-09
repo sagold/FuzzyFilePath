@@ -45,7 +45,7 @@ import FuzzyFilePath.common.path as Path
 import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.string import get_diff
 from FuzzyFilePath.query import Query
-from FuzzyFilePath.query import Completion
+from FuzzyFilePath.completion import Completion
 
 scope_cache = {}
 

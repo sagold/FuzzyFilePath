@@ -2,38 +2,8 @@ import re
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
+from FuzzyFilePath.completion import Completion
 
-class Completion:
-    """
-        Manage active state of completion and post cleanup
-    """
-    active = False  # completion currently in progress (servce suggestions)
-    onInsert = []   # substitutions for building final path
-    base_directory = False  # base directory to set for absolute path, enabled by query...
-
-    def start(post_replacements=[]):
-        Completion.replaceOnInsert = post_replacements
-        Completion.active = True
-
-    def stop():
-        Completion.active = False
-        # set by query....
-        Completion.base_directory = False
-
-    def is_active():
-        return Completion.active
-
-    def get_final_path(path):
-        # hack reverse
-        path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
-        for replace in Completion.replaceOnInsert:
-            path = re.sub(replace[0], replace[1], path)
-
-        if Completion.base_directory and path.startswith("/"):
-            path = re.sub("^\/" + Completion.base_directory, "", path)
-            path = Path.sanitize(path)
-
-        return path
 
 class Query:
     """
@@ -118,7 +88,7 @@ class Query:
             current_folder = Path.sanitize_base_directory(base_directory)
         # notify completion to replace path
         if base_directory and needle_is_absolute:
-            Completion.base_directory = current_folder
+            Completion.set_base_directory(current_folder)
         #
         # filepath_type
         #
