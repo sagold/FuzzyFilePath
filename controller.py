@@ -9,8 +9,6 @@ from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 
-import FuzzyFilePath.FuzzyFilePath as FuzzyFilePath
-
 
 ID = "Controller"
 scope_cache = {}
