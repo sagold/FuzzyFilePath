@@ -7,7 +7,7 @@ import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.config import config
 
-from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
+import FuzzyFilePath.FuzzyFilePath as FuzzyFilePath
 
 
 ID = "Controller"

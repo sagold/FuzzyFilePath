@@ -28,7 +28,7 @@
     @author Sascha Goldhofer <post@saschagoldhofer.de>
 """
 import sublime
-import sublime_plugin
+
 import re
 import os
 
@@ -44,23 +44,7 @@ from FuzzyFilePath.query import Query
 
 
 ID = "FuzzyFilePath"
-
-
-class InsertPathCommand(sublime_plugin.TextCommand):
-    """ trigger customized autocomplete overriding auto settings """
-    def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):
-        if config["DISABLE_KEYMAP_ACTIONS"] is True:
-            return False
-
-        Query.force("filepath_type", type)
-        Query.force("base_directory", base_directory)
-
-        if len(replace_on_insert) > 0:
-            Query.force("replace_on_insert", replace_on_insert)
-        if len(extensions) > 0:
-            Query.force("extensions", extensions)
-
-        self.view.run_command('auto_complete', "insert")
+start_expression = None
 
 
 def get_matching_autotriggers(scope_cache, scope, triggers):
@@ -75,107 +59,105 @@ def get_matching_autotriggers(scope_cache, scope, triggers):
 
     return result
 
+def get_filepath_completions(scope_cache, view, project_folder, current_folder):
+    global Context, Selection, start_expression
 
-class FuzzyFilePath():
+    current_scope = Selection.get_scope(view)
 
-    def get_filepath_completions(scope_cache, view, project_folder, current_folder):
-        global Context, Selection
+    if not Query.by_command():
+        triggers = get_matching_autotriggers(scope_cache, current_scope, config["TRIGGER"])
+    else:
+        triggers = config["TRIGGER"]
 
-        current_scope = Selection.get_scope(view)
+    if not bool(triggers):
+        verbose(ID, "abort query, no valid scope-regex for current context")
+        return False
 
-        if not Query.by_command():
-            triggers = get_matching_autotriggers(scope_cache, current_scope, config["TRIGGER"])
-        else:
-            triggers = config["TRIGGER"]
+    # parse current context, may contain 'is_valid: False'
+    expression = Context.get_context(view)
+    if expression["error"] and not Query.by_command():
+        verbose(ID, "abort not a valid context")
+        return False
 
-        if not bool(triggers):
-            verbose(ID, "abort query, no valid scope-regex for current context")
-            return False
+    # check if there is a trigger for the current expression
+    trigger = Context.find_trigger(expression, current_scope, triggers)
 
-        # parse current context, may contain 'is_valid: False'
-        expression = Context.get_context(view)
-        if expression["error"] and not Query.by_command():
-            verbose(ID, "abort not a valid context")
-            return False
+    # expression | trigger  | force | ACTION            | CURRENT
+    # -----------|----------|-------|-------------------|--------
+    # invalid    | False    | False | abort             | abort
+    # invalid    | False    | True  | query needle      | abort
+    # invalid    | True     | False | query             |
+    # invalid    | True     | True  | query +override   |
+    # valid      | False    | False | abort             | abort
+    # valid      | False    | True  | query needle      | abort
+    # valid      | True     | False | query             |
+    # valid      | True     | True  | query +override   |
 
-        # check if there is a trigger for the current expression
-        trigger = Context.find_trigger(expression, current_scope, triggers)
+    # currently trigger is required in Query.build
+    if trigger is False:
+        verbose(ID, "abort completion, no trigger found")
+        return False
 
-        # expression | trigger  | force | ACTION            | CURRENT
-        # -----------|----------|-------|-------------------|--------
-        # invalid    | False    | False | abort             | abort
-        # invalid    | False    | True  | query needle      | abort
-        # invalid    | True     | False | query             |
-        # invalid    | True     | True  | query +override   |
-        # valid      | False    | False | abort             | abort
-        # valid      | False    | True  | query needle      | abort
-        # valid      | True     | False | query             |
-        # valid      | True     | True  | query +override   |
+    if not expression["valid_needle"]:
+        word = Selection.get_word(view)
+        expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
+        verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
+    else:
+        verbose(ID, "context evaluation {0}".format(expression))
 
-        # currently trigger is required in Query.build
-        if trigger is False:
-            verbose(ID, "abort completion, no trigger found")
-            return False
+    if Query.build(expression.get("needle"), trigger, current_folder) is False:
+        # query is valid, but may not be triggered: not forced, no auto-options
+        verbose(ID, "abort valid query: auto trigger disabled")
+        return False
 
-        if not expression["valid_needle"]:
-            word = Selection.get_word(view)
-            expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
-            verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
-        else:
-            verbose(ID, "context evaluation {0}".format(expression))
+    verbose(ID, ".───────────────────────────────────────────────────────────────")
+    verbose(ID, "| scope settings: {0}".format(trigger))
+    verbose(ID, "| search needle: '{0}'".format(Query.get_needle()))
+    verbose(ID, "| in base path: '{0}'".format(Query.get_base_path()))
 
-        if Query.build(expression.get("needle"), trigger, current_folder) is False:
-            # query is valid, but may not be triggered: not forced, no auto-options
-            verbose(ID, "abort valid query: auto trigger disabled")
-            return False
+    start_expression = expression
+    completions = ProjectManager.search_completions(
+        Query.get_needle(),
+        project_folder,
+        Query.get_extensions(),
+        Query.get_base_path()
+    )
 
-        verbose(ID, ".───────────────────────────────────────────────────────────────")
-        verbose(ID, "| scope settings: {0}".format(trigger))
-        verbose(ID, "| search needle: '{0}'".format(Query.get_needle()))
-        verbose(ID, "| in base path: '{0}'".format(Query.get_base_path()))
+    if completions and len(completions[0]) > 0:
+        Completion.start(Query.get_replacements())
+        view.run_command('_enter_insert_mode') # vintageous
+        log("| => {0} completions found".format(len(completions)))
+    else:
+        sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
+        Completion.stop()
+        log("| => no valid files found for needle: {0}".format(Query.get_needle()))
 
-        FuzzyFilePath.start_expression = expression
-        completions = ProjectManager.search_completions(
-            Query.get_needle(),
-            project_folder,
-            Query.get_extensions(),
-            Query.get_base_path()
-        )
+    log("")
 
-        if completions and len(completions[0]) > 0:
-            Completion.start(Query.get_replacements())
-            view.run_command('_enter_insert_mode') # vintageous
-            log("| => {0} completions found".format(len(completions)))
-        else:
-            sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
-            Completion.stop()
-            log("| => no valid files found for needle: {0}".format(Query.get_needle()))
+    Query.reset()
+    return completions
 
-        log("")
+def update_inserted_filepath(view, post_remove):
+    global start_expression
 
-        Query.reset()
-        return completions
+    expression = Context.get_context(view)
 
-    def update_inserted_filepath(view, post_remove):
-        start_expression = FuzzyFilePath.start_expression
-        expression = Context.get_context(view)
+    # diff of previous needle and inserted needle
+    diff = get_diff(post_remove, expression["needle"])
+    # cleanup string
+    final_path = re.sub("^" + diff["start"], "", expression["needle"])
+    # do not replace current word
+    if diff["end"] != start_expression["word"]:
+        final_path = re.sub(diff["end"] + "$", "", final_path)
 
-        # diff of previous needle and inserted needle
-        diff = get_diff(post_remove, expression["needle"])
-        # cleanup string
-        final_path = re.sub("^" + diff["start"], "", expression["needle"])
-        # do not replace current word
-        if diff["end"] != start_expression["word"]:
-            final_path = re.sub(diff["end"] + "$", "", final_path)
+    # remove path query completely
+    final_path = Completion.get_final_path(final_path)
+    log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
 
-        # remove path query completely
-        final_path = Completion.get_final_path(final_path)
-        log("post cleanup path:'", expression.get("needle"), "' ~~> '", final_path, "'")
-
-        # replace current query with final path
-        view.run_command("ffp_replace_region", {
-            "a": expression["region"].a,
-            "b": expression["region"].b,
-            "string": final_path,
-            "move_cursor": True
-        })
+    # replace current query with final path
+    view.run_command("ffp_replace_region", {
+        "a": expression["region"].a,
+        "b": expression["region"].b,
+        "string": final_path,
+        "move_cursor": True
+    })
