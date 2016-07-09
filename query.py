@@ -14,13 +14,12 @@ state = {
     "post_remove_path": False   # path to remove on post cleanup
 }
 
-override = {
-    # set by insert_path_command: overrideable properties for next query
-    # "extensions": [],
-    # "filepath_type": False,
-    # "base_path": "",
-    # "replace_on_insert": []
-}
+# set by insert_path_command: overrideable properties for next query
+# "extensions": [],
+# "filepath_type": False,
+# "base_path": "",
+# "replace_on_insert": []
+override = {}
 
 
 def reset():
@@ -74,17 +73,16 @@ def build(needle, trigger, current_folder):
     needle_is_absolute = Path.is_absolute(needle)
     needle_is_path = needle_is_absolute or Path.is_relative(needle)
 
-    valid = by_command() or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
-    if valid is False:
+    if not trigger or not (by_command() or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))):
         return False
 
-    """ Set current directory by force, else by trigger:
+    """ Adjust current folder by specified base folder:
 
-        TRIGGER
-        ----------------------------------------
-        False       use current file's directory
-        True        use settings: base_directory
-        String      use string as base_directory
+        BASE-FOLDER ->  CURRENT_FOLDER
+        ------------------------------------------------------------
+        True            use settings base_directory
+        String          use string as base_directory
+        False           use current file's directory (parameter)
     """
     base_path = resolve_value("base_path", trigger, False)
     if base_path is True:
@@ -109,7 +107,7 @@ def resolve_path_type(needle, trigger):
         | --------
         | Trigger?
     """
-    type_of_path = False
+    type_of_path = False # OR RELATIVE BY DEFAULT?
     # test if forced by command
     if override.get("filepath_type"):
         type_of_path = override.get("filepath_type")

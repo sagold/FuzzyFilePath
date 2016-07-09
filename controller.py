@@ -46,7 +46,8 @@ def get_filepath_completions(view):
         view.run_command('_enter_insert_mode') # vintageous
         log("{0} completions found".format(len(completions)))
     else:
-        sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
+        if Query.get_needle() is not None:
+            sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
         Completion.stop()
 
     Query.reset()
