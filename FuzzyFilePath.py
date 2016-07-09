@@ -32,13 +32,11 @@ import sublime
 import re
 import os
 
-import FuzzyFilePath.completion as Completion
 import FuzzyFilePath.query as Query
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.selection as Selection
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 
 
@@ -80,20 +78,20 @@ def find_trigger(view, scope_cache, expression):
     return Context.find_trigger(expression, current_scope, triggers)
 
 
-def get_filepath_completions(scope_cache, view, project_folder, current_folder):
-    global Context, Selection, start_expression
+def get_filepath_completions(view, scope_cache, current_file):
+    global start_expression
 
     # parse current context, may contain 'is_valid: False'
     expression = Context.get_context(view)
     if expression["error"] and not Query.by_command():
-        verbose(ID, "abort not a valid context")
+        verbose(ID, "abort - not a valid context")
         return False
 
     trigger = find_trigger(view, scope_cache, expression)
 
     # currently trigger is required in Query.build
     if trigger is False:
-        verbose(ID, "abort completion, no trigger found")
+        verbose(ID, "abort - no trigger found")
         return False
 
     if not expression["valid_needle"]:
@@ -103,36 +101,17 @@ def get_filepath_completions(scope_cache, view, project_folder, current_folder):
     else:
         verbose(ID, "context evaluation {0}".format(expression))
 
-    if Query.build(expression.get("needle"), trigger, current_folder) is False:
+    if Query.build(expression.get("needle"), trigger, current_file.get_directory()) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
-        verbose(ID, "abort valid query: auto trigger disabled")
+        verbose(ID, "abort - no auto trigger found")
         return False
 
-    verbose(ID, ".───────────────────────────────────────────────────────────────")
-    verbose(ID, "| scope settings: {0}".format(trigger))
-    verbose(ID, "| search needle: '{0}'".format(Query.get_needle()))
-    verbose(ID, "| in base path: '{0}'".format(Query.get_base_path()))
-
     start_expression = expression
-    completions = ProjectManager.search_completions(
+    return ProjectManager.search_completions(
         Query.get_needle(),
-        project_folder,
+        current_file.get_project_directory(),
         Query.get_extensions(),
         Query.get_base_path()
     )
-
-    if completions and len(completions[0]) > 0:
-        Completion.start(Query.get_replacements())
-        view.run_command('_enter_insert_mode') # vintageous
-        log("| => {0} completions found".format(len(completions)))
-    else:
-        sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
-        Completion.stop()
-        log("| => no valid files found for needle: {0}".format(Query.get_needle()))
-
-    log("")
-
-    Query.reset()
-    return completions
 
 

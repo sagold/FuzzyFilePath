@@ -1,10 +1,12 @@
 import sublime
 import FuzzyFilePath.completion as Completion
+import FuzzyFilePath.query as Query
 from FuzzyFilePath.project.Project import Project
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 
 import FuzzyFilePath.FuzzyFilePath as FuzzyFilePath
@@ -36,9 +38,20 @@ def update_settings():
 #completions
 def get_filepath_completions(view):
 	completions = False
+
 	if CurrentFile.is_valid():
 	    verbose(ID, "get filepath completions")
-	    completions = FuzzyFilePath.get_filepath_completions(scope_cache, view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
+	    completions = FuzzyFilePath.get_filepath_completions(view, scope_cache, CurrentFile)
+
+	if completions and len(completions[0]) > 0:
+	    Completion.start(Query.get_replacements())
+	    view.run_command('_enter_insert_mode') # vintageous
+	    log("{0} completions found".format(len(completions)))
+	else:
+	    sublime.status_message("FFP no filepaths found for '" + Query.get_needle() + "'")
+	    Completion.stop()
+
+	Query.reset()
 	return completions
 
 
