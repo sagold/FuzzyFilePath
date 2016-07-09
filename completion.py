@@ -18,9 +18,9 @@ start_expression = False
 scope_cache = {}
 
 state = {
-    "active": False,        # completion currently in progress (serve suggestions)
-    "onInsert": [],         # substitutions for building final path
-    "base_directory": False # base directory to set for absolute path, enabled by query...
+    "active": False,            # completion currently in progress (serve suggestions)
+    "onInsert": [],             # substitutions for building final path
+    "base_directory": False     # base directory to set for absolute path
 }
 
 
@@ -59,31 +59,26 @@ def get_filepaths(view, query, current_file):
     global start_expression
 
     # parse current context, may contain 'is_valid: False'
-    expression = Context.get_context(view)
-    if expression["error"] and not query.by_command():
+    start_expression = Context.get_context(view)
+    if start_expression["error"] and not query.by_command():
         verbose(ID, "abort - not a valid context")
         return False
 
-    trigger = find_trigger(view, expression, query.by_command())
+    current_scope = Selection.get_scope(view)
+    trigger = find_trigger(current_scope, start_expression, query.by_command())
 
     # currently trigger is required in Query.build
     if trigger is False:
         verbose(ID, "abort - no trigger found")
         return False
 
-    if not expression["valid_needle"]:
-        word = Selection.get_word(view)
-        expression["needle"] = re.sub("[^\.A-Za-z0-9\-\_$]", "", word)
-        verbose(ID, "changed invalid needle to {0}".format(expression["needle"]))
-    else:
-        verbose(ID, "context evaluation {0}".format(expression))
-
-    if query.build(expression.get("needle"), trigger, current_file.get_directory()) is False:
+    if query.build(start_expression.get("needle"), trigger, current_file.get_directory()) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
         verbose(ID, "abort - no auto trigger found")
         return False
 
-    start_expression = expression
+    set_base_directory(query.get_post_remove_path())
+
     return ProjectManager.search_completions(
         query.get_needle(),
         current_file.get_project_directory(),
@@ -93,6 +88,7 @@ def get_filepaths(view, query, current_file):
 
 
 def get_matching_autotriggers(scope, triggers):
+    """ Returns all triggers that match the given scope """
     # get cached evaluation
     result = scope_cache.get(scope)
     if result is None:
@@ -105,9 +101,9 @@ def get_matching_autotriggers(scope, triggers):
     return result
 
 
-def find_trigger(view, expression, byCommand=False):
+def find_trigger(scope, expression, byCommand=False):
+    """ Returns the first trigger matching the given scope and expression """
     triggers = config["TRIGGER"]
-    current_scope = Selection.get_scope(view)
 
     if not byCommand:
         # get any triggers that match the requirements and may start automatically

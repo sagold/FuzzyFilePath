@@ -3,7 +3,6 @@
 """
 import re
 import FuzzyFilePath.common.path as Path
-import FuzzyFilePath.completion as Completion
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 
@@ -11,7 +10,8 @@ from FuzzyFilePath.common.config import config
 state = {
 
     "extensions": ["*"],
-    "base_path": False
+    "base_path": False,         # path of current query
+    "post_remove_path": False   # path to remove on post cleanup
 }
 
 override = {
@@ -49,6 +49,8 @@ def get_base_path():
 def get_extensions():
     return state.get("extensions")
 
+def get_post_remove_path():
+    return state.get("post_remove_path")
 
 def get_needle():
     return state.get("needle")
@@ -96,10 +98,7 @@ def build(needle, trigger, current_folder):
     elif base_path:
         current_folder = Path.sanitize_base_directory(base_path)
 
-    # notify completion to replace path
-    if base_path and needle_is_absolute:
-        Completion.set_base_directory(current_folder)
-
+    state["post_remove_path"] = current_folder if (base_path and needle_is_absolute) else False
     state["base_path"] = current_folder if resolve_path_type(needle, trigger) == "relative" else False
     state["replace_on_insert"] = resolve_value("replace_on_insert", trigger, [])
     state["extensions"] = resolve_value("extensions", trigger, ["*"])
