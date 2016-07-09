@@ -1,3 +1,6 @@
+"""
+    Build current query based on received modifiers
+"""
 import re
 import FuzzyFilePath.common.path as Path
 import FuzzyFilePath.completion as Completion
@@ -22,36 +25,40 @@ override = {
 }
 
 
-"""
-    Build current query based on received modifiers
-"""
-
 def reset():
     state["extensions"] = ["*"]
     state["base_path"] = False
     state["replace_on_insert"] = []
     override.clear()
 
+
 def force(key, value):
     override[key] = value
+
 
 def get(key, default=None):
     return override.get(key, default)
 
+
 def by_command():
     return bool(override.get("filepath_type", False))
+
 
 def get_base_path():
     return state.get("base_path")
 
+
 def get_extensions():
     return state.get("extensions")
+
 
 def get_needle():
     return state.get("needle")
 
+
 def get_replacements():
     return state.get("replace_on_insert")
+
 
 def build(needle, trigger, current_folder):
     force_type = override.get("filepath_type", False)
@@ -128,6 +135,7 @@ def build(needle, trigger, current_folder):
         return True
 
     return False
+
 
 def build_needle_query(needle, current_folder):
     """
