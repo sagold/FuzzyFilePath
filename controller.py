@@ -7,14 +7,12 @@ from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
 
 ID = "Controller"
 
-
 #completions
 def get_filepath_completions(view):
 	completions = False
 	if CurrentFile.is_valid():
 	    verbose(ID, "get filepath completions")
 	    completions = FuzzyFilePath.get_filepath_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
-	    # completions = FuzzyFilePath.on_query_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
 	return completions
 
 
