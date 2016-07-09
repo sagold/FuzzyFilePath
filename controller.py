@@ -67,7 +67,7 @@ def on_project_activated(window):
 
 
 #file
-def on_file_created(view):
+def on_file_created():
 	"""a new file has been created"""
 	ProjectManager.rebuild_filecache()
 
