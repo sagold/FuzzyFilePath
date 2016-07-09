@@ -34,38 +34,16 @@ import os
 
 import FuzzyFilePath.completion as Completion
 from FuzzyFilePath.project.ProjectManager import ProjectManager
-from FuzzyFilePath.project.Project import Project
 import FuzzyFilePath.expression as Context
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
 import FuzzyFilePath.common.selection as Selection
-import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.string import get_diff
 from FuzzyFilePath.query import Query
 
-scope_cache = {}
 
 ID = "FuzzyFilePath"
-
-
-def plugin_loaded():
-    """ load settings """
-    update_settings()
-    global_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    global_settings.add_on_change("update", update_settings)
-
-
-def update_settings():
-    """ restart projectFiles with new plugin and project settings """
-
-    # invalidate cache
-    global scope_cache
-    scope_cache = {}
-    # update settings
-    global_settings = Settings.update()
-    # update project settings
-    ProjectManager.initialize(Project, global_settings)
 
 
 class InsertPathCommand(sublime_plugin.TextCommand):
@@ -85,8 +63,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         self.view.run_command('auto_complete', "insert")
 
 
-def get_matching_autotriggers(scope, triggers):
-    global scope_cache
+def get_matching_autotriggers(scope_cache, scope, triggers):
     # get cached evaluation
     result = scope_cache.get(scope)
     if result is None:
@@ -101,13 +78,13 @@ def get_matching_autotriggers(scope, triggers):
 
 class FuzzyFilePath():
 
-    def get_filepath_completions(view, project_folder, current_folder):
+    def get_filepath_completions(scope_cache, view, project_folder, current_folder):
         global Context, Selection
 
         current_scope = Selection.get_scope(view)
 
         if not Query.by_command():
-            triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
+            triggers = get_matching_autotriggers(scope_cache, current_scope, config["TRIGGER"])
         else:
             triggers = config["TRIGGER"]
 

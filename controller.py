@@ -1,19 +1,44 @@
-
+import sublime
 import FuzzyFilePath.completion as Completion
-from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.project.Project import Project
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.common.settings as Settings
+from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.config import config
+
 from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
 
 
 ID = "Controller"
+scope_cache = {}
+
+
+#init
+def plugin_loaded():
+    """ load settings """
+    update_settings()
+    global_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    global_settings.add_on_change("update", update_settings)
+
+
+def update_settings():
+    """ restart projectFiles with new plugin and project settings """
+    # invalidate cache
+    global scope_cache
+    scope_cache = {}
+    # update settings
+    global_settings = Settings.update()
+    # update project settings
+    ProjectManager.initialize(Project, global_settings)
+
 
 #completions
 def get_filepath_completions(view):
 	completions = False
 	if CurrentFile.is_valid():
 	    verbose(ID, "get filepath completions")
-	    completions = FuzzyFilePath.get_filepath_completions(view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
+	    completions = FuzzyFilePath.get_filepath_completions(scope_cache, view, CurrentFile.get_project_directory(), CurrentFile.get_directory())
 	return completions
 
 
