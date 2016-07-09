@@ -32,6 +32,7 @@ import sublime_plugin
 import re
 import os
 
+import FuzzyFilePath.completion as Completion
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.project.Project import Project
 import FuzzyFilePath.expression as Context
@@ -42,7 +43,6 @@ import FuzzyFilePath.common.selection as Selection
 import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.string import get_diff
 from FuzzyFilePath.query import Query
-from FuzzyFilePath.completion import Completion
 
 scope_cache = {}
 
@@ -100,12 +100,6 @@ def get_matching_autotriggers(scope, triggers):
 
 
 class FuzzyFilePath():
-
-    def completion_active():
-        return Completion.is_active()
-
-    def completion_stop():
-        Completion.stop()
 
     def get_filepath_completions(view, project_folder, current_folder):
         global Context, Selection

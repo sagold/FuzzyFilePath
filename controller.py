@@ -1,5 +1,6 @@
-from FuzzyFilePath.common.verbose import verbose
 
+import FuzzyFilePath.completion as Completion
+from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.project.CurrentFile import CurrentFile
 from FuzzyFilePath.project.ProjectManager import ProjectManager
 from FuzzyFilePath.FuzzyFilePath import FuzzyFilePath
@@ -17,14 +18,14 @@ def get_filepath_completions(view):
 
 
 def on_query_completion_inserted(view, post_remove):
-	if FuzzyFilePath.completion_active():
+	if Completion.is_active():
 	    verbose(ID, "query completion inserted")
 	    FuzzyFilePath.update_inserted_filepath(view, post_remove)
-	    FuzzyFilePath.completion_stop()
+	    Completion.stop()
 
 
 def on_query_completion_aborted():
-	FuzzyFilePath.completion_stop()
+	Completion.stop()
 
 
 #project

@@ -1,8 +1,8 @@
 import re
 import FuzzyFilePath.common.path as Path
+import FuzzyFilePath.completion as Completion
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.completion import Completion
 
 
 class Query:
