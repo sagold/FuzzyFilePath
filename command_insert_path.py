@@ -10,7 +10,7 @@ class InsertPathCommand(sublime_plugin.TextCommand):
             return False
 
         Query.override_trigger_setting("filepath_type", type)
-        Query.override_trigger_setting("base_directory", base_directory)
+        Query.override_trigger_setting("base_path", base_directory)
 
         if len(replace_on_insert) > 0:
             Query.override_trigger_setting("replace_on_insert", replace_on_insert)

@@ -16,9 +16,9 @@ state = {
 
 override = {
     # set by insert_path_command: overrideable properties for next query
-    # "filepath_type": False,
     # "extensions": [],
-    # "base_directory": "",
+    # "filepath_type": False,
+    # "base_path": "",
     # "replace_on_insert": []
 }
 
@@ -86,7 +86,7 @@ def build(needle, trigger, current_folder):
         True        use settings: base_directory
         String      use string as base_directory
     """
-    base_path = resolve_value("base_directory", trigger, False)
+    base_path = resolve_value("base_path", trigger, False)
     if base_path is True:
         current_folder = config["BASE_DIRECTORY"]
     elif base_path:
