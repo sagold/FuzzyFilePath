@@ -11,7 +11,6 @@ from FuzzyFilePath.common.config import config
 
 
 ID = "Controller"
-scope_cache = {}
 
 
 #init
@@ -33,13 +32,13 @@ def update_settings():
     ProjectManager.initialize(Project, global_settings)
 
 
-#completions
+#query
 def get_filepath_completions(view):
 	completions = False
 
 	if CurrentFile.is_valid():
 	    verbose(ID, "get filepath completions")
-	    completions = Completion.get_filepaths(view, Query, scope_cache, CurrentFile)
+	    completions = Completion.get_filepaths(view, Query, CurrentFile)
 
 	if completions and len(completions[0]) > 0:
 	    Completion.start(Query.get_replacements())

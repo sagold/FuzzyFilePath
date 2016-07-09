@@ -1,5 +1,5 @@
 """
-    Manage active state of completion and post cleanup
+    Manage active state of current completion and post cleanup
 """
 import re
 import sublime
@@ -15,6 +15,7 @@ from FuzzyFilePath.common.verbose import verbose
 
 ID = "Completion"
 start_expression = False
+scope_cache = {}
 
 state = {
     "active": False,        # completion currently in progress (serve suggestions)
@@ -30,7 +31,6 @@ def start(post_replacements=[]):
 
 def stop():
     state["active"] = False
-    # set by query....
     state["base_directory"] = False
 
 
@@ -55,7 +55,7 @@ def get_final_path(path):
     return path
 
 
-def get_filepaths(view, query, scope_cache, current_file):
+def get_filepaths(view, query, current_file):
     global start_expression
 
     # parse current context, may contain 'is_valid: False'
@@ -64,7 +64,7 @@ def get_filepaths(view, query, scope_cache, current_file):
         verbose(ID, "abort - not a valid context")
         return False
 
-    trigger = find_trigger(view, scope_cache, expression, query.by_command())
+    trigger = find_trigger(view, expression, query.by_command())
 
     # currently trigger is required in Query.build
     if trigger is False:
@@ -92,7 +92,7 @@ def get_filepaths(view, query, scope_cache, current_file):
     )
 
 
-def get_matching_autotriggers(scope_cache, scope, triggers):
+def get_matching_autotriggers(scope, triggers):
     # get cached evaluation
     result = scope_cache.get(scope)
     if result is None:
@@ -105,13 +105,13 @@ def get_matching_autotriggers(scope_cache, scope, triggers):
     return result
 
 
-def find_trigger(view, scope_cache, expression, byCommand=False):
+def find_trigger(view, expression, byCommand=False):
     triggers = config["TRIGGER"]
     current_scope = Selection.get_scope(view)
 
     if not byCommand:
         # get any triggers that match the requirements and may start automatically
-        triggers = get_matching_autotriggers(scope_cache, current_scope, config["TRIGGER"])
+        triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
 
     if not bool(triggers):
         verbose(ID, "abort query, no valid scope-regex for current context")
