@@ -77,7 +77,7 @@ class Test(TestCase):
 	#basepath override by command
 	def should_prefer_command_over_rel(self):
 		valid_trigger["relative"] = True
-		Query.force("filepath_type", "absolute")
+		Query.override_trigger_setting("filepath_type", "absolute")
 
 		Query.build("../relative", valid_trigger, "current_folder")
 
@@ -85,7 +85,7 @@ class Test(TestCase):
 
 	def should_prefer_command_over_abs(self):
 		valid_trigger["relative"] = False
-		Query.force("filepath_type", "relative")
+		Query.override_trigger_setting("filepath_type", "relative")
 
 		Query.build("/absolute", valid_trigger, "current_folder")
 
@@ -93,14 +93,14 @@ class Test(TestCase):
 
 	#swap rel <-> abs
 	def should_transform_rel_to_abs_query(self):
-		Query.force("filepath_type", "absolute") # set query to be absolute
+		Query.override_trigger_setting("filepath_type", "absolute") # set query to be absolute
 		Query.build("../folder/sub", valid_trigger, "current_folder") # but insert relative path
 
 		self.assert_equal(Query.get_needle(), "folder/sub")
 		self.assert_equal(Query.get_base_path(), False)
 
 	def should_transform_abs_to_rel_query(self):
-		Query.force("filepath_type", "relative") # set query to be relative
+		Query.override_trigger_setting("filepath_type", "relative") # set query to be relative
 		Query.build("/folder/sub", valid_trigger, "current_folder") # but insert absolute path
 
 		self.assert_equal(Query.get_needle(), "folder/sub")

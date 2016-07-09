@@ -9,12 +9,12 @@ class InsertPathCommand(sublime_plugin.TextCommand):
         if config["DISABLE_KEYMAP_ACTIONS"] is True:
             return False
 
-        Query.force("filepath_type", type)
-        Query.force("base_directory", base_directory)
+        Query.override_trigger_setting("filepath_type", type)
+        Query.override_trigger_setting("base_directory", base_directory)
 
         if len(replace_on_insert) > 0:
-            Query.force("replace_on_insert", replace_on_insert)
+            Query.override_trigger_setting("replace_on_insert", replace_on_insert)
         if len(extensions) > 0:
-            Query.force("extensions", extensions)
+            Query.override_trigger_setting("extensions", extensions)
 
         self.view.run_command('auto_complete', "insert")

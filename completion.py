@@ -101,7 +101,7 @@ def get_matching_autotriggers(scope, triggers):
     return result
 
 
-def find_trigger(scope, expression, byCommand=False):
+def find_trigger(current_scope, expression, byCommand=False):
     """ Returns the first trigger matching the given scope and expression """
     triggers = config["TRIGGER"]
 

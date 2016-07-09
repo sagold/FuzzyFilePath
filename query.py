@@ -16,10 +16,10 @@ state = {
 
 override = {
     # set by insert_path_command: overrideable properties for next query
-    "filepath_type": False,
-    "extensions": [],
-    "base_directory": "",
-    "replace_on_insert": []
+    # "filepath_type": False,
+    # "extensions": [],
+    # "base_directory": "",
+    # "replace_on_insert": []
 }
 
 
@@ -30,12 +30,8 @@ def reset():
     override.clear()
 
 
-def force(key, value):
+def override_trigger_setting(key, value):
     override[key] = value
-
-
-def get(key, default=None):
-    return override.get(key, default)
 
 
 def by_command():
@@ -49,8 +45,10 @@ def get_base_path():
 def get_extensions():
     return state.get("extensions")
 
+
 def get_post_remove_path():
     return state.get("post_remove_path")
+
 
 def get_needle():
     return state.get("needle")
@@ -72,15 +70,11 @@ def build(needle, trigger, current_folder):
                 query.get_base_path()
             )
     """
-    triggered = by_command()
     needle = Path.sanitize(needle)
     needle_is_absolute = Path.is_absolute(needle)
-
     needle_is_path = needle_is_absolute or Path.is_relative(needle)
-    if not triggered and trigger.get("auto", False) is False and needle_is_path is False:
-        return False
 
-    valid = triggered or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
+    valid = by_command() or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))
     if valid is False:
         return False
 
