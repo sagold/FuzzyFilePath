@@ -1,5 +1,5 @@
 import sublime_plugin
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.project.ProjectManager as ProjectManager
 
 
 class FfpUpdateCacheCommand(sublime_plugin.TextCommand):

@@ -1,9 +1,3 @@
-import sublime
-import os
-import re
-import threading
-from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.config import config
 """
     Scans, parses and stores all files in the given folder to the dictionary `files`
 
@@ -12,7 +6,16 @@ from FuzzyFilePath.common.config import config
         1 : file extension
         2 : sublime text auto completion string
 """
+import sublime
+import os
+import re
+import threading
+from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.config import config
+
+
 ID = "cache"
+
 
 def posix(path):
     return path.replace("\\", "/")
@@ -56,16 +59,19 @@ class FileCacheWorker(threading.Thread):
                 extension = extension[1:]
 
                 # posix required for windows, else absolute paths are wrong: /asd\ads\
-                relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], posix(relative_path))
+                relative_path = posix(relative_path)
+                # substitute $ which prevents errors in further processing. is replaced again in completion.py post repl
+                relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], relative_path)
 
                 if extension in self.extensions:
+                    current_filename = posix(filename)
                     folder_cache[relative_path] = [
                         # modified filepath. $ hack is reversed in post_commit_completion
-                        re.sub("\$", config["ESCAPE_DOLLAR"], posix(filename)),
+                        re.sub("\$", config["ESCAPE_DOLLAR"], current_filename),
                         # extension of file
                         extension,
                         # sublime completion text
-                        posix(filename) + "\t" + extension
+                        current_filename + "\t" + extension
                     ]
 
             elif (not ressource.startswith('.') and os.path.isdir(current_path)):

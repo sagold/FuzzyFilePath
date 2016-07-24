@@ -1,110 +1,114 @@
-import copy
+"""
+    Manages active projects, activation and deactivation
+"""
 import sublime
-import sublime_plugin
+import os
+
 
 from FuzzyFilePath.common.verbose import verbose
 import FuzzyFilePath.project.validate as Validate
-from FuzzyFilePath.project.CurrentFile import CurrentFile
+import FuzzyFilePath.project.CurrentView as CurrentView
 import FuzzyFilePath.common.settings as Settings
+import FuzzyFilePath.common.path as Path
+from FuzzyFilePath.project.Project import Project
 
 ProjectCache = {}
 
 
 ID = "ProjectManager"
 
-class ProjectManager(sublime_plugin.EventListener):
-	""" registers projects and keeps track of current project (in conjuction with ProjectListener) """
 
-	active = False
-	current_project = False
-	ffp_settings = None
-	ProjectConstructor = None
+state = {
 
-	def initialize(ProjectConstructor, ffp_settings):
-		ProjectManager.ProjectConstructor = ProjectConstructor
-		ProjectManager.ffp_settings = ffp_settings
-		ProjectManager.active = True
-		ProjectManager.activate_project(sublime.active_window())
+    "current_project": False,
+    "current_folder": False,
+    "ffp_settings": {},
+    "ProjectConstructor": None
+}
 
-	def set_settings(config, extensionsToSuggest):
-		ProjectManager.config = config
-		ProjectManager.extensions = extensionsToSuggest
+def set_main_settings(ffp_settings):
+    state["ffp_settings"] = ffp_settings
+    activate_project(sublime.active_window())
 
-	def update_project(window):
-		if ProjectManager.active:
-			return ProjectManager.rebuild_filecache()
+def set_settings(config, extensionsToSuggest):
+    state["config"] = config
+    state["extensions"] = extensionsToSuggest
 
-	def activate_project(window):
-		if ProjectManager.active:
-			# fetch project
-			ProjectManager.current_project = ProjectManager.get_project(window)
-			CurrentFile.evaluate_current(window.active_view(), ProjectManager.get_current_project())
+def update_current_project_folder(view):
+    if state["current_project"] is not False and view.file_name():
+        state["current_folder"] = state.get("current_project").get_folder(view.file_name())
 
-			if ProjectManager.has_current_project():
-				# update project settings
-				project_settings = Settings.project(window)
-				ProjectManager.get_current_project().update_settings(ProjectManager.ffp_settings, project_settings)
-				verbose(ID, "activate project", ProjectManager.get_current_project().get_directory())
-		else:
-			verbose(ID, "this is not a project")
+def activate_project(window):
+    """ Retrieves the current project, either from cache or creates a new project
 
-	def get_current_project():
-		return ProjectManager.current_project
+        Note:
+            a project is always associated with the a window, but a project may be opened multiple times.
+            Furthermore: files may be added that are not within the project project-folders
+    """
+    view = window.active_view()
+    if not view:
+        return
 
-	def has_current_project():
-		return ProjectManager.current_project is not False
+    # fetch project
+    state["current_project"] = get_project(window)
 
-	def get_project(window):
-		project_settings = Settings.project(window)
-		if project_settings is False:
-			return False
+    if has_current_project():
+        CurrentView.load_current_view(view, get_current_project().get_directory())
+        # update project settings
+        project_settings = Settings.project(window)
+        get_current_project().update_settings(state.get("ffp_settings"), project_settings)
+        verbose(ID, "activate project", get_current_project())
+    else:
+        CurrentView.invalidate()
 
-		project_folder = get_project_folder(window)
-		project = ProjectCache.get(project_folder)
-		if project is None:
-			project = ProjectManager.ProjectConstructor(window, project_folder, project_settings, ProjectManager.ffp_settings)
-			ProjectCache[project_folder] = project
+def get_current_project():
+    return state.get("current_folder")
 
-		return project
+def has_current_project():
+    return get_current_project() is not False
 
-	# delegate
+def get_project(window):
+    if not window.folders():
+        return False
 
-	def rebuild_filecache():
-		if ProjectManager.current_project:
-			ProjectManager.current_project.rebuild_filecache()
+    # TODO: Add option: Index folder files of non-projects
 
-	def update_filecache(folder, filename):
-		self.rebuild_filecache()
+    # retrieve id of current project. Could also be: window id for non projects else project file
+    project_id = window.id()
+    project_name = window.project_file_name()
+    project = ProjectCache.get(project_name)
 
-	def search_completions(needle, project_folder, valid_extensions, base_path=False):
-		if ProjectManager.current_project:
-			return ProjectManager.current_project.search_completions(needle, project_folder, valid_extensions, base_path)
+    if project is None and ProjectCache.get(project_id):
+        project = ProjectCache.get(project_id)
+
+        # if project was saved with its id, but a project name may now be retrieved, rename project to name
+        if project_name:
+            del ProjectCache[project_id]
+            ProjectCache[project_name] = project
+        else:
+            project_name = project_id
+
+    if project is None:
+        project = Project(project_id, window, state["ffp_settings"])
+        ProjectCache[project_id] = project
+
+    return project
 
 
-def get_project_folder(window):
-	"""
-		returns project directory
+# delegate
 
-		if multiple independent folders are detected, the first folder is returned and a warning is printed
-		-> multiple independent folders are not yet supported, which results in ignored folders
-		-> ignored folders are not cached nor proposed
-	"""
-	folders = window.folders()
-	if len(folders) == 1:
-		return folders[0]
+def rebuild_filecache():
+    current_folder = get_current_project()
+    if current_folder:
+        current_folder.rebuild_filecache()
 
-	project_folder = False
-	for folder in folders:
-		if project_folder is False:
-			project_folder = folder
-		elif folder in project_folder:
-			# set the lowest folder as project folder
-			project_folder = folder
-		# elif project_folder in folder:
-		# 	# ignore, lowest folder as project folder
-		elif project_folder not in folder:
-			print("Warning. Multiple independent folders found:")
-			print("current project folder", project_folder)
-			print("secondary project folder", folder)
+def search_completions(needle, project_folder, valid_extensions, base_path=False):
+    current_project = state.get("current_project")
+    if current_project:
+        return current_project.search_completions(needle, project_folder, valid_extensions, base_path)
 
-	return project_folder
+def get_project_id(window):
+    project_name = window.project_file_name()
+    if project_name:
+        return project_name
+    return window.id()

@@ -1,6 +1,6 @@
 import sublime_plugin
 
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.project.ProjectManager as ProjectManager
 import FuzzyFilePath.project.validate as Validate
 
 

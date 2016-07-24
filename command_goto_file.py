@@ -4,7 +4,7 @@ import re
 import sublime_plugin
 
 import FuzzyFilePath.expression as Context
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.project.ProjectManager as ProjectManager
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
 import FuzzyFilePath.common.selection as Selection

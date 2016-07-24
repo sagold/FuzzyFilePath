@@ -2,7 +2,7 @@ import sublime
 import sublime_plugin
 
 import FuzzyFilePath.controller as controller
-from FuzzyFilePath.project.ProjectManager import get_project_folder
+from FuzzyFilePath.project.ProjectManager import get_project_id
 
 
 ID = "ProjectListener"
@@ -18,12 +18,12 @@ class ProjectListener(sublime_plugin.EventListener):
         if not window:
             return False
 
-        project_folder = get_project_folder(window)
+        project_id = get_project_id(window)
 
-        if self.previous_project != project_folder:
+        if self.previous_project != project_id:
             if self.previous_project is not None:
                 self.on_project_activated(view)
-            self.previous_project = project_folder
+            self.previous_project = project_id
 
         elif self.previous_window is not sublime.active_window().id():
             self.previous_window = sublime.active_window().id()

@@ -3,7 +3,7 @@
 """
 import re
 import sublime
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.project.ProjectManager as ProjectManager
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.config import config

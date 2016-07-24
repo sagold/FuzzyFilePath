@@ -1,6 +1,6 @@
 from FuzzyFilePath.common.config import config
 
-IGNORE = ["FuzzyFilePath", "ProjectManager", "CurrentFile", "QueryCompletionListener"]
+IGNORE = ["CurrentFile", "QueryCompletionListener"]
 
 def log(*args):
 	if config["LOG"]:

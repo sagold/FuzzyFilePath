@@ -75,7 +75,7 @@ class FileCache:
                 properties[2] = file displayed as suggestion, like 'test/mock/project/index     html'
             """
             if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, filepath, re.IGNORECASE)):
-                completion = self.get_completion(filepath, properties[2], base_path)
+                completion = self.get_completion(filepath, base_path)
                 result.append(completion)
 
         return (result, sublime.INHIBIT_EXPLICIT_COMPLETIONS | sublime.INHIBIT_WORD_COMPLETIONS)
@@ -92,7 +92,7 @@ class FileCache:
                 result.append(filepath)
         return result
 
-    def get_completion(self, target_path, path_display, base_path=False):
+    def get_completion(self, target_path, base_path=False):
         if base_path is False:
             # absolute path
             return (target_path, "/" + target_path)

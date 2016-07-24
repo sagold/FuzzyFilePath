@@ -2,7 +2,7 @@ import json
 import sublime
 import sublime_plugin
 
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.project.ProjectManager as ProjectManager
 
 
 class FfpShowCurrentSettingsCommand(sublime_plugin.TextCommand):

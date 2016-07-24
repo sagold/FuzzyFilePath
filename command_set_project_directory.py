@@ -4,7 +4,7 @@ import sublime_plugin
 
 from FuzzyFilePath.common.config import config
 import FuzzyFilePath.project.validate as Validate
-from FuzzyFilePath.project.ProjectManager import ProjectManager
+import FuzzyFilePath.project.ProjectManager as ProjectManager
 
 """
     DO:

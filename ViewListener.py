@@ -3,17 +3,18 @@ import copy
 import sublime_plugin
 
 import FuzzyFilePath.controller as controller
-from FuzzyFilePath.project.CurrentFile import CurrentFile
+import FuzzyFilePath.project.CurrentView as CurrentView
 
 
-ID = "CurrentFileListener"
+ID = "ViewListener"
 
-class CurrentFileListener(sublime_plugin.EventListener):
+
+class ViewListener(sublime_plugin.EventListener):
     """ Evaluates and caches current file`s project status """
 
     def on_post_save_async(self, view):
-        if CurrentFile.is_temp():
-            CurrentFile.cache[view.id()] = None
+        if CurrentView.is_temp():
+            CurrentView.invalidate_view(view.id())
             self.on_file_created()
             self.on_activated(view)
 
