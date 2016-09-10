@@ -2,15 +2,14 @@ import json
 import sublime
 import sublime_plugin
 
-import FuzzyFilePath.project.ProjectManager as ProjectManager
+import FuzzyFilePath.current_state as state
 
 
 class FfpShowCurrentSettingsCommand(sublime_plugin.TextCommand):
     """ shows a message dialog with project validation status of current file """
     def run(self, edit):
-        project = ProjectManager.get_current_project()
-        if project:
-            settings = project.get_settings()
+        settings = state.get_settings()
+        if settings:
             json_string = json.dumps(settings, indent=4, sort_keys=True)
 
             new_file = sublime.active_window().new_file()

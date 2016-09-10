@@ -9,26 +9,27 @@ map_settings = {
 
 
 def project(window):
-    """ returns project settings. If not already set, creates them """
+    """ returns project settings """
     data = window.project_data()
     if not data:
-        return False
-
-    settings = data.get("settings", False)
-    if settings is False:
-        settings = {}
-
-    ffp_project_settings = settings.get("FuzzyFilePath")
-    if not ffp_project_settings:
-        ffp_project_settings = {}
-        settings["FuzzyFilePath"] = ffp_project_settings
-
+        return {}
+    settings = data.get("settings", {})
+    ffp_project_settings = settings.get("FuzzyFilePath", {})
     return ffp_project_settings
 
 
-def get_global_settings():
-    return config
+def get(window):
+    """ Returns all settings (default, user, project) merged by standard rules """
+    project_settings = project(window)
+    global_settings = update()
+    for key in global_settings:
+        project_settings[key] = project_settings.get(key.lower(), global_settings[key])
+    return project_settings
 
+
+def get_global_settings():
+    """ Returns settings retrieved by merged settings files """
+    return config
 
 def update():
     """ merges plugin settings with user settings by default """

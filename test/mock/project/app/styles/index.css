@@ -1,0 +1,8 @@
+
+
+.issue13 {
+	composes: label from './styles.css'
+	composes: label from "sty";
+
+	background-color: rgba(0, 0, 0, 0.2);
+}

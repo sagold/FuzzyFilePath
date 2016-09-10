@@ -4,7 +4,6 @@ import re
 import sublime_plugin
 
 import FuzzyFilePath.expression as Context
-import FuzzyFilePath.project.ProjectManager as ProjectManager
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
 import FuzzyFilePath.common.selection as Selection
@@ -21,7 +20,7 @@ class FfpGotoFileCommand(sublime_plugin.TextCommand):
             return log(ID, "abort, no valid path given:", context.get("needle"))
 
         path = context.get("needle")
-        project = ProjectManager.get_current_project()
+        project = state.get_project_directory()
 
         if not (path and project):
             return log(ID, "path or project invalid", path, project)

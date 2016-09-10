@@ -1,6 +1,6 @@
 from FuzzyFilePath.test.tools import TestCase
 from FuzzyFilePath.common.config import config
-from FuzzyFilePath.project.Project import get_closest_folder
+from FuzzyFilePath.current_state import get_closest_folder
 
 class FolderMock:
 	def __init__(self, directory):

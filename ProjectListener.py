@@ -2,7 +2,7 @@ import sublime
 import sublime_plugin
 
 import FuzzyFilePath.controller as controller
-from FuzzyFilePath.project.ProjectManager import get_project_id
+from FuzzyFilePath.project.get_project_id import get_project_id
 
 
 ID = "ProjectListener"

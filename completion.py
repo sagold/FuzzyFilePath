@@ -3,7 +3,6 @@
 """
 import re
 import sublime
-import FuzzyFilePath.project.ProjectManager as ProjectManager
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.config import config
@@ -11,6 +10,7 @@ from FuzzyFilePath.common.string import get_diff
 import FuzzyFilePath.common.selection as Selection
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.verbose import verbose
+import FuzzyFilePath.current_state as current_state
 
 
 ID = "Completion"
@@ -63,7 +63,7 @@ def get_filepaths(view, query, current_file):
     # remembed the path for `update_inserted_filepath`, query will be reset...
     state["base_directory"] = query.get_post_remove_path()
 
-    return ProjectManager.search_completions(
+    return current_state.search_completions(
         query.get_needle(),
         current_file.get_project_directory(),
         query.get_extensions(),
@@ -72,7 +72,7 @@ def get_filepaths(view, query, current_file):
 
 
 def find_trigger(current_scope, expression, byCommand=False):
-    triggerList = ProjectManager.get_settings().get("TRIGGER")
+    triggerList = current_state.get_setting("TRIGGER")
 
     """ Returns the first trigger matching the given scope and expression """
     triggers = triggerList #config["TRIGGER"]
@@ -130,7 +130,7 @@ def get_matching_autotriggers(scope, triggers):
 
 def apply_post_replacements(path, base_directory, replace_on_insert):
     # hack reverse
-    path = re.sub(config["ESCAPE_DOLLAR"], "$", path)
+    path = re.sub(current_state.get_setting("ESCAPE_DOLLAR"), "$", path)
     for replace in replace_on_insert:
         path = re.sub(replace[0], replace[1], path)
 

@@ -1,12 +1,11 @@
 import sublime
 import FuzzyFilePath.completion as Completion
 import FuzzyFilePath.query as Query
-import FuzzyFilePath.project.CurrentView as CurrentView
-import FuzzyFilePath.project.ProjectManager as ProjectManager
 import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.config import config
+import FuzzyFilePath.current_state as state
 
 
 ID = "Controller"
@@ -28,17 +27,18 @@ def update_settings():
     # update settings
     global_settings = Settings.update()
     # update project settings
-    ProjectManager.set_main_settings(global_settings)
+    # @TODO: notify state to update settings
+    #ProjectManager.set_main_settings(global_settings)
 
 
 #query
 def get_filepath_completions(view):
-    if not CurrentView.is_valid():
+    if not state.is_valid():
         Query.reset()
         return False
 
     verbose(ID, "get filepath completions")
-    completions = Completion.get_filepaths(view, Query, CurrentView)
+    completions = Completion.get_filepaths(view, Query, state.get_view())
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.get_replacements())
@@ -68,31 +68,22 @@ def on_query_completion_aborted():
 def on_project_focus(window):
     """ window has gained focus, rebuild file cache (in case files were removed/added) """
     verbose(ID, "refocus project")
-    ProjectManager.rebuild_filecache()
+    for folder in window.folders():
+            state.rebuild_filecache(folder)
 
 
 def on_project_activated(window):
     """ a new project has received focus """
     verbose(ID, "activate project")
-    ProjectManager.activate_project(window)
+    state.update()
+
 
 
 #file
 def on_file_created():
     """ a new file has been created """
-    ProjectManager.rebuild_filecache()
+    state.rebuild_filecache()
 
 
 def on_file_focus(view):
-    """
-        1. load project of window
-        2. load projectfolder of view
-    """
-    # let the project manager select the correct project folder
-    ProjectManager.update_current_project_folder(view)
-    # update current views settings
-    current_project = ProjectManager.get_current_project()
-    if current_project:
-        CurrentView.load_current_view(view, current_project.get_directory())
-    else:
-        CurrentView.invalidate()
+    state.update()
