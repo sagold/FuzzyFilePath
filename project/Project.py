@@ -19,6 +19,10 @@ class Project():
 			# TODO create a folder for each directory but share root's filecache
 			self.directories.append(ProjectFolder(window, directory, project_settings, ffp_settings))
 
+	def get_directories(self):
+		""" returns a list of directories as strings associated with project. currently used for debugging """
+		return list(map(lambda x: x.get_directory(), self.directories))
+
 	def rebuild_filecache(self):
 		for directory in self.directories:
 			directory.rebuild_filecache()
