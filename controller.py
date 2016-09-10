@@ -24,7 +24,7 @@ def update_settings():
     # invalidate cache
     global scope_cache
     scope_cache = {}
-    state.update_settings(global_settings)
+    state.update_settings()
 
 
 #query
