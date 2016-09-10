@@ -80,6 +80,12 @@ def update():
 	return valid
 
 
+def update_settings(global_settings):
+	window = sublime.active_window()
+	if valid and window:
+		state["settings"] = settings.get(window)
+
+
 def get_setting(key):
 	return state["settings"].get(key)
 

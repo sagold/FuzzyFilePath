@@ -24,11 +24,7 @@ def update_settings():
     # invalidate cache
     global scope_cache
     scope_cache = {}
-    # update settings
-    global_settings = Settings.update()
-    # update project settings
-    # @TODO: notify state to update settings
-    #ProjectManager.set_main_settings(global_settings)
+    state.update_settings(global_settings)
 
 
 #query

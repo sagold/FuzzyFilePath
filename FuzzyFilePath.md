@@ -6,7 +6,6 @@
 
 ## tasks
 
-    - delegate update settings to current_state
     - cache states where appropriate
     - possibly create file caches of all project directories simultaneously
     - Cleanup @TODO flags
