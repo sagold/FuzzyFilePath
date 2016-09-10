@@ -48,30 +48,33 @@ def activate_project(window):
     """ Retrieves the current project, either from cache or creates a new project
 
         Note:
-            a project is always associated with the a window, but a project may be opened multiple times.
+            a project is always associated with a window, but a project may be opened multiple times.
             Furthermore: files may be added that are not within the project project-folders
     """
     view = window.active_view()
     if not view:
         return
 
-    # fetch project
+    # update state
     state["current_project"] = get_project(window)
+    update_current_project_folder(view)
 
     if has_current_project():
         CurrentView.load_current_view(view, get_current_project().get_directory())
         # update project settings
         project_settings = Settings.project(window)
         get_current_project().update_settings(state.get("ffp_settings"), project_settings)
-        verbose(ID, "activate project", get_current_project())
     else:
         CurrentView.invalidate()
+
 
 def get_current_project():
     return state.get("current_folder")
 
+
 def has_current_project():
     return get_current_project() is not False
+
 
 def get_project(window):
     if not window.folders():
