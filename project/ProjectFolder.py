@@ -76,11 +76,6 @@ class ProjectFolder():
 		return self.settings
 
 	def set_setting(self, key, value):
-		data = self.window.get_project_data()
-		settings = data.get("settings").get("FuzzyFilePath")
-		settings[key] = value
-		self.window.set_project_data(data)
-		# and update current settings
 		self.settings[key] = value
 
 	def rebuild_filecache(self):

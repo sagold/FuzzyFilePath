@@ -14,23 +14,20 @@ def project(window):
     if not data:
         return False
 
-    changed = False
     settings = data.get("settings", False)
     if settings is False:
-        changed = True
         settings = {}
-        data["settings"] = settings
 
     ffp_project_settings = settings.get("FuzzyFilePath")
     if not ffp_project_settings:
-        changed = True
         ffp_project_settings = {}
         settings["FuzzyFilePath"] = ffp_project_settings
-    if changed:
-        window.set_project_data(data)
 
     return ffp_project_settings
 
+
+def get_global_settings():
+    return config
 
 
 def update():
