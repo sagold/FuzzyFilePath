@@ -34,6 +34,12 @@ def set_settings(config, extensionsToSuggest):
     state["config"] = config
     state["extensions"] = extensionsToSuggest
 
+def get_settings():
+    if state["current_folder"] is not False:
+        return state.get("current_folder").get_settings()
+    else:
+        return Settings.get_global_settings()
+
 def update_current_project_folder(view):
     if state["current_project"] is not False and view.file_name():
         state["current_folder"] = state.get("current_project").get_folder(view.file_name())

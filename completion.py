@@ -72,12 +72,14 @@ def get_filepaths(view, query, current_file):
 
 
 def find_trigger(current_scope, expression, byCommand=False):
+    triggerList = ProjectManager.get_settings().get("TRIGGER")
+
     """ Returns the first trigger matching the given scope and expression """
-    triggers = config["TRIGGER"]
+    triggers = triggerList #config["TRIGGER"]
 
     if not byCommand:
         # get any triggers that match the requirements and may start automatically
-        triggers = get_matching_autotriggers(current_scope, config["TRIGGER"])
+        triggers = get_matching_autotriggers(current_scope, triggerList)
 
     if not bool(triggers):
         verbose(ID, "abort query, no valid scope-regex for current context")
