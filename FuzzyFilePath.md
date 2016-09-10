@@ -5,14 +5,19 @@
 
 
 ## tasks
-	
-	- !ensure config is no longer read, use project asettings instead
+
+    - delegate update settings to current_state
+    - cache states where appropriate
+    - possibly create file caches of all project directories simultaneously
+    - Cleanup @TODO flags
+    - change project folder config to be used from corresponding folder settings object (additionally...)
+    - !ensure config is no longer read, use project settings instead
+
     - growing list of triggers is getting unmaintainable. Probably group by main-scope in object for faster
         retrieval and namespacing
     - add custom triggers without overriding the default scopes
-    - support for multiple project folders may be achieved by hooking into settings-folders-array
 
-    - improve testing
-    - add to command palette: settings, base_directory
+    - maybe support different triggers based on inserted filepath? (i.e. absolute if matches node_mod...)
+    - suddenly Testrunner causes plugin host to expire
     - test: reload settings on change
     - possibly send ffp states to serve for better debugging

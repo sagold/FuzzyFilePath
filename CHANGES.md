@@ -1,3 +1,10 @@
+16/09/10
+
+- support for multiple folders
+- bugfixes
+- major code simplifications
+
+
 15/06/07
 
 - fixed project settings to be added on top of default settings
