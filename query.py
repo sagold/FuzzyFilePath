@@ -10,7 +10,7 @@ import FuzzyFilePath.common.settings as settings
 state = {
 
     "extensions": ["*"],
-    "base_path": False,         # path of current query
+    "base_directory": False,    # path of current query
     "post_remove_path": False   # path to remove on post cleanup
 }
 
@@ -24,7 +24,7 @@ override = {}
 
 def reset():
     state["extensions"] = ["*"]
-    state["base_path"] = False
+    state["base_directory"] = False
     state["replace_on_insert"] = []
     override.clear()
 
@@ -38,7 +38,7 @@ def by_command():
 
 
 def get_base_path():
-    return state.get("base_path")
+    return state.get("base_directory")
 
 
 def get_extensions():
@@ -84,14 +84,14 @@ def build(needle, trigger, current_folder):
         String          use string as base_directory
         False           use current file's directory (parameter)
     """
-    base_path = resolve_value("base_path", trigger, False)
+    base_path = resolve_value("base_directory", trigger, False)
     if base_path is True:
         current_folder = settings.get("base_directory")
     elif base_path:
         current_folder = Path.sanitize_base_directory(base_path)
 
     state["post_remove_path"] = current_folder if (base_path and needle_is_absolute) else False
-    state["base_path"] = current_folder if resolve_path_type(needle, trigger) == "relative" else False
+    state["base_directory"] = current_folder if resolve_path_type(needle, trigger) == "relative" else False
     state["replace_on_insert"] = resolve_value("replace_on_insert", trigger, [])
     state["extensions"] = resolve_value("extensions", trigger, ["*"])
     state["needle"] = sanitize_needle(needle, current_folder)
@@ -141,8 +141,8 @@ def sanitize_needle(needle, current_folder):
     needle = re.sub("[\\n\\t]", "", needle)
 
     # remove base path from needle
-    if state.get("base_path") and isinstance(current_folder, str) and needle.startswith(current_folder):
-        needle = needle[len(state.get("base_path")):]
+    if state.get("base_directory") and isinstance(current_folder, str) and needle.startswith(current_folder):
+        needle = needle[len(state.get("base_directory")):]
 
     needle = needle.strip()
 
