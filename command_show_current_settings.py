@@ -1,7 +1,6 @@
 import json
 import sublime
 import sublime_plugin
-
 import FuzzyFilePath.current_state as state
 
 

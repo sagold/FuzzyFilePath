@@ -2,7 +2,6 @@ import os
 import sublime
 import re
 import sublime_plugin
-
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
