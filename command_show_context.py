@@ -3,7 +3,6 @@ import sublime_plugin
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.selection as Selection
 from FuzzyFilePath.completion import resolve_trigger
-import FuzzyFilePath.current_state as state
 import FuzzyFilePath.query as Query
 
 
@@ -15,7 +14,7 @@ class FfpShowContextCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		context = Context.get_context(self.view)
 		current_scope = self.view.scope_name(Selection.get_position(self.view))
-		trigger = resolve_trigger(self.view, Query, state.get_view())
+		trigger = resolve_trigger(self.view, Query)
 		print("FOUND TRIGGER", trigger)
 
 		self.content = "<h4>FuzzyFilepath - context evaluation</h4>"

@@ -40,7 +40,7 @@ def is_active():
     return state.get("active")
 
 
-def resolve_trigger(view, query, current_file):
+def resolve_trigger(view, query):
     global start_expression
 
     # parse current context, may contain 'is_valid: False'
@@ -63,7 +63,7 @@ def resolve_trigger(view, query, current_file):
 def get_filepaths(view, query, current_file):
     global start_expression
 
-    trigger = resolve_trigger(view, query, current_file)
+    trigger = resolve_trigger(view, query)
     log(ID_TRIGGER, trigger)
     if query.build(start_expression.get("needle"), trigger, current_file.get_directory()) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
