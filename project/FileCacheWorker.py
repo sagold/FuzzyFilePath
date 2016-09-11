@@ -11,7 +11,7 @@ import os
 import re
 import threading
 from FuzzyFilePath.common.verbose import verbose
-from FuzzyFilePath.common.config import config
+import FuzzyFilePath.common.settings as settings
 
 
 ID = "cache"
@@ -61,13 +61,13 @@ class FileCacheWorker(threading.Thread):
                 # posix required for windows, else absolute paths are wrong: /asd\ads\
                 relative_path = posix(relative_path)
                 # substitute $ which prevents errors in further processing. is replaced again in completion.py post repl
-                relative_path = re.sub("\$", config["ESCAPE_DOLLAR"], relative_path)
+                relative_path = re.sub("\$", settings.get("escape_dollar"), relative_path)
 
                 if extension in self.extensions:
                     current_filename = posix(filename)
                     folder_cache[relative_path] = [
                         # modified filepath. $ hack is reversed in post_commit_completion
-                        re.sub("\$", config["ESCAPE_DOLLAR"], current_filename),
+                        re.sub("\$", settings.get("escape_dollar"), current_filename),
                         # extension of file
                         extension,
                         # sublime completion text

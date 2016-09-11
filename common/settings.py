@@ -19,12 +19,12 @@ project_settings = {}
 current_settings = {}
 # backwards compatibility of setting schema
 map_settings = {
-    "TRIGGER": "scopes"
+    "trigger": "scopes"
 }
 
 
-def get(key):
-    return current_settings.get(key)
+def get(key, default=None):
+    return current_settings.get(key.lower(), default)
 
 
 def current():
@@ -62,7 +62,7 @@ def get_project_settings(base):
 
 
 def get_base_settings(config):
-    user_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    user_settings = sublime.load_settings(config["ffp_settings_file"])
     # Note: user_settings is of class Settings
     user_settings = merge(config, user_settings)
     return sanitize(user_settings)
@@ -120,8 +120,8 @@ def get_folder_setting(folder=None):
 
 def sanitize(settings_object):
     #print("SANITIZE", settings_object)
-    if "BASE_DIRECTORY" in settings_object:
-        settings_object["BASE_DIRECTORY"] = Path.sanitize_base_directory(settings_object.get("BASE_DIRECTORY"))
-    if "PROJECT_DIRECTORY" in settings_object:
-        settings_object["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(settings_object.get("PROJECT_DIRECTORY"))
+    if "base_directory" in settings_object:
+        settings_object["base_directory"] = Path.sanitize_base_directory(settings_object.get("base_directory"))
+    if "project_directory" in settings_object:
+        settings_object["project_directory"] = Path.sanitize_base_directory(settings_object.get("project_directory"))
     return settings_object

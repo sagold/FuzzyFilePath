@@ -55,6 +55,9 @@ def update():
 		valid = False
 		return valid
 
+	# notify settings of new project folder
+	update_settings()
+
 	print("\n")
 	log("Update")
 	valid = True
@@ -64,10 +67,7 @@ def update():
 	state["folders"] = folders
 	state["project_folder"] = project_folder
 	state["view"] = View(project_folder, file)
-	# update settings object, before accessing it
-	update_settings()
-	state["cache"] = get_file_cache(project_folder, settings.current())
-	log("is now valid")
+	state["cache"] = get_file_cache(project_folder)
 	log("Updated", state)
 	return valid
 
@@ -89,11 +89,11 @@ def get_view():
 	return state.get("view")
 
 
-def get_file_cache(folder, settings):
+def get_file_cache(folder):
 	if not folder in file_caches:
-		valid_file_extensions = get_valid_extensions(settings.get("TRIGGER"))
-		log("Build cache for " + folder + " (", valid_file_extensions , ") excluding", settings.get("EXCLUDE_FOLDERS"))
-		file_caches[folder] = FileCache(valid_file_extensions, settings.get("EXCLUDE_FOLDERS"), folder)
+		valid_file_extensions = get_valid_extensions(settings.get("trigger"))
+		log("Build cache for " + folder + " (", valid_file_extensions , ") excluding", settings.get("exclude_folders"))
+		file_caches[folder] = FileCache(valid_file_extensions, settings.get("exclude_folders"), folder)
 
 	return file_caches.get(folder)
 

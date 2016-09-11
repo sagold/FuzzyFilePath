@@ -1,6 +1,6 @@
 import re
 import sublime
-from FuzzyFilePath.common.config import config
+import FuzzyFilePath.common.settings as settings
 import FuzzyFilePath.common.selection as Selection
 
 NEEDLE_SEPARATOR = ">\"\'\(\)\{\}"
@@ -125,7 +125,7 @@ def get_context(view):
 
 def check_trigger(trigger, expression):
 	# returns True if the expression statements match the trigger
-	for statement in set(config["TRIGGER_STATEMENTS"]).intersection(trigger):
+	for statement in set(settings.get("trigger_statements")).intersection(trigger):
 		values = trigger.get(statement)
 		# statement values may be None (or any other value...)
 		if type(values) is list and not expression.get(statement) in values:

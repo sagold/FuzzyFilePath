@@ -1,14 +1,14 @@
 import re
 import sublime_plugin
-
 import FuzzyFilePath.controller as controller
 import FuzzyFilePath.common.selection as Selection
 import FuzzyFilePath.expression as Context
-from FuzzyFilePath.common.config import config
+import FuzzyFilePath.common.settings as settings
 from FuzzyFilePath.common.verbose import verbose
 
 
 ID = "QueryCompletionListener"
+
 
 class QueryCompletionListener(sublime_plugin.EventListener):
 
@@ -20,7 +20,7 @@ class QueryCompletionListener(sublime_plugin.EventListener):
     post_remove = ""
 
     def on_query_completions(self, view, prefix, locations):
-        if config["DISABLE_AUTOCOMPLETION"] and not Query.by_command():
+        if settings.get("disable_autocompletion") and not Query.by_command():
             return False
 
         if self.track_insert["active"] is False:
@@ -67,7 +67,7 @@ class QueryCompletionListener(sublime_plugin.EventListener):
 
     def on_text_command(self, view, command_name, args):
         # check if a completion may be inserted
-        if command_name in config["TRIGGER_ACTION"] or command_name in config["INSERT_ACTION"]:
+        if command_name in settings.get("trigger_action", []) or command_name in settings.get("insert_action", []):
             self.start_tracking(view, command_name)
         elif command_name == "hide_auto_complete":
             self.on_query_abort()
@@ -76,7 +76,7 @@ class QueryCompletionListener(sublime_plugin.EventListener):
     # check if a completion is inserted and trigger on_post_insert_completion
     def on_post_text_command(self, view, command_name, args):
         current_line = Selection.get_line(view)
-        command_trigger = command_name in config["TRIGGER_ACTION"] and self.track_insert["start_line"] != current_line
-        if command_trigger or command_name in config["INSERT_ACTION"]:
+        command_trigger = command_name in settings.get("trigger_action", []) and self.track_insert["start_line"] != current_line
+        if command_trigger or command_name in settings.get("insert_action", []):
             self.finish_tracking(view, command_name)
             self.on_post_insert_completion(view, command_name)

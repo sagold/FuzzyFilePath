@@ -4,7 +4,7 @@
 import re
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.verbose import log
-from FuzzyFilePath.common.config import config
+import FuzzyFilePath.common.settings as settings
 
 
 state = {
@@ -73,7 +73,7 @@ def build(needle, trigger, current_folder):
     needle_is_absolute = Path.is_absolute(needle)
     needle_is_path = needle_is_absolute or Path.is_relative(needle)
 
-    if not trigger or not (by_command() or (config["AUTO_TRIGGER"] if needle_is_path else trigger.get("auto", config["AUTO_TRIGGER"]))):
+    if not trigger or not (by_command() or (settings.get("auto_trigger") if needle_is_path else trigger.get("auto", settings.get("auto_trigger")))):
         return False
 
     """ Adjust current folder by specified base folder:
@@ -86,7 +86,7 @@ def build(needle, trigger, current_folder):
     """
     base_path = resolve_value("base_path", trigger, False)
     if base_path is True:
-        current_folder = config["BASE_DIRECTORY"]
+        current_folder = settings.get("base_directory")
     elif base_path:
         current_folder = Path.sanitize_base_directory(base_path)
 
@@ -112,7 +112,7 @@ def resolve_path_type(needle, trigger):
     if override.get("filepath_type"):
         type_of_path = override.get("filepath_type")
     # test path to trigger auto-completion by needle
-    elif not by_command() and trigger.get("auto") is False and config["AUTO_TRIGGER"] and Path.is_absolute(needle):
+    elif not by_command() and trigger.get("auto") is False and settings.get("auto_trigger") and Path.is_absolute(needle):
         type_of_path = "absolute"
     elif Path.is_absolute(needle):
         type_of_path = "absolute"

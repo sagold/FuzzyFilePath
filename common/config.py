@@ -1,21 +1,21 @@
 config = {
 
-	"DEBUG": False,
-	"LOG": False,
-	"ID": "config",
-	"FFP_SETTINGS_FILE": "FuzzyFilePath.sublime-settings",
-	"ESCAPE_DOLLAR": '\$',
-	"TRIGGER_ACTION": ["auto_complete", "insert_path"],
-	"INSERT_ACTION": ["commit_completion", "insert_best_completion"],
-	"TRIGGER_STATEMENTS": ["prefix", "tagName", "style"],
+	"debug": False,
+	"log": False,
+	"id": "config",
+	"ffp_settings_file": "FuzzyFilePath.sublime-settings",
+	"escape_dollar": '\$',
+	"trigger_action": ["auto_complete", "insert_path"],
+	"insert_action": ["commit_completion", "insert_best_completion"],
+	"trigger_statements": ["prefix", "tagName", "style"],
 
-	"BASE_DIRECTORY": False,
-	"PROJECT_DIRECTORY": False,
-	"DISABLE_AUTOCOMPLETION": False,
-	"DISABLE_KEYMAP_ACTIONS": False,
-	"AUTO_TRIGGER": True,
-	"TRIGGER": [],
-	"EXCLUDE_FOLDERS": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
+	"base_directory": False,
+	"project_directory": False,
+	"disable_autocompletion": False,
+	"disable_keymap_actions": False,
+	"auto_trigger": True,
+	"trigger": [],
+	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
 
-	"POST_INSERT_MOVE_CHARACTERS": "^[\"\'\);]*"
+	"post_insert_move_characters": "^[\"\'\);]*"
 }

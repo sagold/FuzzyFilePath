@@ -3,10 +3,6 @@
 """
 from FuzzyFilePath.test.tools import TestCase
 import FuzzyFilePath.query as Query
-from FuzzyFilePath.common.config import config
-
-# config["DEBUG"] = True
-# config["LOG"] = True
 
 valid_trigger = False
 
