@@ -42,7 +42,7 @@ def update_base_settings():
     base_settings = get_base_settings(config)
     project_settings = base_settings
     current_settings = base_settings
-    verbose("BASE_SETTINGS", current_settings)
+    #verbose("BASE_SETTINGS", current_settings)
 
 
 # @TODO improve memory
@@ -50,13 +50,13 @@ def update_project_settings():
     global base_settings, project_settings, current_settings
     project_settings = get_project_settings(base_settings)
     current_settings = project_settings
-    verbose("PROJECT_SETTINGS", current_settings)
+    #verbose("PROJECT_SETTINGS", current_settings)
 
 
 def update_project_folder_settings(project_folder):
     global project_settings, current_settings
     current_settings = get_folder_settings(project_settings, project_folder)
-    verbose("CURRENT_SETTINGS", current_settings)
+    #verbose("CURRENT_SETTINGS", current_settings)
 
 
 def get_project_settings(base):
@@ -119,10 +119,10 @@ def get_folder_setting(folder=None):
     for folder_settings in folders:
         if folder_settings.get("path") == folder:
             settings = folder_settings.get("FuzzyFilePath", {})
-            verbose("SETTINGS FOUND FOR FOLDER", folder, ":", settings)
+            verbose("found folder settings", folder, ":", settings)
             return settings
 
-    verbose("no settings found for folder", folder)
+    verbose("no folder settings found", folder)
     return {}
 
 
@@ -135,5 +135,5 @@ def sanitize(settings_object):
 
 
 def verbose(*args):
-    if get("debug") is True:
-        print("FFP\tSETTINGS", *args)
+    if get("log") is True:
+        print("FFP\tSettings", *args)
