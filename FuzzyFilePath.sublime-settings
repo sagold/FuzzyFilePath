@@ -43,7 +43,7 @@
 			"replace_on_insert": [
 				["\\.js$", ""],						// after insertion, remove .js from path
 				["([^.])\\/index$", "\\1"],			// nodejs will load index.js by default => also remove index
-				["^\\/.*\\/bower_components\\/", ""]	// remove bower_components, since our build tool resolves this path automatically
+				["^(\\/.+)?\\/bower_components\\/", ""]	// remove bower_components, since our build tool resolves this path automatically
 			]
 		},
 		{
