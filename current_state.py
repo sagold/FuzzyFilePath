@@ -23,7 +23,6 @@ def log(*args):
 	print("STATE", *args)
 
 
-temp = False
 valid = False # if the current view is a valid project file
 file_caches = {} # caches any file indices of each project folder
 state = {} # saves current views state like filename, project_folder, cache and settings
@@ -47,8 +46,6 @@ def update():
 	file = Path.posix(view.file_name())
 	if not file:
 		log("Abort -- view has not yet been saved to file")
-		# @TODO: Track temporary view to identify a saved file or check sublime events
-		valid = False
 		temp = True
 		return valid
 	if state.get("file") == file:
@@ -80,7 +77,7 @@ def update():
 	return valid
 
 
-def update_settings(global_settings):
+def update_settings():
 	window = sublime.active_window()
 	if valid and window:
 		state["settings"] = settings.get(window)
@@ -101,9 +98,6 @@ def get_project_directory():
 def is_valid():
 	return valid
 
-def is_temp():
-	return temp
-
 
 def get_view():
 	""" legacy: return the current view """
@@ -119,16 +113,20 @@ def get_file_cache(folder, settings):
 	return file_caches.get(folder)
 
 
-def rebuild_filecache(folder):
-	folder = Path.posix(folder)
-
-	if not folder in file_caches:
+def rebuild_filecache(folder=None):
+	if not folder:
+		if state.get("cache"):
+			log("rebuild current filecache of folder " + state.get("project_folder"))
+			state.get("cache").rebuild()
 		return
 
-	if folder in file_caches:
-		file_caches.get(folder).rebuild()
-	else:
-		state.get("cache").rebuild()
+	folder = Path.posix(folder)
+	if not folder in file_caches:
+		log("Abort rebuild filecache -- folder " + folder + " not cached")
+		return False
+
+	log("rebuild current filecache of folder " + folder)
+	file_caches.get(folder).rebuild()
 
 
 def search_completions(needle, project_folder, valid_extensions, base_path=False):
