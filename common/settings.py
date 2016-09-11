@@ -31,24 +31,32 @@ def current():
     return current_settings
 
 
-# @TODO improve memory
 def update():
     """ merges plugin settings with user settings by default """
-    global base_settings, project_settings, current_settings
+    update_base_settings()
+    update_project_settings()
 
+
+def update_base_settings():
+    global base_settings, project_settings, current_settings
     base_settings = get_base_settings(config)
-    print("BASE_SETTINGS", base_settings)
-    project_settings = get_project_settings(base_settings)
-    print("PROJECT_SETTINGS", project_settings)
-    current_settings = project_settings
+    project_settings = base_settings
+    current_settings = base_settings
+    verbose("BASE_SETTINGS", current_settings)
 
 
 # @TODO improve memory
-def update_project_settings(project_folder):
+def update_project_settings():
     global base_settings, project_settings, current_settings
     project_settings = get_project_settings(base_settings)
+    current_settings = project_settings
+    verbose("PROJECT_SETTINGS", current_settings)
+
+
+def update_project_folder_settings(project_folder):
+    global project_settings, current_settings
     current_settings = get_folder_settings(project_settings, project_folder)
-    print("CURRENT_SETTINGS", current_settings)
+    verbose("CURRENT_SETTINGS", current_settings)
 
 
 def get_project_settings(base):
@@ -111,17 +119,21 @@ def get_folder_setting(folder=None):
     for folder_settings in folders:
         if folder_settings.get("path") == folder:
             settings = folder_settings.get("FuzzyFilePath", {})
-            print("SETTINGS FOUND FOR FOLDER", folder, ":", settings)
+            verbose("SETTINGS FOUND FOR FOLDER", folder, ":", settings)
             return settings
 
-    print("no settings found for folder", folder)
+    verbose("no settings found for folder", folder)
     return {}
 
 
 def sanitize(settings_object):
-    #print("SANITIZE", settings_object)
     if "base_directory" in settings_object:
         settings_object["base_directory"] = Path.sanitize_base_directory(settings_object.get("base_directory"))
     if "project_directory" in settings_object:
         settings_object["project_directory"] = Path.sanitize_base_directory(settings_object.get("project_directory"))
     return settings_object
+
+
+def verbose(*args):
+    if get("debug") is True and not args[0] in IGNORE:
+        print("FFP SETTINGS", *args)

@@ -17,5 +17,4 @@
 
     - maybe support different triggers based on inserted filepath? (i.e. absolute if matches node_mod...)
     - suddenly Testrunner causes plugin host to expire
-    - test: reload settings on change
     - possibly send ffp states to serve for better debugging

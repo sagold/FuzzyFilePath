@@ -56,7 +56,9 @@ def update():
 		return valid
 
 	# notify settings of new project folder
-	update_settings()
+	if state.get("project_folder") != project_folder:
+		settings.update_project_settings()
+	settings.update_project_folder_settings(project_folder)
 
 	print("\n")
 	log("Update")
@@ -72,12 +74,13 @@ def update():
 	return valid
 
 
-def update_settings():
-	settings.update_project_settings(state.get("project_folder"))
-
-
 def get_project_directory():
 	return state.get("project_folder")
+
+
+def update_settings():
+	if state.get("project_folder"):
+		settings.update_project_folder_settings(state.get("project_folder"))
 
 
 def is_valid():
