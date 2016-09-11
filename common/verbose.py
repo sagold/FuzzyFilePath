@@ -14,7 +14,7 @@ def warn(*args):
 	print("FFP -WARNING-\t", *args)
 
 def start_block():
-	print("\n")
+	print("")
 
 def end_block():
-	print("\n")
+	print("")

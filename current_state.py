@@ -61,9 +61,8 @@ def update():
 		settings.update_project_settings()
 	settings.update_project_folder_settings(project_folder)
 
-	logger.start_block()
-	logger.verbose(ID, "Update")
 	valid = True
+
 	# @TODO cache
 	# @TODO read settings retrieved from folder settings
 	state["file"] = file
@@ -71,7 +70,10 @@ def update():
 	state["project_folder"] = project_folder
 	state["view"] = View(project_folder, file)
 	state["cache"] = get_file_cache(project_folder)
+
+	logger.start_block()
 	logger.verbose(ID, "Updated", state)
+
 	return valid
 
 

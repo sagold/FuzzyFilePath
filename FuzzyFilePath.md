@@ -6,6 +6,9 @@
 
 ## tasks
 
+    - Test changes
+    - Test windows paths
+
     - cache states where appropriate
     - possibly create file caches of all project directories simultaneously
     - Cleanup @TODO flags
