@@ -210,6 +210,16 @@
 			"replace_on_insert": [["^\\/", ""]]
 		},
 		{
+		    // latex \input{}
+		    "scope": "meta\\.include\\.latex",
+		    "prefix": ["input"],
+
+		    "auto": true,
+		    "relative": true,
+		    "base_directory": false,
+		    "extensions": ["png", "gif", "jpeg", "jpg", "svg"]
+		},
+		{
 		    // * - any source file (by command only)
 		    "scope": "source",
 
