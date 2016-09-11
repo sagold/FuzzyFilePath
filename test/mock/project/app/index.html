@@ -14,11 +14,11 @@
 			}
 		</style>
 
-		<script type="text/javascript" src="./boot.js"></script>
+		<script src="" type="text/javascript"></script>
 		<script type="text/javascript" src="./mock/project/app/boot.js"></script>
 		<script type="text/javascript">
-			define(["/test/mock/project/bower_components/angular"], function (angular) {
-				var main = require("/test/mock/project/app/src/main"),
+			define(["../bower_components/angular/index.js"], function (angular) {
+				var main = require("/app/src/main"),
 					main_relative = require("./src/main");
 			});
 		</script>
@@ -31,7 +31,7 @@
 		</div>
 
 
-		<script src="./mock/project/app/boot.js"></script>
+		<script src="./boot.js"></script>
 
 	</body>
 </html>

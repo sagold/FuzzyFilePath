@@ -1,23 +1,17 @@
 {
 	// set project_directory relative to sublime project directory
 	"project_directory": "",
-
 	// base directory for paths relative to project_directory. Used if scope-trigger contains "base_directory": true
 	// watch out for side effects with project directory (if base_directory is not within project_directory)
-	"base_directory": false,
-
+	"base_directory": "",
 	// disable automatic path completions
 	"disable_autocompletions": false,
-
 	// disable keymaps
 	"disable_keymap_actions": false,
-
 	// ignore folders that match following regular expressions
 	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
-
 	// logs scope evaluation to console to debug configuration
 	"log": false,
-
 	// LIST OF TRIGGERS FOR AUTO COMPLETION
 	// - setting "scopes" in user settings will override all other scopes.
 	// - triggers are evaluated in given order. First match wins
@@ -31,6 +25,9 @@
 		// 	"extensions": ["*"],
 		// 	"auto": true
 		// },
+		/*
+			Javascript
+		 */
 		{
 			// js: require()
 			"scope": "\\.js\\s",					// 1. ignore if scope at cursor does not match expression (super+alt+p)
@@ -108,45 +105,39 @@
 		    "extensions": ["png", "gif", "jpg", "jpeg"],
 		    "relative": true
 		},
+		/*
+			CSS
+		 */
 		{
-			// (s)css: import
-			"scope": "(css|sass)\\s",
+ 			// import ""
+			"scope": "source\\.(css|sass|less)",
 
 			"auto": true,
 			"prefix": ["import"],
 			"relative": false,
-			"extensions": ["css", "scss"],
+			"extensions": ["css", "scss", "less"],
 			"replace_on_insert": [
 				["\\.(css|scss)$", ""],
 				["^\\/bower_components\\/", ""]
 			]
 		},
 		{
-			// (s)css: import
-			"scope": "(css|sass)\\s",
+		    // *: url()
+		    "scope": "source\\.(css|sass|less)",
+		    "prefix": ["url"],
 
-			"auto": true,
-			"prefix": ["url"],
-			"relative": false,
-			"extensions": ["jpg", "png", "gif"],
-			"replace_on_insert": [
-				["\\.(css|scss)$", ""],
-				["^\\/bower_components\\/", ""]
-			]
+		    "auto": true,
+		    "relative": true,
+		    "base_directory": true,
+		    "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
+		    "replace_on_insert": [
+		    	["\\.(css|scss)$", ""],
+		    	["^\\/bower_components\\/", ""]
+		    ]
 		},
-		{
-			// (s)css: import
-			"scope": ".",
-
-			"auto": false,
-			"relative": true,
-			"extensions": ["js", "html", "scss", "png", "jpg", "gif", "svg"],
-			"replace_on_insert": [
-				["\\.js$", ""],
-				["\\/index$", ""],
-				["^\\/bower_components\\/", ""]
-			]
-		},
+		/*
+			HTML
+		 */
 		{
 		    // html - <script src="..">
 		    "scope": "string\\.quote.*\\.html",
@@ -160,7 +151,7 @@
 		{
 			// string.quote.double.html
 		    // html - <img src="" and <script src="" and <* style="*: url()
-		    "scope": "meta.tag.*string.*\\.html",
+		    "scope": "text\\.html",
 		    // <* src
 		    "prefix": ["src", "url"],
 
@@ -181,31 +172,9 @@
 		    "extensions": ["css"],
 		    "relative": true
 		},
-		{
-		    // css - *: url()
-		    "scope": "meta\\.property.*\\.css",
-		    // *: url
-		    "prefix": ["url"],
-
-		    "auto": true,
-		    "relative": true,
-		    "base_directory": true,
-		    "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
-		},
-		{
-		    // css - import ""
-		    "scope": ".*\\.(css|sass|less)",
-		    // *: url
-		    "prefix": ["import"],
-
-		    "auto": true,
-		    "extensions": ["css", "scss", "less"],
-		    "relative": true,
-		    "replace_on_insert": [
-		    	// remove extension
-		    	["\\.(scss|less)$", ""],
-		    ]
-		},
+		/*
+			OTHER
+		 */
 		{
 			// glsl
 			"scope": "source\\.glsl",
