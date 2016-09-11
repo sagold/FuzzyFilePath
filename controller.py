@@ -4,7 +4,6 @@ import FuzzyFilePath.query as Query
 import FuzzyFilePath.common.settings as Settings
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
-from FuzzyFilePath.common.config import config
 import FuzzyFilePath.current_state as state
 
 
@@ -15,7 +14,7 @@ ID = "Controller"
 def plugin_loaded():
     """ load settings """
     update_settings()
-    global_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    global_settings = sublime.load_settings(Settings.get("FFP_SETTINGS_FILE"))
     global_settings.add_on_change("update", update_settings)
 
 
@@ -24,6 +23,7 @@ def update_settings():
     # invalidate cache
     global scope_cache
     scope_cache = {}
+    Settings.update()
     state.update_settings()
 
 

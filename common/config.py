@@ -2,6 +2,7 @@ config = {
 
 	"DEBUG": False,
 	"LOG": False,
+	"ID": "config",
 	"FFP_SETTINGS_FILE": "FuzzyFilePath.sublime-settings",
 	"ESCAPE_DOLLAR": '\$',
 	"TRIGGER_ACTION": ["auto_complete", "insert_path"],

@@ -1,12 +1,12 @@
 import sublime_plugin
-from FuzzyFilePath.common.config import config
+import FuzzyFilePath.common.settings as settings
 import FuzzyFilePath.query as Query
 
 class InsertPathCommand(sublime_plugin.TextCommand):
     """ trigger customized autocomplete overriding auto settings """
     def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):
         print("INSERT PATH COMMAND")
-        if config["DISABLE_KEYMAP_ACTIONS"] is True:
+        if settings.get("DISABLE_KEYMAP_ACTIONS") is True:
             return False
 
         Query.override_trigger_setting("filepath_type", type)

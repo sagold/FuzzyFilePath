@@ -5,11 +5,11 @@ import re
 import sublime
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.path as Path
-from FuzzyFilePath.common.config import config
 from FuzzyFilePath.common.string import get_diff
 import FuzzyFilePath.common.selection as Selection
 from FuzzyFilePath.common.verbose import log
 from FuzzyFilePath.common.verbose import verbose
+import FuzzyFilePath.common.settings as settings
 import FuzzyFilePath.current_state as current_state
 
 
@@ -73,10 +73,10 @@ def get_filepaths(view, query, current_file):
 
 def find_trigger(current_scope, expression, byCommand=False):
     """ Returns the first trigger matching the given scope and expression """
-    triggers = current_state.get_setting("TRIGGER")
+    triggers = settings.get("TRIGGER")
     if not byCommand:
         # get any triggers that match the requirements and may start automatically
-        triggers = get_matching_autotriggers(current_scope, current_state.get_setting("TRIGGER"))
+        triggers = get_matching_autotriggers(current_scope, settings.get("TRIGGER"))
     if not bool(triggers):
         verbose(ID, "abort query, no valid scope-regex for current context")
         return False
@@ -124,7 +124,7 @@ def get_matching_autotriggers(scope, triggers):
 
 def apply_post_replacements(path, base_directory, replace_on_insert):
     # hack reverse
-    path = re.sub(current_state.get_setting("ESCAPE_DOLLAR"), "$", path)
+    path = re.sub(settings.get("ESCAPE_DOLLAR"), "$", path)
     for replace in replace_on_insert:
         path = re.sub(replace[0], replace[1], path)
 

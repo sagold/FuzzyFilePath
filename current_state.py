@@ -1,11 +1,6 @@
 """
-	manages current state, which include
-	- current filename of view
-	- current project folder if any
-	- settings (merged with project settings)
-	- project folder
-
-	this is intended to simplify and replace project, projectfolder and currentview construct
+	manages current state, which include: current filename of view, current project folder if any, project folder
+	does not manage settings, but sends a message with the current project folder to settings
 """
 ID = "CURRENT STATE"
 
@@ -68,27 +63,17 @@ def update():
 	state["file"] = file
 	state["folders"] = folders
 	state["project_folder"] = project_folder
-	state["settings"] = settings.get(window)
 	state["view"] = View(project_folder, file)
-	state["cache"] = get_file_cache(project_folder, state.get("settings"))
+	# update settings object, before accessing it
+	update_settings()
+	state["cache"] = get_file_cache(project_folder, settings.current())
 	log("is now valid")
 	log("Updated", state)
-	print("\n")
 	return valid
 
 
 def update_settings():
-	window = sublime.active_window()
-	if valid and window:
-		state["settings"] = settings.get(window)
-
-
-def get_setting(key):
-	return state["settings"].get(key)
-
-
-def get_settings():
-	return state.get("settings")
+	settings.update_project_settings(state.get("project_folder"))
 
 
 def get_project_directory():

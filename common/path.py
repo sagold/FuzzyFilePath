@@ -41,6 +41,10 @@ def get_relative_folder(file_name, base_directory):
     folder = "" if folder == "." else folder
     return sanitize(folder)
 
+def relative_to(base_directory, folder_path):
+    folder = os.path.relpath(folder_path, base_directory)
+    return sanitize(folder)
+
 # return {string} path from base to target
 # !replace with `os.path.relpath(path[, start])`
 # => https://docs.python.org/2/library/os.path.html

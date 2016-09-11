@@ -1,18 +1,18 @@
 import re
 import sublime
 import sublime_plugin
-from FuzzyFilePath.common.config import config
+import FuzzyFilePath.common.settings as settings
 
 class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
 
     # helper: replaces range with string
     def run(self, edit, a, b, string, move_cursor=False):
-        if config["DISABLE_KEYMAP_ACTIONS"] is True:
+        if settings.get("DISABLE_KEYMAP_ACTIONS") is True:
             return False
 
         self.view.replace(edit, sublime.Region(a, b), string)
 
-        if move_cursor and config["POST_INSERT_MOVE_CHARACTERS"]:
+        if move_cursor and settings.get("POST_INSERT_MOVE_CHARACTERS"):
         	self.move_skip(a + len(string))
 
     def move_skip(self, point):
@@ -21,7 +21,7 @@ class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
     	line_region = self.view.line(point)
     	post_region = sublime.Region(word_region.b, line_region.b)
     	post = self.view.substr(post_region)
-    	to_move = re.search(config["POST_INSERT_MOVE_CHARACTERS"], post)
+    	to_move = re.search(settings.get("POST_INSERT_MOVE_CHARACTERS"), post)
 
     	if to_move:
     		length = len(to_move.group(0))

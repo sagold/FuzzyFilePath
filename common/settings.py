@@ -1,60 +1,127 @@
+"""
+    manages the current setting data which is retrieved in the following order (bottom to top)
+    - project settings: folder settings
+    - project settings
+    - user settings file
+    - default settings file
+    - config
+"""
 import sublime
+import os
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.common.config import config
 
-
+# base settings: config, default, user settings file
+base_settings = {}
+# project settings merged with base settings
+project_settings = {}
+# final settings object
+current_settings = {}
+# backwards compatibility of setting schema
 map_settings = {
     "TRIGGER": "scopes"
 }
 
 
-def project(window):
-    """ returns project settings """
-    data = window.project_data()
-    if not data:
-        return {}
-    settings = data.get("settings", {})
-    ffp_project_settings = settings.get("FuzzyFilePath", {})
-    return ffp_project_settings
+def get(key):
+    return current_settings.get(key)
 
 
-def get(window):
-    """ Returns all settings (default, user, project) merged by standard rules """
-    project_settings = project(window)
-    global_settings = update()
-    for key in global_settings:
-        project_settings[key] = project_settings.get(key.lower(), global_settings[key])
-    return project_settings
+def current():
+    return current_settings
 
 
-def get_global_settings():
-    """ Returns settings retrieved by merged settings files """
-    return config
-
+# @TODO improve memory
 def update():
     """ merges plugin settings with user settings by default """
-    ffp_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
-    global_settings = merge(config, ffp_settings)
+    global base_settings, project_settings, current_settings
 
-    if global_settings["BASE_DIRECTORY"]:
-        global_settings["BASE_DIRECTORY"] = Path.sanitize_base_directory(global_settings["BASE_DIRECTORY"])
-
-    if global_settings["PROJECT_DIRECTORY"]:
-        global_settings["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(global_settings["PROJECT_DIRECTORY"])
-
-    return global_settings
+    base_settings = get_base_settings(config)
+    print("BASE_SETTINGS", base_settings)
+    project_settings = get_project_settings(base_settings)
+    print("PROJECT_SETTINGS", project_settings)
+    current_settings = project_settings
 
 
-def merge(settings, overwrite):
-    if not overwrite:
-        return settings
+# @TODO improve memory
+def update_project_settings(project_folder):
+    global base_settings, project_settings, current_settings
+    project_settings = get_project_settings(base_settings)
+    current_settings = get_folder_settings(project_settings, project_folder)
+    print("CURRENT_SETTINGS", current_settings)
 
-    """ update settings by given overwrite """
+
+def get_project_settings(base):
+    """ returns project settings """
+    data = sublime.active_window().project_data()
+    if not data:
+        return base
+    ffp_project_settings = data.get("settings", {}).get("FuzzyFilePath", {})
+    ffp_project_settings = sanitize(ffp_project_settings)
+    return merge(base, ffp_project_settings)
+
+
+def get_base_settings(config):
+    user_settings = sublime.load_settings(config["FFP_SETTINGS_FILE"])
+    # Note: user_settings is of class Settings
+    user_settings = merge(config, user_settings)
+    return sanitize(user_settings)
+
+
+def get_folder_settings(project, project_folder=None):
+    if not project_folder:
+        return project
+
+    folder_settings = get_folder_setting(project_folder)
+    folder_settings = sanitize(folder_settings)
+    return merge(project, folder_settings)
+
+
+def merge(settings, overwrite={}):
+    """ merge settings object with given overwrite settings """
+    result = {}
     for key in settings:
-        settings[key] = overwrite.get(key.lower(), settings[key])
-    # support old config schema
+        result[key] = overwrite.get(key.lower(), settings.get(key))
+    # backwards compatibility
     for key in map_settings:
         mappedKey = map_settings[key]
-        settings[key] = overwrite.get(mappedKey, settings[key])
+        result[key] = overwrite.get(mappedKey, settings.get(key))
 
-    return settings
+    return result
+
+
+# @TODO improve memory
+def get_folder_setting(folder=None):
+    """ returns the project config object FuzzyFilePath associated with the given folder """
+    if not folder:
+        return {}
+    data = sublime.active_window().project_data()
+    if not data:
+        return {}
+    folders = data.get("folders")
+    if not folders:
+        return {}
+    # if the project file has been saved, paths in project settings may be relative, but the given filepath is absolute
+    # (retrieved from window.folder())
+    project_directory = sublime.active_window().project_file_name()
+    if project_directory:
+        project_directory = os.path.dirname(project_directory)
+        folder = Path.relative_to(project_directory, folder)
+
+    for folder_settings in folders:
+        if folder_settings.get("path") == folder:
+            settings = folder_settings.get("FuzzyFilePath", {})
+            print("SETTINGS FOUND FOR FOLDER", folder, ":", settings)
+            return settings
+
+    print("no settings found for folder", folder)
+    return {}
+
+
+def sanitize(settings_object):
+    #print("SANITIZE", settings_object)
+    if "BASE_DIRECTORY" in settings_object:
+        settings_object["BASE_DIRECTORY"] = Path.sanitize_base_directory(settings_object.get("BASE_DIRECTORY"))
+    if "PROJECT_DIRECTORY" in settings_object:
+        settings_object["PROJECT_DIRECTORY"] = Path.sanitize_base_directory(settings_object.get("PROJECT_DIRECTORY"))
+    return settings_object
