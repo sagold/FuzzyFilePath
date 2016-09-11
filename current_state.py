@@ -19,6 +19,7 @@ valid = False # if the current view is a valid project file
 file_caches = {} # caches any file indices of each project folder
 state = {} # saves current views state like filename, project_folder, cache and settings
 
+
 def update():
 	""" call me anytime a new view has gained focus. This includes activation of a new window, which should have an
 		active view
@@ -64,7 +65,6 @@ def update():
 	valid = True
 
 	# @TODO cache
-	# @TODO read settings retrieved from folder settings
 	state["file"] = file
 	state["folders"] = folders
 	state["project_folder"] = project_folder
@@ -94,9 +94,11 @@ def get_view():
 	""" legacy: return the current view """
 	return state.get("view")
 
+
 def enable():
 	global is_enabled
 	is_enabled = True
+
 
 def get_file_cache(folder):
 	if not folder in file_caches:
@@ -132,7 +134,7 @@ def find_file(file_name):
 
 
 def get_valid_extensions(triggers):
-	""" Returns a list of all extensions found in scope triggers """
+	""" Returns a list of all file extensions found in scope triggers """
 	extensionsToSuggest = []
 	for scope in triggers:
 	    ext = scope.get("extensions", [])

@@ -1,6 +1,6 @@
 import FuzzyFilePath.common.settings as settings
 
-IGNORE = ["CurrentFile", "QueryCompletionListener", "search", "Expression"]
+IGNORE = ["CurrentFile", "QueryCompletionListener", "search", "Expression", "cache"]
 
 def log(*args):
 	if settings.get("log"):
