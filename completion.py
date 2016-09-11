@@ -72,19 +72,14 @@ def get_filepaths(view, query, current_file):
 
 
 def find_trigger(current_scope, expression, byCommand=False):
-    triggerList = current_state.get_setting("TRIGGER")
-
     """ Returns the first trigger matching the given scope and expression """
-    triggers = triggerList #config["TRIGGER"]
-
+    triggers = current_state.get_setting("TRIGGER")
     if not byCommand:
         # get any triggers that match the requirements and may start automatically
-        triggers = get_matching_autotriggers(current_scope, triggerList)
-
+        triggers = get_matching_autotriggers(current_scope, current_state.get_setting("TRIGGER"))
     if not bool(triggers):
         verbose(ID, "abort query, no valid scope-regex for current context")
         return False
-
     # check if one of the triggers match the current context (expression, scope)
     return Context.find_trigger(expression, current_scope, triggers)
 
@@ -92,7 +87,6 @@ def find_trigger(current_scope, expression, byCommand=False):
 def update_inserted_filepath(view, post_remove):
     """ post completion: adjusts inserted filepath """
     expression = Context.get_context(view)
-
     # diff of previous needle and inserted needle
     diff = get_diff(post_remove, expression["needle"])
     # cleanup string
