@@ -14,8 +14,8 @@ ID = "Controller"
 def plugin_loaded():
     """ load settings """
     update_settings()
-    global_settings = sublime.load_settings(Settings.get("FFP_SETTINGS_FILE"))
-    global_settings.add_on_change("update", update_settings)
+    settings_file = sublime.load_settings(Settings.get("ffp_settings_file"))
+    settings_file.add_on_change("update", update_settings)
 
 
 def update_settings():
