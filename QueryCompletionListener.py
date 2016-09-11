@@ -5,6 +5,7 @@ import FuzzyFilePath.common.selection as Selection
 import FuzzyFilePath.expression as Context
 import FuzzyFilePath.common.settings as settings
 from FuzzyFilePath.common.verbose import verbose
+import FuzzyFilePath.current_state as state
 
 
 ID = "QueryCompletionListener"
@@ -43,6 +44,9 @@ class QueryCompletionListener(sublime_plugin.EventListener):
 
     # track post insert insertion
     def start_tracking(self, view, command_name=None):
+        if not state.is_valid():
+            return
+
         self.track_insert["active"] = True
         self.track_insert["start_line"] = Selection.get_line(view)
         """
