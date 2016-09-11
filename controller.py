@@ -24,6 +24,7 @@ def update_settings():
     global scope_cache
     scope_cache = {}
     Settings.update()
+    state.enable()
     state.update_settings()
 
 

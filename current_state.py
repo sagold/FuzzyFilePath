@@ -2,7 +2,7 @@
 	manages current state, which include: current filename of view, current project folder if any, project folder
 	does not manage settings, but sends a message with the current project folder to settings
 """
-ID = "CURRENT STATE"
+ID = "CurrentState"
 
 
 import sublime
@@ -11,13 +11,10 @@ import FuzzyFilePath.common.settings as settings
 from FuzzyFilePath.project.FileCache import FileCache
 from FuzzyFilePath.project.View import View
 import FuzzyFilePath.common.path as Path
+import FuzzyFilePath.common.verbose as logger
 
 
-
-def log(*args):
-	print("STATE", *args)
-
-
+is_enabled = False # set to true when plugin has initially updated settings
 valid = False # if the current view is a valid project file
 file_caches = {} # caches any file indices of each project folder
 state = {} # saves current views state like filename, project_folder, cache and settings
@@ -26,32 +23,36 @@ def update():
 	""" call me anytime a new view has gained focus. This includes activation of a new window, which should have an
 		active view
 	"""
-	global valid
+	global valid, is_enabled
+
+	if not is_enabled:
+		return False
+
 	temp = False
 	window = sublime.active_window()
 	if window is None:
-		log("Abort -- no active window")
+		logger.log(ID, "Abort -- no active window")
 		valid = False
 		return valid
 	view = window.active_view()
 	if view is None:
-		log("Abort -- no active view")
+		logger.log(ID, "Abort -- no active view")
 		valid = False
 		return valid
 	file = Path.posix(view.file_name())
 	if not file:
-		log("Abort -- view has not yet been saved to file")
+		logger.log(ID, "Abort -- view has not yet been saved to file")
 		temp = True
 		return valid
 	if state.get("file") == file:
-		log("Abort -- view already updated")
+		logger.log(ID, "Abort -- view already updated")
 		return valid
 
 	folders = list(map(lambda f: Path.posix(f), window.folders()))
 	project_folder = get_closest_folder(file, folders)
 
 	if project_folder is False:
-		log("Abort -- file not part of a project (folder)")
+		logger.log(ID, "Abort -- file not part of a project (folder)")
 		valid = False
 		return valid
 
@@ -61,7 +62,7 @@ def update():
 	settings.update_project_folder_settings(project_folder)
 
 	print("\n")
-	log("Update")
+	logger.verbose(ID, "Update")
 	valid = True
 	# @TODO cache
 	# @TODO read settings retrieved from folder settings
@@ -70,7 +71,7 @@ def update():
 	state["project_folder"] = project_folder
 	state["view"] = View(project_folder, file)
 	state["cache"] = get_file_cache(project_folder)
-	log("Updated", state)
+	logger.verbose(ID, "Updated", state)
 	return valid
 
 
@@ -91,11 +92,14 @@ def get_view():
 	""" legacy: return the current view """
 	return state.get("view")
 
+def enable():
+	global is_enabled
+	is_enabled = True
 
 def get_file_cache(folder):
 	if not folder in file_caches:
 		valid_file_extensions = get_valid_extensions(settings.get("trigger"))
-		log("Build cache for " + folder + " (", valid_file_extensions , ") excluding", settings.get("exclude_folders"))
+		logger.verbose(ID, "Build cache for " + folder + " (", valid_file_extensions , ") excluding", settings.get("exclude_folders"))
 		file_caches[folder] = FileCache(valid_file_extensions, settings.get("exclude_folders"), folder)
 
 	return file_caches.get(folder)
@@ -104,16 +108,16 @@ def get_file_cache(folder):
 def rebuild_filecache(folder=None):
 	if not folder:
 		if state.get("cache"):
-			log("rebuild current filecache of folder " + state.get("project_folder"))
+			logger.verbose(ID, "rebuild current filecache of folder " + state.get("project_folder"))
 			state.get("cache").rebuild()
 		return
 
 	folder = Path.posix(folder)
 	if not folder in file_caches:
-		log("Abort rebuild filecache -- folder " + folder + " not cached")
+		logger.log(ID, "Abort rebuild filecache -- folder " + folder + " not cached")
 		return False
 
-	log("rebuild current filecache of folder " + folder)
+	logger.verbose(ID, "rebuild current filecache of folder " + folder)
 	file_caches.get(folder).rebuild()
 
 
