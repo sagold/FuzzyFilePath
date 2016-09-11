@@ -14,6 +14,8 @@ import FuzzyFilePath.current_state as current_state
 
 
 ID = "Completion"
+ID_TRIGGER = "SelectedTrigger"
+
 start_expression = False
 scope_cache = {}
 
@@ -54,6 +56,8 @@ def get_filepaths(view, query, current_file):
     if trigger is False:
         verbose(ID, "abort - no trigger found")
         return False
+
+    log(ID_TRIGGER, trigger)
 
     if query.build(start_expression.get("needle"), trigger, current_file.get_directory()) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
