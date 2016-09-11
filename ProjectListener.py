@@ -2,10 +2,10 @@ import sublime
 import sublime_plugin
 
 import FuzzyFilePath.controller as controller
-from FuzzyFilePath.project.get_project_id import get_project_id
 
 
 ID = "ProjectListener"
+
 
 class ProjectListener(sublime_plugin.EventListener):
     """ listens on window changes, delegating events to controller """
@@ -39,3 +39,10 @@ class ProjectListener(sublime_plugin.EventListener):
         if not window:
             return False
         controller.on_project_activated(window)
+
+
+def get_project_id(window):
+    project_name = window.project_file_name()
+    if project_name:
+        return project_name
+    return window.id()

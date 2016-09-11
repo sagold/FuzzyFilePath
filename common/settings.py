@@ -136,4 +136,4 @@ def sanitize(settings_object):
 
 def verbose(*args):
     if get("log") is True:
-        print("FFP\tSettings", *args)
+        print("FFP\t", "Settings", *args)
