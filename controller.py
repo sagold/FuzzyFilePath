@@ -35,7 +35,7 @@ def get_filepath_completions(view):
         return False
 
     verbose(ID, "get filepath completions")
-    completions = Completion.get_filepaths(view, Query, state.get_view())
+    completions = Completion.get_filepaths(view, Query)
 
     if completions and len(completions[0]) > 0:
         Completion.start(Query.get_replacements())

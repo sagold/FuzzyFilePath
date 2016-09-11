@@ -60,12 +60,12 @@ def resolve_trigger(view, query):
     return trigger
 
 
-def get_filepaths(view, query, current_file):
+def get_filepaths(view, query):
     global start_expression
 
     trigger = resolve_trigger(view, query)
     log(ID_TRIGGER, trigger)
-    if query.build(start_expression.get("needle"), trigger, current_file.get_directory()) is False:
+    if query.build(start_expression.get("needle"), trigger, current_state.get_directory()) is False:
         # query is valid, but may not be triggered: not forced, no auto-options
         verbose(ID, "abort - no auto trigger found")
         return False
@@ -75,7 +75,7 @@ def get_filepaths(view, query, current_file):
 
     return current_state.search_completions(
         query.get_needle(),
-        current_file.get_project_directory(),
+        current_state.get_project_directory(),
         query.get_extensions(),
         query.get_base_path()
     )

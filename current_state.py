@@ -7,9 +7,9 @@ ID = "CurrentState"
 
 import sublime
 import os
+import re
 import FuzzyFilePath.common.settings as settings
 from FuzzyFilePath.project.FileCache import FileCache
-from FuzzyFilePath.project.View import View
 import FuzzyFilePath.common.path as Path
 import FuzzyFilePath.common.verbose as logger
 
@@ -66,9 +66,9 @@ def update():
 
 	# @TODO cache
 	state["file"] = file
+	state["directory"] = sanitize_directory(file, project_folder)
 	state["folders"] = folders
 	state["project_folder"] = project_folder
-	state["view"] = View(project_folder, file)
 	state["cache"] = get_file_cache(project_folder)
 
 	logger.start_block()
@@ -77,22 +77,28 @@ def update():
 	return valid
 
 
+def sanitize_directory(file_name, project_folder):
+	directory = re.sub(project_folder, "", file_name)
+	directory = re.sub("^[\\\\/\.]*", "", directory)
+	return os.path.dirname(directory)
+
+
 def get_project_directory():
 	return state.get("project_folder")
 
 
+def get_directory():
+	return state.get("directory")
+
+
 def update_settings():
 	if state.get("project_folder"):
+		# we expect settings to be already updated and thus only update the project folder settings
 		settings.update_project_folder_settings(state.get("project_folder"))
 
 
 def is_valid():
 	return valid
-
-
-def get_view():
-	""" legacy: return the current view """
-	return state.get("view")
 
 
 def enable():
