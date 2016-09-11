@@ -6,7 +6,8 @@ Fuzzy search and insert filenames inside your current project directory. Highly 
 
 <img src="https://raw.githubusercontent.com/sagold/FuzzyFilePath/develop/FuzzyFilePathDemo.gif" />
 <br />
-<em style="display: block; text-align: right;">Basic settings support Html, Css and Javascript, but may be adjusted for every language</em>
+<em style="display: block; text-align: right;">Basic settings support Javascript, HTML, CSS, PHP and glsl, but may be
+adjusted for most languages</em>
 
 
 ## <a name="installation">Installation</a>
@@ -51,7 +52,7 @@ FuzzyFilePath is disabled for single files or files outside the opened folder.
 
 ### Open File
 
-Use<kbd>Alt</kbd>+<kbd>Enter</kbd> to open the file under cursor
+Use <kbd>Alt</kbd>+<kbd>Enter</kbd> to open the file under cursor
 
 
 ### Configure Completion Panel
@@ -70,7 +71,7 @@ completion panel to show up. i.e. enabling autocompletion for latex `\input{"pat
 ]
 ```
 
-or enabling html completion for `<script src="path/to/script"`
+or enabling html completion for `<script src="path/to/script">`
 
 ```json
 "auto_complete_triggers":
