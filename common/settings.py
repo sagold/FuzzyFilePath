@@ -136,4 +136,4 @@ def sanitize(settings_object):
 
 def verbose(*args):
     if get("debug") is True:
-        print("FFP SETTINGS", *args)
+        print("FFP\tSETTINGS", *args)
