@@ -48,12 +48,42 @@ The current string may modify the suggested filepaths by the following rules:
 
 FuzzyFilePath is disabled for single files or files outside the opened folder.
 
-### open file
+
+### Open File
 
 Use<kbd>Alt</kbd>+<kbd>Enter</kbd> to open the file under cursor
 
 
-#### Special Characters
+### Configure Completion Panel
+
+Ensure you have [autocompletion activated for Sublime](https://www.granneman.com/webdev/editors/sublime-text/top-features-of-sublime-text/auto-completion-in-sublime-text/). In those cases, where the autocompletion panel is still
+not opened (for any type of completions), you may extend `auto_complete_triggers` to add special rules for the
+completion panel to show up. i.e. enabling autocompletion for latex `\input{"path/to/asset"}`, you could add:
+
+```json
+"auto_complete_triggers":
+[
+	{
+		"characters": "abcdefghijklmnopqrstuvwxyz",
+		"selector": "text.tex.latex"
+	}
+]
+```
+
+or enabling html completion for `<script src="path/to/script"`
+
+```json
+"auto_complete_triggers":
+[
+	{
+		"characters": "abcdefghijklmnopqrstuvwxyz",
+		"selector": "string.quoted.double.html"
+	}
+]
+```
+
+
+### Special Characters
 
 If your projects contains filenames with special characters, consider modifying Sublime Texts `word_separators`.
 
