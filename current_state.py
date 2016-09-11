@@ -61,7 +61,7 @@ def update():
 		settings.update_project_settings()
 	settings.update_project_folder_settings(project_folder)
 
-	print("\n")
+	logger.start_block()
 	logger.verbose(ID, "Update")
 	valid = True
 	# @TODO cache

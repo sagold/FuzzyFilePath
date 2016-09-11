@@ -2,6 +2,9 @@ import re
 import sublime
 import FuzzyFilePath.common.settings as settings
 import FuzzyFilePath.common.selection as Selection
+import FuzzyFilePath.common.verbose as logger
+
+ID = "Expression"
 
 NEEDLE_SEPARATOR = ">\"\'\(\)\{\}"
 NEEDLE_SEPARATOR_BEFORE = "\"\'\(\{"
@@ -42,9 +45,7 @@ def get_context(view):
 		needle += pre_quotes.group(2) + word
 		separator = pre_quotes.group(1)
 		pre_match = pre_quotes.group(2)
-
 		needle_region.a -= len(pre_quotes.group(2))
-
 	else:
 		# use whitespace as separator
 		pre_quotes = re.search("(\s)([^"+NEEDLE_SEPARATOR+"\s]*)$", pre)
@@ -52,7 +53,6 @@ def get_context(view):
 			needle = pre_quotes.group(2) + word
 			separator = pre_quotes.group(1)
 			pre_match = pre_quotes.group(2)
-
 			needle_region.a -= len(pre_quotes.group(2))
 
 	if pre_quotes:
@@ -61,16 +61,13 @@ def get_context(view):
 			needle += post_quotes.group(1)
 			needle_region.b += len(post_quotes.group(1))
 		else:
-			print("no post quotes found => invalid")
+			logger.verbose(ID, "no post quotes found => invalid")
 			valid = False
-
 	elif not re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
 		needle = pre + word
 		needle_region.a = pre_region.a
-
 	else:
 		needle = word
-
 
 	# grab prefix
 	prefix_region = sublime.Region(line_region.a, pre_region.b - len(pre_match) - 1)
@@ -99,15 +96,15 @@ def get_context(view):
 		# print("style:", style)
 
 	if separator is False:
-		print("context", "separator undefined => invalid", needle)
+		logger.verbose(ID, "separator undefined => invalid", needle)
 		valid_needle = False
 		valid = False
 	elif re.search("["+NEEDLE_INVALID_CHARACTERS+"]", needle):
-		print("context", "invalid characters in needle => invalid", needle)
+		logger.verbose(ID, "invalid characters in needle => invalid", needle)
 		valid_needle = False
 		valid = False
 	elif prefix is None and separator.strip() == "":
-		print("context", "prefix undefined => invalid", needle)
+		logger.verbose(ID, "prefix undefined => invalid", needle)
 		valid = False
 
 	return {

@@ -12,3 +12,9 @@ def verbose(*args):
 
 def warn(*args):
 	print("FFP -WARNING-\t", *args)
+
+def start_block():
+	print("\n")
+
+def end_block():
+	print("\n")

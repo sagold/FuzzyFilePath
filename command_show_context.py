@@ -10,7 +10,6 @@ class FfpShowContextCommand(sublime_plugin.TextCommand):
     content = None
 
     def run(self, edit):
-    	print("show context")
     	context = Context.get_context(self.view)
     	current_scope = self.view.scope_name(Selection.get_position(self.view))
 
