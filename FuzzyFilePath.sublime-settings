@@ -9,7 +9,7 @@
 	// disable keymaps
 	"disable_keymap_actions": false,
 	// ignore folders that match following regular expressions
-	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
+	"exclude_folders": ["node\\_modules\\/.*\\/node_modules", "bower\\_components/.*/bower\\_components"],
 	// logs scope evaluation to console to debug configuration
 	"log": false,
 	// LIST OF TRIGGERS FOR AUTO COMPLETION
@@ -40,7 +40,8 @@
 			"replace_on_insert": [
 				["\\.js$", ""],						// after insertion, remove .js from path
 				["([^.])\\/index$", "\\1"],			// nodejs will load index.js by default => also remove index
-				["^(\\/.+)?\\/bower_components\\/", ""]	// remove bower_components, since our build tool resolves this path automatically
+				// remove path to module-folder, since our build tool resolves this path automatically
+				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
 			]
 		},
 		{
@@ -55,7 +56,7 @@
 			"replace_on_insert": [
 				["\\.js$", ""],
 				["([^.])\\/index$", "\\1"],
-				["^\\/bower_components\\/", ""]
+				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
 			]
 		},
 		{
@@ -81,7 +82,8 @@
 			"extensions": ["js", "ts"],
 			"replace_on_insert": [
 				["(\\.js|\\.ts)$", ""],
-				["([^.])\\/index$", "\\1"]
+				["([^.])\\/index$", "\\1"],
+				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
 			]
 		},
 		{
@@ -118,7 +120,7 @@
 			"extensions": ["css", "scss", "less"],
 			"replace_on_insert": [
 				["\\.(css|scss)$", ""],
-				["^\\/bower_components\\/", ""]
+				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
 			]
 		},
 		{
@@ -132,7 +134,7 @@
 		    "extensions": ["png", "gif", "jpeg", "jpg", "woff", "ttf", "svg", "otf"],
 		    "replace_on_insert": [
 		    	["\\.(css|scss)$", ""],
-		    	["^\\/bower_components\\/", ""]
+		    	["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
 		    ]
 		},
 		/*
