@@ -3,6 +3,7 @@ import os
 import gc
 import re
 from FuzzyFilePath.common.verbose import verbose
+from FuzzyFilePath.common.verbose import log
 import FuzzyFilePath.common.path as Path
 from FuzzyFilePath.project.FileCacheWorker import FileCacheWorker
 
@@ -44,6 +45,7 @@ class FileCache:
 
             return : List -- containing sublime completions
         """
+        log(ID, needle, project_folder, valid_extensions, base_path)
         project_files = self.cache.files
         if (project_files is None):
             return False
