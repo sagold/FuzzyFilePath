@@ -2,6 +2,7 @@ import sublime_plugin
 import FuzzyFilePath.common.settings as settings
 import FuzzyFilePath.query as Query
 
+
 class InsertPathCommand(sublime_plugin.TextCommand):
     """ trigger customized autocomplete overriding auto settings """
     def run(self, edit, type="default", base_directory=None, replace_on_insert=[], extensions=[]):

@@ -3,6 +3,7 @@ import sublime
 import sublime_plugin
 import FuzzyFilePath.common.settings as settings
 
+
 class FfpReplaceRegionCommand(sublime_plugin.TextCommand):
 
     # helper: replaces range with string
