@@ -188,6 +188,18 @@
 				["\\.glsl$", ""]
 			]
 		},
+		{
+			// handlebars partial
+			"scope": "\\.handlebars\\s.*inline",
+
+			"auto": true,
+			"relative": true,
+			"base_directory": false,
+			"extensions": ["hbs", "handlebars"],
+			"replace_on_insert": [
+				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
+			]
+		},
 	    {
 			// python
 			"scope": "\\.python",
