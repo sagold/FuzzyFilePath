@@ -14,7 +14,9 @@ def warn(*args):
 	print("FFP -WARNING-\t", *args)
 
 def start_block():
-	print("")
+	if settings.get("log") or settings.get("debug"):
+		print("")
 
 def end_block():
-	print("")
+	if settings.get("log") or settings.get("debug"):
+		print("")
