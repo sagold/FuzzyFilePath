@@ -127,9 +127,9 @@ def get_folder_setting(folder=None):
 
 
 def sanitize(settings_object):
-    if "base_directory" in settings_object:
+    if "base_directory" in settings_object and settings_object.get("base_directory"):
         settings_object["base_directory"] = Path.sanitize_base_directory(settings_object.get("base_directory"))
-    if "project_directory" in settings_object:
+    if "project_directory" in settings_object and settings_object.get("project_directory"):
         settings_object["project_directory"] = Path.sanitize_base_directory(settings_object.get("project_directory"))
     return settings_object
 

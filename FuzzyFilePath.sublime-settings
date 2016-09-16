@@ -3,7 +3,7 @@
 	"project_directory": "",
 	// base directory for paths relative to project_directory. Used if scope-trigger contains "base_directory": true
 	// watch out for side effects with project directory (if base_directory is not within project_directory)
-	"base_directory": "",
+	"base_directory": false,
 	// disable automatic path completions
 	"disable_autocompletions": false,
 	// disable keymaps
@@ -116,7 +116,7 @@
 
 			"auto": true,
 			"prefix": ["import"],
-			"relative": false,
+			"relative": true,
 			"extensions": ["css", "scss", "less"],
 			"replace_on_insert": [
 				["\\.(css|scss)$", ""],
