@@ -30,7 +30,7 @@ def get_end_diff(first, second):
     index = 0
     result = ""
     for c in first:
-        if c is second[index]:
+        if index in second and c is second[index]:
             index += 1
             result = c + result
         else:
