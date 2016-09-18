@@ -1,6 +1,6 @@
 # FuzzyFilePath - autocomplete filepaths
 
-@version 0.2.7
+@version 0.3.0
 @author Sascha Goldhofer <post@saschagoldhofer.de>
 
 ## tasks
