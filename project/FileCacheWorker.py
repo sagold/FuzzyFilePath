@@ -34,7 +34,8 @@ class FileCacheWorker(threading.Thread):
     def run(self):
         verbose(ID, "START adding files in", self.folder)
         self.files = self.read(self.folder)
-        verbose(ID, len(self.files), "files cached")
+        #verbose(ID, len(self.files), "files cached")
+        print("FuzzyFilePath cached {0} files in {1}".format(len(self.files), self.folder))
 
 
     def read(self, folder, base=None):
