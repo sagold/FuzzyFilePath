@@ -9,11 +9,16 @@
 - Cleanup @TODO flags
 - suddenly Testrunner causes plugin host to expire
 
+
 ### release
 
-    - Test changes
-    - Test windows paths
+    - WIP: Test changes
+    - DONE: Test windows paths
     - Add documentation for multiple folder support
+
+### performance
+
+    - searching in large folders, where the query matches a folder containing many files, are very slow. i.e. searching for "node_modules/path/to/package" is much slower than searching for "path/to/package"
 
 ### features
 
