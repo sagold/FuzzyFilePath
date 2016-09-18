@@ -9,7 +9,7 @@
 	// disable keymaps
 	"disable_keymap_actions": false,
 	// ignore folders that match following regular expressions
-	"exclude_folders": ["node\\_modules\\/.*\\/node_modules", "bower\\_components/.*/bower\\_components"],
+	"exclude_folders": ["node\\_modules\\/[^/]*\\/node\\_modules", "bower\\_components/.*/bower\\_components"],
 	// logs scope evaluation to console to debug configuration
 	"log": false,
 	// LIST OF TRIGGERS FOR AUTO COMPLETION
