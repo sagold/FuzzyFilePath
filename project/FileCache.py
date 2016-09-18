@@ -65,7 +65,7 @@ class FileCache:
         for i in needle:
             regex += i + ".*"
 
-        verbose(ID, "scan", len(project_files), "files for", needle, valid_extensions);
+        verbose(ID, "scan", len(project_files), "files for", regex, valid_extensions);
 
         # get matching files
         result = []
@@ -80,9 +80,14 @@ class FileCache:
                 funny: the regex matched here is also matched again by Sublime itself. thus returning all
                 filepaths is as good as filtering them before, with the exception that the first one is incredibly
                 faster...
+
+                The problem with the second solution is, that sublime does not include anything outside word separators
+                and thus proposing many invalid paths. Thus the regex has to be faster, by either
+                - omitting anything after the last slash, since sublime does the rest correctly (no improvement)
+                - splitting the search by folders...
             """
-            #if ((properties[1] in valid_extensions or "*" in valid_extensions)) and re.match(regex, filepath, re.IGNORECASE)):
-            if ((properties[1] in valid_extensions or "*" in valid_extensions)):
+            if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, filepath, re.IGNORECASE)):
+            # if ((properties[1] in valid_extensions or "*" in valid_extensions)):
                 completion = self.get_completion(filepath, base_path)
                 result.append(completion)
 
