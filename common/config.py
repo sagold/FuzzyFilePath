@@ -8,6 +8,7 @@ config = {
 	"trigger_action": ["auto_complete", "insert_path"],
 	"insert_action": ["commit_completion", "insert_best_completion"],
 	"trigger_statements": ["prefix", "tagName", "style"],
+	"fast_query": False,
 
 	"base_directory": False,
 	"project_directory": False,

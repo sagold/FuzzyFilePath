@@ -5,6 +5,7 @@ import re
 from FuzzyFilePath.common.verbose import verbose
 from FuzzyFilePath.common.verbose import log
 import FuzzyFilePath.common.path as Path
+import FuzzyFilePath.common.settings as settings
 from FuzzyFilePath.project.FileCacheWorker import FileCacheWorker
 
 ID = "search"
@@ -61,11 +62,14 @@ class FileCache:
         needle = re.escape(needle);
 
         # build search expression
-        regex = ".*"
-        for i in needle:
-            regex += i + ".*"
+        if settings.get("fast_query"):
+            regex = ".*" + re.sub("\\\/", ".*\\\/.*", needle) + ".*"
+        else:
+            regex = ".*"
+            for i in needle:
+                regex += i + ".*"
 
-        verbose(ID, "scan", len(project_files), "files for", regex, valid_extensions);
+        verbose(ID, "scan", len(project_files), "files for", regex, "(" + needle + ")", valid_extensions);
 
         # get matching files
         result = []
