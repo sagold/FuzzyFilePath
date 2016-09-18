@@ -76,7 +76,13 @@ class FileCache:
                 properties[1] = file extension, like "html"
                 properties[2] = file displayed as suggestion, like 'test/mock/project/index     html'
             """
-            if ((properties[1] in valid_extensions or "*" in valid_extensions) and re.match(regex, filepath, re.IGNORECASE)):
+            """
+                funny: the regex matched here is also matched again by Sublime itself. thus returning all
+                filepaths is as good as filtering them before, with the exception that the first one is incredibly
+                faster...
+            """
+            #if ((properties[1] in valid_extensions or "*" in valid_extensions)) and re.match(regex, filepath, re.IGNORECASE)):
+            if ((properties[1] in valid_extensions or "*" in valid_extensions)):
                 completion = self.get_completion(filepath, base_path)
                 result.append(completion)
 
