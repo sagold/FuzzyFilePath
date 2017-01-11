@@ -41,7 +41,7 @@
 				["\\.js$", ""],						// after insertion, remove .js from path
 				["([^.])\\/index$", "\\1"],			// nodejs will load index.js by default => also remove index
 				// remove path to module-folder, since our build tool resolves this path automatically
-				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
+				["^([\\/.]+)?\\/(bower_components|node_modules)\\/", ""]
 			]
 		},
 		{
@@ -56,7 +56,7 @@
 			"replace_on_insert": [
 				["\\.js$", ""],
 				["([^.])\\/index$", "\\1"],
-				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
+				["^([\\/.]+)?\\/(bower_components|node_modules)\\/", ""]
 			]
 		},
 		{
@@ -146,7 +146,7 @@
 		    "prefix": ["src"],
 		    "tagName": ["script"],
 		    "auto": true,
-		    "base_directory": true,
+		    "base_directory": false,
 		    "extensions": ["js"],
 		    "relative": true
 		},
