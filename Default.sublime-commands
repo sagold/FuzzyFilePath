@@ -2,5 +2,14 @@
 	{ "caption": "FuzzyFilePath: Rebuild cache", "command": "ffp_update_cache" },
 	{ "caption": "FuzzyFilePath: Show info", "command": "ffp_show_info" },
 	{ "caption": "FuzzyFilePath: Set project directory", "command": "ffp_set_project_directory" },
-	{ "caption": "FuzzyFilePath: Show current settings", "command": "ffp_show_current_settings" }
+	{ "caption": "FuzzyFilePath: Show current settings", "command": "ffp_show_current_settings" },
+	{ "caption": "FuzzyFilePath: Goto File", "command": "ffp_goto_file"},
+	{ "caption": "FuzzyFilePath: Insert Relative Path", "command": "insert_path", "args": {
+          "type": "relative"
+        }
+    },
+	{ "caption": "FuzzyFilePath: Insert Absolute Path", "command": "insert_path", "args": {
+          "type": "absolute"
+        }
+    }
 ]
