@@ -1,9 +1,13 @@
 17/04/01
 
 - fixed an error while post-replacing inserted filepath, which exited with a broken result
-- changed filecache worker to include subfolders defined as project-folder, even if exclude_folders did match them
+
+CHANGES
+
 - improved goto-file command by quering a simplified path (webpack ~)
 - improved goto-file command to open uncached files if filepath does exist
+- filecache worker now includes subfolders defined as project-folder, even if exclude_folders does match them
+
 
 16/09/10
 
@@ -30,7 +34,6 @@ FEATURES
 - set project specifiv project_directory via command palette
 - after completion insertion, move to beginning of next word
 - support multiple opened projects (in separate windows)
-
 
 CHANGES
 
