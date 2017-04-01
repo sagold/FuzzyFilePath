@@ -25,12 +25,13 @@ def get_start_diff(first, second):
     return result
 
 def get_end_diff(first, second):
-    first = first[::-1]
+    first = first[::-1] # reverse string
     second = second[::-1]
+    second_length = len(second)
     index = 0
     result = ""
     for c in first:
-        if index in second and c is second[index]:
+        if index < second_length and c is second[index]:
             index += 1
             result = c + result
         else:
