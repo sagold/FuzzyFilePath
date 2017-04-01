@@ -32,6 +32,9 @@ class FfpGotoFileCommand(sublime_plugin.TextCommand):
             path = re.sub(project_folder, "", path)
 
         path = re.sub("^[\\\\/\.]", "", path)
+        # cleanup string, in case there are special characters for a path
+        # e.g. webpack uses ~, which is not part of path
+        path = re.sub("[^A-Za-z0-9 \-_\\\\/.%?#]*", "", path)
         files = state.find_file(path)
 
         if len(files) == 0:
