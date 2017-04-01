@@ -31,14 +31,19 @@ class FfpGotoFileCommand(sublime_plugin.TextCommand):
             path = Path.get_absolute_path(current_directory, path)
             path = re.sub(project_folder, "", path)
 
+
         path = re.sub("^[\\\\/\.]", "", path)
+        realpath = path
         # cleanup string, in case there are special characters for a path
         # e.g. webpack uses ~, which is not part of path
         path = re.sub("[^A-Za-z0-9 \-_\\\\/.%?#]*", "", path)
         files = state.find_file(path)
 
         if len(files) == 0:
-            return log(ID, "failed finding file", path)
+            # it may be an uncached file, try to open it by using the real path
+            if self.filepath_exists(os.path.join(project_folder, realpath)):
+                return self.open_file(project_folder, realpath)
+            return log(ID, "failed finding file", path, "it is not within the cache and not a realpath")
 
         if len(files) == 1:
             self.open_file(project_folder, files[0])
@@ -53,6 +58,9 @@ class FfpGotoFileCommand(sublime_plugin.TextCommand):
             self.files = files
             self.project_folder = project_folder
             self.view.show_popup_menu(files, self.select_file)
+
+    def filepath_exists(self, filepath):
+        return os.path.isfile(filepath)
 
     def select_file(self, index):
         self.open_file(self.project_folder, self.files[index])
