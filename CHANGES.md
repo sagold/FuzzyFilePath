@@ -1,3 +1,10 @@
+17/04/01
+
+- fixed an error while post-replacing inserted filepath, which exited with a broken result
+- changed filecache worker to include subfolders defined as project-folder, even if exclude_folders did match them
+- improved goto-file command by quering a simplified path (webpack ~)
+- improved goto-file command to open uncached files if filepath does exist
+
 16/09/10
 
 - support for multiple folders
