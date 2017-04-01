@@ -43,11 +43,15 @@ class FileCacheWorker(threading.Thread):
         folder_cache = {}
         base = base if base is not None else folder
 
-        # test ignore expressions on current path
-        for test in self.exclude_folders:
-            if re.search(test, folder) is not None:
-                verbose(ID, "skip " + folder)
-                return folder_cache
+        if base is not folder:
+            # ensure project_folders are not excluded by another folders exclude patterns
+            # e.g. project/node_modules excludes project/node_modules/module, which is also a project folder
+            relative_folder = os.path.relpath(folder, base)
+            # test ignore expressions on current path
+            for test in self.exclude_folders:
+                if re.search(test, relative_folder) is not None:
+                    # verbose(ID, "skip " + folder)
+                    return folder_cache
 
         # ressources =
         for ressource in os.listdir(folder):
