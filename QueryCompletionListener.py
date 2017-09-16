@@ -79,6 +79,8 @@ class QueryCompletionListener(sublime_plugin.EventListener):
 
     # check if a completion is inserted and trigger on_post_insert_completion
     def on_post_text_command(self, view, command_name, args):
+        if len( view.sel() ) < 1:
+            return
         current_line = Selection.get_line(view)
         command_trigger = command_name in settings.get("trigger_action", []) and self.track_insert["start_line"] != current_line
         if command_trigger or command_name in settings.get("insert_action", []):
