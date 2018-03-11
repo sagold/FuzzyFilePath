@@ -16,70 +16,22 @@
                         "children":
                         [
                             {
-                                "command": "open_file", "args":
+                                "caption": "Settings",
+                                "command": "edit_settings", "args":
                                 {
-                                    "file": "${packages}/FuzzyFilePath/FuzzyFilePath.sublime-settings"
-                                },
-                                "caption": "Settings – Default"
-                            },
-                            {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/User/FuzzyFilePath.sublime-settings"
-                                },
-                                "caption": "Settings – User"
+                                    "base_file": "${packages}/FuzzyFilePath/FuzzyFilePath.sublime-settings",
+                                    "default": "{\n\t$0\n}\n"
+                                }
                             },
                             { "caption": "-" },
-                            { "caption": "-" },
                             {
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/FuzzyFilePath/Default (OSX).sublime-keymap",
-                                    "platform": "OSX"
-                                },
-                                "caption": "Key Bindings – Default"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/FuzzyFilePath/Default (Linux).sublime-keymap",
-                                    "platform": "Linux"
-                                },
-                                "caption": "Key Bindings – Default"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/FuzzyFilePath/Default (Windows).sublime-keymap",
-                                    "platform": "Windows"
-                                },
-                                "caption": "Key Bindings – Default"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/User/Default (OSX).sublime-keymap",
-                                    "platform": "OSX"
-                                },
-                                "caption": "Key Bindings – User"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/User/Default (Linux).sublime-keymap",
-                                    "platform": "Linux"
-                                },
-                                "caption": "Key Bindings – User"
-                            },
-                            {
-                                "command": "open_file",
-                                "args": {
-                                    "file": "${packages}/User/Default (Windows).sublime-keymap",
-                                    "platform": "Windows"
-                                },
-                                "caption": "Key Bindings – User"
-                            },
-                            { "caption": "-" }
+                                "caption": "Key Bindings",
+                                "command": "edit_settings", "args":
+                                {
+                                    "base_file": "${packages}/FuzzyFilePath/Default ($platform).sublime-keymap",
+                                    "default": "[\n\t$0\n]\n"
+                                }
+                            }
                         ]
                     }
                 ]
