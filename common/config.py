@@ -16,6 +16,7 @@ config = {
 	"disable_keymap_actions": False,
 	"auto_trigger": True,
 	"trigger": [],
+	"additional_scopes": [],
 	"exclude_folders": ["node\\_modules", "bower\\_components/.*/bower\\_components"],
 
 	"post_insert_move_characters": "^[\"\'\);]*"
