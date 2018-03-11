@@ -73,6 +73,7 @@ def get_base_settings(config):
     user_settings = sublime.load_settings(config["ffp_settings_file"])
     # Note: user_settings is of class Settings
     user_settings = merge(config, user_settings)
+    user_settings = merge_scopes(user_settings)
     return sanitize(user_settings)
 
 
@@ -96,6 +97,16 @@ def merge(settings, overwrite={}):
         result[key] = overwrite.get(mappedKey, settings.get(key))
 
     return result
+
+
+def merge_scopes(settings):
+    """Merge triggers from 'additional_scopes' in user settings to the main triggers, if present"""
+    triggers = settings.get("trigger")
+    additional_scopes = settings.get("additional_scopes", [])
+    for trigger in additional_scopes:
+        triggers.append(trigger)
+    settings["trigger"] = triggers
+    return settings
 
 
 # @TODO improve memory
