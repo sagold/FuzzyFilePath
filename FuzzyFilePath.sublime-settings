@@ -14,8 +14,6 @@
 	"log": false,
 	// LIST OF TRIGGERS FOR AUTO COMPLETION
 	// - setting "scopes" in user settings will override all other scopes.
-	// - create "additional_scopes" in user settings to add more scopes instead.
-	//   they will be added after the existing scopes.
 	// - triggers are evaluated in given order. First match wins
 	// - specialize trigger by 1. scope 2. prefix, style and/or tagname
 	// - command (insert_path) still requires a trigger
@@ -242,11 +240,6 @@
 		    "auto": false,
 		    "extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
 		    "relative": true
-		},
-	],
-	"additional_scopes": [
-		{
-
 		}
 	]
 }
