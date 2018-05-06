@@ -1,3 +1,9 @@
+18/05/06
+
+- Add `additional_scopes` list for custom scope extension
+- Update edit_settings command
+- Add json as valid js extension
+
 17/04/01
 
 - fixed an error while post-replacing inserted filepath, which exited with a broken result
