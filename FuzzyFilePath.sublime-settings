@@ -38,7 +38,7 @@
 			"auto": true,
 			"relative": true,						// insert absolute
 			"base_directory": false,				// insert absolute from the set base directory (above)
-			"extensions": ["js", "html", "scss"],	// show only .js, .html and .scss files
+			"extensions": ["js", "html", "scss", "json"],	// show only .js, .html and .scss files
 			"replace_on_insert": [
 				["\\.js$", ""],						// after insertion, remove .js from path
 				["([^.])\\/index$", "\\1"],			// nodejs will load index.js by default => also remove index
