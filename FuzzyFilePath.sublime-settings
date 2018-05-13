@@ -48,7 +48,7 @@
 		},
 		{
 			// es6 import from/import "*"
-			"scope": "string\\.js\\s",
+			"scope": "\\.js\\s",
 
 			"auto": true,
 			"relative": true,
