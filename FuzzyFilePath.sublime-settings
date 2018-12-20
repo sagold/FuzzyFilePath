@@ -32,15 +32,15 @@
 		 */
 		{
 			// js: require()
-			"scope": "\\.js\\s",					// 1. ignore if scope at cursor does not match expression (super+alt+p)
+			"scope": "\\.(js|ts)\\s",					// 1. ignore if scope at cursor does not match expression (super+alt+p)
 			"prefix": ["require", "define"],		// 2. trigger only if: require(<cursor>, define([<cursor>
 			// if 1 & 2 are true:
 			"auto": true,
 			"relative": true,						// insert absolute
 			"base_directory": false,				// insert absolute from the set base directory (above)
-			"extensions": ["js", "html", "scss", "json"],	// show only .js, .html and .scss files
+			"extensions": ["ts", "js", "html", "scss", "json"],	// show only .js, .html and .scss files
 			"replace_on_insert": [
-				["\\.js$", ""],						// after insertion, remove .js from path
+				["\\.(js|ts)$", ""],						// after insertion, remove .js from path
 				["([^.])\\/index$", "\\1"],			// nodejs will load index.js by default => also remove index
 				// remove path to module-folder, since our build tool resolves this path automatically
 				["^([\\/.]+)?\\/(bower_components|node_modules)\\/", ""]
@@ -48,15 +48,15 @@
 		},
 		{
 			// es6 import from/import "*"
-			"scope": "\\.js\\s",
+			"scope": "string.*\\.(js|ts)\\s",
 
 			"auto": true,
 			"relative": true,
 			"base_directory": false,
 			"prefix": ["from", "import"],
-			"extensions": ["js", "html", "scss"],
+			"extensions": ["ts", "js", "html", "scss", "json"],
 			"replace_on_insert": [
-				["\\.js$", ""],
+				["\\.(js|ts)$", ""],
 				["([^.])\\/index$", "\\1"],
 				["^([\\/.]+)?\\/(bower_components|node_modules)\\/", ""]
 			]
@@ -114,12 +114,12 @@
 		 */
 		{
  			// import ""
-			"scope": "source\\.(css|sass|less)",
+			"scope": "source\\.(css|sass|scss|less)",
 
 			"auto": true,
 			"prefix": ["import"],
 			"relative": true,
-			"extensions": ["css", "scss", "less"],
+			"extensions": ["css", "sass", "scss", "less"],
 			"replace_on_insert": [
 				["\\.(css|scss)$", ""],
 				["^(\\/.+)?\\/(bower_components|node_modules)\\/", ""]
