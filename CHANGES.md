@@ -1,3 +1,7 @@
+19/04/03
+
+- Update triggers for sass, js and ts
+
 18/05/06
 
 - Add `additional_scopes` list for custom scope extension
