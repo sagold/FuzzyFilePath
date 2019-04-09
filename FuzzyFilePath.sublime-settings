@@ -239,9 +239,9 @@
 		    // * - any source file (by command only)
 		    "scope": "source",
 
-		    "auto": false,
-		    "extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
-		    "relative": true
+			"auto": false,
+			"extensions": ["js", "html", "css", "scss", "less", "png", "gif", "jpeg", "jpg", "svg"],
+			"relative": true
 		},
 	],
 	"additional_scopes": [
